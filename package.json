@@ -1,0 +1,36 @@
+{
+  "name": "website-scraper",
+  "version": "0.0.0",
+  "description": "full web-page's scraping including all dependencies (css, images, js, etc.)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/s0ph1e/node-website-scraper.git"
+  },
+  "keywords": [
+    "scrape",
+    "url",
+    "page",
+    "site",
+    "html",
+    "css",
+    "image",
+    "js"
+  ],
+  "author": "s0ph1e",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/s0ph1e/node-website-scraper/issues"
+  },
+  "homepage": "https://github.com/s0ph1e/node-website-scraper",
+  "dependencies": {
+    "bluebird": "^2.3.2",
+    "fs-extra": "^0.11.1",
+    "cheerio": "^0.17.0",
+    "valid-url": "^1.0.9",
+    "underscore": "^1.7.0"
+  }
+}
