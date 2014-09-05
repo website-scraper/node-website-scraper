@@ -1,5 +1,5 @@
-var Core = require('./lib/core.js');
+var Scraper = require('./lib/load.js');
 
-module.exports.scrape = function(data, callback) {
-  return new Core(data).scrape(callback);
+module.exports.scrape = function (data, callback) {
+  return new Scraper(data).scrape(callback);
 };
