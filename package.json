@@ -29,7 +29,7 @@
   "dependencies": {
     "bluebird": "^2.3.2",
     "fs-extra": "^0.11.1",
-    "cheerio": "^0.17.0",
+    "cheerio": "0.11.0",
     "valid-url": "^1.0.9",
     "underscore": "^1.7.0"
   }
