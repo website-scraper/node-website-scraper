@@ -1,7 +1,7 @@
 {
   "name": "website-scraper",
-  "version": "0.0.0",
-  "description": "full web-page's scraping including all dependencies (css, images, js, etc.)",
+  "version": "0.1.0",
+  "description": "full web-page's scraping including all css, images, js, etc.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,8 @@
   },
   "keywords": [
     "scrape",
+    "scraper",
+    "web",
     "url",
     "page",
     "site",
