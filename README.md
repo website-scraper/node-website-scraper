@@ -25,7 +25,7 @@ Makes request to `url` and saves all files found with `srcToLoad` to `path`.
  - `path:` path to save loaded files *(required)*
  - `log:` boolean indicates whether to write the log to console *(optional, default: false)*
  - `indexFile:` filename for index page *(optional, default: 'index.html')*
- - `srcToLoad:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see example below)*
+ - `srcToLoad:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/defaults.js`)*
  - `directories:` array of objects, specifies relative directories for extensions. If `null` all files will be saved to `path` *(optional, see example below)*
  
  
