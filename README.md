@@ -1,6 +1,12 @@
 ##Introduction
 Node.js module for website's scraping with images, css, js, etc. Uses cheerio, request, bluebird, fs-extra, underscore.
 
+[![Build Status](https://travis-ci.org/s0ph1e/node-website-scraper.svg?branch=master)](https://travis-ci.org/s0ph1e/node-website-scraper)
+[![Version](https://img.shields.io/npm/v/website-scraper.svg)](https://www.npmjs.org/package/website-scraper)
+[![Downloads](https://img.shields.io/npm/dm/website-scraper.svg)](https://www.npmjs.org/package/website-scraper)
+
+[![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
+
 ##Installation
 `npm install website-scraper`
 
