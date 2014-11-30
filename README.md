@@ -16,7 +16,7 @@ Node.js module for website's scraping with images, css, js, etc.
 ```javascript
 var scraper = require('website-scraper'); 
 var options = {
-  url: 'http://nodejs.org/',
+  urls: 'http://nodejs.org/',
   directory: '/path/to/save/',
 };
 
@@ -33,16 +33,15 @@ scraper.scrape(options).then(function (result) {
 
 ##API
 ### scrape(options, callback)
-Makes request to `url` and saves all files found with `srcToLoad` to `directory`. 
+Makes request to `url` and saves all files found with `sources` to `directory`. 
 
 **options** - object containing next options:
 
- - `url:` url to load *(required)*
+ - `urls:` array of urls to load and filenames for them *(required, see example below)*
  - `directory:` path to save loaded files *(required)*
- - `paths:` array of objects, contains urls or relative paths to load and filenames for them (if is not set only `url` will be loaded) *(optional, see example below)*
  - `log:` boolean indicates whether to write the log to console *(optional, default: false)*
- - `indexFile:` filename for index page *(optional, default: 'index.html')*
- - `srcToLoad:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/defaults.js`)*
+ - `defaultFilename:` filename for index page *(optional, default: 'index.html')*
+ - `sources:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/defaults.js`)*
  - `subdirectories:` array of objects, specifies subdirectories for extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  
  
@@ -69,19 +68,18 @@ and separate files into directories:
 
 ```javascript
 scraper.scrape({
-  url: 'http://nodejs.org/',
-  directory: '/path/to/save',
-  paths: [
-    {path: '/', filename: 'index.html'},
-    {path: '/about', filename: 'about.html'},
+  urls: [
+    'http://nodejs.org/',	// Will be saved with default filename 'index.html'
+    {url: 'http://nodejs.org/about', filename: 'about.html'},
     {url: 'http://blog.nodejs.org/', filename: 'blog.html'}
   ],
+  directory: '/path/to/save',
   subdirectories: [
     {directory: 'img', extensions: ['.jpg', '.png', '.svg']},
     {directory: 'js', extensions: ['.js']},
     {directory: 'css', extensions: ['.css']}
   ],
-  srcToLoad: [
+  sources: [
     {selector: 'img', attr: 'src'},
     {selector: 'link[rel="stylesheet"]', attr: 'href'},
     {selector: 'script', attr: 'src'}
