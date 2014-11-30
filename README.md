@@ -16,7 +16,7 @@ Node.js module for website's scraping with images, css, js, etc.
 ```javascript
 var scraper = require('website-scraper'); 
 var options = {
-  urls: 'http://nodejs.org/',
+  urls: ['http://nodejs.org/'],
   directory: '/path/to/save/',
 };
 
@@ -42,7 +42,7 @@ Makes request to `url` and saves all files found with `sources` to `directory`.
  - `log:` boolean indicates whether to write the log to console *(optional, default: false)*
  - `defaultFilename:` filename for index page *(optional, default: 'index.html')*
  - `sources:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/defaults.js`)*
- - `subdirectories:` array of objects, specifies subdirectories for extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
+ - `subdirectories:` array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  
  
 **callback** - callback function *(optional)*, includes following parameters:
