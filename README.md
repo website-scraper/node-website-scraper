@@ -1,11 +1,11 @@
 ##Introduction
 Node.js module for website's scraping with images, css, js, etc. 
 
-[![Build Status](https://travis-ci.org/s0ph1e/node-website-scraper.svg?branch=master)](https://travis-ci.org/s0ph1e/node-website-scraper)
-[![Code Climate](https://codeclimate.com/github/s0ph1e/node-website-scraper/badges/gpa.svg)](https://codeclimate.com/github/s0ph1e/node-website-scraper)
-[![Version](https://img.shields.io/npm/v/website-scraper.svg)](https://www.npmjs.org/package/website-scraper)
-[![Downloads](https://img.shields.io/npm/dm/website-scraper.svg)](https://www.npmjs.org/package/website-scraper)
-[![Dependency Status](https://david-dm.org/s0ph1e/node-website-scraper.svg)](https://david-dm.org/s0ph1e/node-website-scraper)
+[![Build Status](https://img.shields.io/travis/s0ph1e/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/s0ph1e/node-website-scraper)
+[![Code Climate](https://img.shields.io/codeclimate/github/s0ph1e/node-website-scraper.svg?style=flat)](https://codeclimate.com/github/s0ph1e/node-website-scraper)
+[![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
+[![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
+[![Dependency Status](https://david-dm.org/s0ph1e/node-website-scraper.svg?style=flat)](https://david-dm.org/s0ph1e/node-website-scraper)
 
 [![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
 
