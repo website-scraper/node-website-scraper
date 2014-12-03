@@ -1,6 +1,6 @@
 {
   "name": "website-scraper",
-  "version": "0.2.1-beta",
+  "version": "0.2.1",
   "description": "full web-page's scraping including all css, images, js, etc.",
   "readmeFilename": "README.md",
   "main": "index.js",
