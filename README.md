@@ -1,4 +1,4 @@
-##Introduction
+## Introduction
 Node.js module for website's scraping with images, css, js, etc. 
 
 [![Build Status](https://img.shields.io/travis/s0ph1e/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/s0ph1e/node-website-scraper)
@@ -9,10 +9,10 @@ Node.js module for website's scraping with images, css, js, etc.
 
 [![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
 
-##Installation
+## Installation
 `npm install website-scraper`
 
-##Usage
+## Usage
 ```javascript
 var scraper = require('website-scraper'); 
 var options = {
@@ -31,7 +31,7 @@ scraper.scrape(options).then(function (result) {
 });
 ```
 
-##API
+## API
 ### scrape(options, callback)
 Makes request to `url` and saves all files found with `sources` to `directory`. 
 
@@ -53,7 +53,7 @@ Makes request to `url` and saves all files found with `sources` to `directory`.
     - `filename:` absolute filename where page was saved
 
 
-##Examples
+## Examples
 Let's scrape some pages from [http://nodejs.org/](http://nodejs.org/) with images, css, js files and save them to `/path/to/save/`. 
 Imagine we want to load:
   - [Home page](http://nodejs.org/) to `index.html`
@@ -89,7 +89,7 @@ scraper.scrape({
 });
 ```
 
-##Dependencies
+## Dependencies
 
  - cheerio
  - request
