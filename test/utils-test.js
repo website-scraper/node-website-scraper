@@ -51,10 +51,4 @@ var should = require('should')
         utils.trimFilename('index.html').should.be.equal('index.html');
       });
     });
-
-    describe('#makeRequest(url)', function(){
-//      it('should be a promise', function(){
-//
-//      });
-    });
   });
