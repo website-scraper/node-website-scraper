@@ -31,13 +31,13 @@
   "homepage": "https://github.com/s0ph1e/node-website-scraper",
   "dependencies": {
     "bluebird": "^2.3.2",
-    "fs-extra": "^0.12.0",
+    "fs-extra": "^0.16.4",
     "cheerio": "0.11.0",
     "request": "^2.42.0",
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "should": "^4.3.0",
+    "should": "^5.0.0",
     "mocha": "^2.0.1"
   }
 }
