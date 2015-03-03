@@ -46,5 +46,17 @@ var should = require('should')
         paths.should.containEql('i.css');
 
       });
+
+      it('should not return duplicate paths', function(){
+        var text = '\
+          @import url("a.css");             \
+          @import a.css;                    \
+          background-image url ("a.css");   \
+        ';
+
+        var paths = css.getSourcesPaths(text);
+        paths.should.be.instanceof(Array).and.have.lengthOf(1);
+        paths.should.containEql('a.css');
+      });
     });
   });
