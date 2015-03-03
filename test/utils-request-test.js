@@ -25,6 +25,8 @@ describe('Request utils', function(){
   });
 
   describe('#makeRequest', function(){
+    this.timeout(15000);
+
     it('should return object with url and body properties', function(){
       return request.makeRequest({}, 'http://example.com').then(function (data) {
         data.should.have.properties(['url', 'body']);
