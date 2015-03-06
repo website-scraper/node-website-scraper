@@ -43,7 +43,7 @@ Makes request to `url` and saves all files found with `sources` to `directory`.
  - `defaultFilename:` filename for index page *(optional, default: 'index.html')*
  - `sources:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/defaults.js`)*
  - `subdirectories:` array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
- - `request`: object, custom options for [request](https://github.com/request/request) *(optional, see example below)*
+ - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
  
  
 **callback** - callback function *(optional)*, includes following parameters:
