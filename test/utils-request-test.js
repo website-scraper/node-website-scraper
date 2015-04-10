@@ -1,3 +1,4 @@
+var nock = require('nock');
 var request = require('../lib/utils/request');
 
 var should = require('should')
@@ -25,10 +26,11 @@ describe('Request utils', function(){
   });
 
   describe('#makeRequest', function(){
-    this.timeout(15000);
+    var url = 'http://www.google.com';
+    nock(url).get('/').reply(200, 'Hello from Google!');
 
     it('should return object with url and body properties', function(){
-      return request.makeRequest({}, 'http://example.com').then(function (data) {
+      return request.makeRequest({}, url).then(function (data) {
         data.should.have.properties(['url', 'body']);
       });
     });

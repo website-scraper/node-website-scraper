@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "should": "^5.0.0",
-    "mocha": "^2.0.1"
+    "mocha": "^2.0.1",
+    "nock": "^1.6.0"
   }
 }
