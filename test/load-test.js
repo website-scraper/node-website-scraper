@@ -1,4 +1,5 @@
 var nock = require('nock');
+var _ = require('underscore');
 var Loader = require('../lib/load');
 
 var defaultOptions = {
@@ -66,6 +67,43 @@ describe('Load', function(){
       localFilename1.should.not.be.equal(localFilename2);
       localFilename2.should.not.be.equal(localFilename3);
       localFilename3.should.not.be.equal(localFilename1);
+    });
+  });
+
+  describe('#getDirectoryByExtension', function(){
+    it('should return directory for extension specified in options', function(){
+      var loader = new Loader(_.extend(defaultOptions, {
+        subdirectories: [
+          {
+            directory: 'images',
+            extensions: ['.png', '.jpg']
+          },
+          {
+            directory: 'scripts',
+            extensions: ['.js']
+          },
+          {
+            directory: 'styles',
+            extensions: ['.css']
+          }
+        ]
+      }));
+
+      loader.getDirectoryByExtension('.png').should.be.equal('images');
+      loader.getDirectoryByExtension('.jpg').should.be.equal('images');
+      loader.getDirectoryByExtension('.js').should.be.equal('scripts');
+      loader.getDirectoryByExtension('.css').should.be.equal('styles');
+
+    });
+
+    it('should return nothing if no directory for extension was set', function(){
+      var loader = new Loader(_.extend(defaultOptions, {
+        subdirectories: null}
+      );
+
+      loader.getDirectoryByExtension('.svg').should.be.empty;
+      loader.getDirectoryByExtension('.png').should.be.empty;
+
     });
   });
 });
