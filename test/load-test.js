@@ -1,0 +1,71 @@
+var nock = require('nock');
+var Loader = require('../lib/load');
+
+var defaultOptions = {
+  urls: ['http://example.com']
+};
+
+var should = require('should')
+describe('Load', function(){
+  describe('#getLoadedFilename', function(){
+    it('should return nothing if no filename was set for url before', function(){
+      var loader = new Loader(defaultOptions);
+      var url = 'http://example.com';
+
+      var localFilename = loader.getLoadedFilename(url);
+      should(localFilename).not.be.ok;
+    });
+  });
+
+  describe('#setLoadedFilename, #getLoadedFilename', function(){
+    it('should set local filename for url and then get local filename by url', function(){
+      var loader = new Loader(defaultOptions);
+      var url = 'http://example.com';
+      var localFilename = 'index.html';
+
+      loader.setLoadedFilename(url, localFilename);
+      loader.getLoadedFilename(url).should.be.equal(localFilename);
+    });
+  });
+
+  describe('#getAllLoadedFilenames', function(){
+    it('should return an array with all local filenames set before', function(){
+      var loader = new Loader(defaultOptions);
+
+      for (var i = 1; i <= 3; i++) {
+        loader.setLoadedFilename('http://example.com/' + i, 'file-' + i + '.txt');
+      }
+
+      var allLoadedFilenames = loader.getAllLoadedFilenames();
+      allLoadedFilenames.should.be.instanceof(Array).and.have.lengthOf(3);
+      allLoadedFilenames.should.containEql('file-1.txt');
+      allLoadedFilenames.should.containEql('file-2.txt');
+      allLoadedFilenames.should.containEql('file-3.txt');
+    });
+  });
+
+  describe('#getFilename', function(){
+    it('should return different result for filename if such file was already loaded', function(){
+      var loader = new Loader(defaultOptions);
+
+      var url1 = 'http://example.com/index.html'
+      var filename1 = 'index.html';
+      var localFilename1 = loader.getFilename(filename1);
+      loader.setLoadedFilename(url1, localFilename1);
+
+      var url2 = 'http://example.com/blog/index.html'
+      var filename2 = 'index.html';
+      var localFilename2 = loader.getFilename(filename2);
+      loader.setLoadedFilename(url2, localFilename2);
+
+      var url3 = 'http://example.com/about/index.html'
+      var filename3 = 'index.html';
+      var localFilename3 = loader.getFilename(filename3);
+      loader.setLoadedFilename(url3, localFilename3);
+
+      localFilename1.should.not.be.equal(localFilename2);
+      localFilename2.should.not.be.equal(localFilename3);
+      localFilename3.should.not.be.equal(localFilename1);
+    });
+  });
+});
