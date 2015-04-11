@@ -98,8 +98,8 @@ describe('Load', function(){
 
     it('should return nothing if no directory for extension was set', function(){
       var loader = new Loader(_.extend(defaultOptions, {
-        subdirectories: null}
-      );
+        subdirectories: null
+      }));
 
       loader.getDirectoryByExtension('.svg').should.be.empty;
       loader.getDirectoryByExtension('.png').should.be.empty;
