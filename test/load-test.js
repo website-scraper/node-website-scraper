@@ -1,6 +1,7 @@
 var nock = require('nock');
 var _ = require('underscore');
 var Loader = require('../lib/load');
+var fs = require('fs-extra');
 
 var defaultOptions = {
   urls: ['http://example.com']
@@ -106,4 +107,50 @@ describe('Load', function(){
 
     });
   });
+
+  describe('#validate', function(){
+    it('should return rejected promise if directory exists', function(){
+      var directory = __dirname + '/tmpDir_' + new Date().getTime().toString();
+
+      fs.mkdir(directory, function(){
+        var loader = new Loader(_.extend(defaultOptions, {
+          directory: directory
+        }));
+
+        var validate = loader.validate();
+
+        validate.isRejected().should.be.true;
+
+        validate.then(_.noop, _.noop).then(function() {
+          fs.remove(directory);
+        });
+      });
+    });
+
+    it('should return rejected promise if no directory passed', function(){
+      var loader = new Loader();
+      var validate = loader.validate();
+
+      validate.isRejected().should.be.true;
+
+      validate.then(_.noop, _.noop);
+
+    });
+
+    it('should return resolved promise if directory doesn\'t exist', function(){
+      var directory = __dirname + '/tmpDir_' + new Date().getTime().toString();
+
+      var loader = new Loader(_.extend(defaultOptions, {
+        directory: directory
+      }));
+
+      var validate = loader.validate();
+
+      validate.isFulfilled().should.be.true;
+
+      validate.then(_.noop, _.noop);
+
+    });
+  });
+
 });
