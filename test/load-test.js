@@ -117,12 +117,10 @@ describe('Load', function(){
           directory: directory
         }));
 
-        var validate = loader.validate();
-
-        validate.isRejected().should.be.true;
-
-        validate.then(_.noop, _.noop).then(function() {
-          fs.remove(directory);
+        loader.validate().then(_.noop).catch(function(e) {
+            e.should.be.instanceof(Error);
+        }).finally(function() {
+            fs.remove(directory);
         });
       });
     });
@@ -131,10 +129,9 @@ describe('Load', function(){
       var loader = new Loader();
       var validate = loader.validate();
 
-      validate.isRejected().should.be.true;
-
-      validate.then(_.noop, _.noop);
-
+      loader.validate().then(_.noop).catch(function(e) {
+          e.should.be.instanceof(Error);
+      });
     });
 
     it('should return resolved promise if directory doesn\'t exist', function(){
@@ -144,12 +141,9 @@ describe('Load', function(){
         directory: directory
       }));
 
-      var validate = loader.validate();
-
-      validate.isFulfilled().should.be.true;
-
-      validate.then(_.noop, _.noop);
-
+      loader.validate().then(function(result) {
+          should(result).be.empty;
+      });
     });
   });
 
