@@ -7,6 +7,10 @@ var defaultOptions = {
   urls: ['http://example.com']
 };
 
+function getTmpDirectoryName() {
+    return _.uniqueId(__dirname + '/tmpDir_' + new Date().getTime().toString() + '_');
+}
+
 var should = require('should')
 describe('Load', function(){
   describe('#getLoadedFilename', function(){
@@ -110,7 +114,7 @@ describe('Load', function(){
 
   describe('#validate', function(){
     it('should return rejected promise if directory exists', function(){
-      var directory = __dirname + '/tmpDir_' + new Date().getTime().toString();
+      var directory = getTmpDirectoryName();
 
       fs.mkdir(directory, function(){
         var loader = new Loader(_.extend(defaultOptions, {
@@ -135,7 +139,7 @@ describe('Load', function(){
     });
 
     it('should return resolved promise if directory doesn\'t exist', function(){
-      var directory = __dirname + '/tmpDir_' + new Date().getTime().toString();
+      var directory = getTmpDirectoryName();
 
       var loader = new Loader(_.extend(defaultOptions, {
         directory: directory
