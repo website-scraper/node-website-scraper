@@ -131,7 +131,6 @@ describe('Load', function(){
 
     it('should return rejected promise if no directory passed', function(){
       var loader = new Loader();
-      var validate = loader.validate();
 
       loader.validate().then(_.noop).catch(function(e) {
           e.should.be.instanceof(Error);
