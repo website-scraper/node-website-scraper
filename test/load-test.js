@@ -77,7 +77,7 @@ describe('Load', function(){
 
   describe('#getDirectoryByExtension', function(){
     it('should return directory for extension specified in options', function(){
-      var loader = new Loader(_.extend(defaultOptions, {
+      var loader = new Loader(_.extend({}, defaultOptions, {
         subdirectories: [
           {
             directory: 'images',
@@ -102,7 +102,7 @@ describe('Load', function(){
     });
 
     it('should return nothing if no directory for extension was set', function(){
-      var loader = new Loader(_.extend(defaultOptions, {
+      var loader = new Loader(_.extend({}, defaultOptions, {
         subdirectories: null
       }));
 
@@ -117,7 +117,7 @@ describe('Load', function(){
       var directory = getTmpDirectoryName();
 
       fs.mkdir(directory, function(){
-        var loader = new Loader(_.extend(defaultOptions, {
+        var loader = new Loader(_.extend({}, defaultOptions, {
           directory: directory
         }));
 
@@ -141,7 +141,7 @@ describe('Load', function(){
     it('should return resolved promise if directory doesn\'t exist', function(){
       var directory = getTmpDirectoryName();
 
-      var loader = new Loader(_.extend(defaultOptions, {
+      var loader = new Loader(_.extend({}, defaultOptions, {
         directory: directory
       }));
 
