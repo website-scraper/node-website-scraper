@@ -5,7 +5,7 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "test": "node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -40,8 +40,6 @@
   "devDependencies": {
     "should": "^5.0.0",
     "mocha": "^2.0.1",
-    "nock": "^1.6.0",
-    "coveralls": "^2.11.2",
-    "istanbul": "^0.3.7"
+    "nock": "^1.6.0"
   }
 }
