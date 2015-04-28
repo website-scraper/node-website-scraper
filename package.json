@@ -1,7 +1,7 @@
 {
   "name": "website-scraper",
-  "version": "0.2.3",
-  "description": "full web-page's scraping including all css, images, js, etc.",
+  "version": "0.2.4",
+  "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "keywords": [
     "scrape",
     "scraper",
+    "download",
     "web",
     "url",
     "page",
