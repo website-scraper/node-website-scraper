@@ -1,5 +1,5 @@
 var nock = require('nock');
-var request = require('../lib/utils/request');
+var request = require('../lib/request');
 
 var should = require('should')
 describe('Request utils', function(){
