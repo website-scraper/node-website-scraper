@@ -30,10 +30,11 @@ describe('Request utils', function () {
 		var url = 'http://www.google.com';
 		nock(url).get('/').reply(200, 'Hello from Google!');
 
-		it('should return object with url and body properties', function () {
-			return request.makeRequest({}, url).then(function (data) {
+		it('should return object with url and body properties', function (done) {
+			request.makeRequest({}, url).then(function (data) {
 				data.should.have.properties(['url', 'body']);
-			});
+				done();
+			}).catch(done);
 		});
 	});
 });
