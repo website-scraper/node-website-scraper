@@ -30,7 +30,7 @@ describe('Html handler', function () {
 		});
 
 		afterEach(function() {
-			fs.removeSync(testDirname);
+			return fs.removeSync(testDirname);
 		});
 
 		it('should remove base tag from text and update url for absolute href', function(done) {

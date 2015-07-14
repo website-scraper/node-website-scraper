@@ -25,7 +25,7 @@ describe('Css handler', function () {
 		});
 
 		afterEach(function() {
-			fs.remove(testDirname);
+			return fs.removeSync(testDirname);
 		});
 
 		it('should not call loadPageObject if no sources in css', function(done) {
