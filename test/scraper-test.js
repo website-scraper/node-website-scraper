@@ -2,9 +2,9 @@ var should = require('should');
 var fs = require('fs-extra');
 var _ = require('underscore');
 var Scraper = require('../lib/scraper');
-var PageObject = require('../lib/page-object');
+var Resource = require('../lib/resource');
 
-var testDirname = __dirname + '/.tmp/scraper';
+var testDirname = __dirname + '/.scraper-test';
 var urls = [ 'http://example.com' ];
 
 describe('Scraper', function () {
@@ -59,14 +59,14 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('#beforeLoad', function() {
+	describe('#prepare', function() {
 		it('should create directory', function(done) {
 			var s = new Scraper({
 				urls: urls,
 				directory: testDirname
 			});
 
-			s.beforeLoad().then(function() {
+			s.prepare().then(function() {
 				var exists = fs.existsSync(testDirname);
 				exists.should.be.eql(true);
 				done();
@@ -84,11 +84,11 @@ describe('Scraper', function () {
 				]
 			});
 
-			s.beforeLoad().then(function() {
-				s.loadedPageObjects.should.have.length(3);
-				_.where(s.loadedPageObjects, { filename: 'img' }).should.have.length(1);
-				_.where(s.loadedPageObjects, { filename: 'js' }).should.have.length(1);
-				_.where(s.loadedPageObjects, { filename: 'css' }).should.have.length(1);
+			s.prepare().then(function() {
+				s.loadedResources.should.have.length(3);
+				_.where(s.loadedResources, { filename: 'img' }).should.have.length(1);
+				_.where(s.loadedResources, { filename: 'js' }).should.have.length(1);
+				_.where(s.loadedResources, { filename: 'css' }).should.have.length(1);
 				done();
 			}).catch(done);
 		});
@@ -99,13 +99,13 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.beforeLoad().then(function() {
+			s.prepare().then(function() {
 				s.options.urls.should.be.an.instanceOf(Array).and.have.length(1);
 				done();
 			}).catch(done);
 		});
 
-		it('should create PageObjects for each url', function(done) {
+		it('should create Resource object for each url', function(done) {
 			var s = new Scraper({
 				urls: [
 					'http://first-url.com',
@@ -115,14 +115,14 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.beforeLoad().then(function() {
-				s.originalPageObjects.should.be.an.instanceOf(Array).and.have.length(3);
-				s.originalPageObjects[0].should.be.an.instanceOf(PageObject);
-				s.originalPageObjects[1].should.be.an.instanceOf(PageObject);
-				s.originalPageObjects[2].should.be.an.instanceOf(PageObject);
-				_.where(s.originalPageObjects, { url: 'http://first-url.com' }).should.have.length(1);
-				_.where(s.originalPageObjects, { url: 'http://second-url.com' }).should.have.length(1);
-				_.where(s.originalPageObjects, { url: 'http://third-url.com' }).should.have.length(1);
+			s.prepare().then(function() {
+				s.originalResources.should.be.an.instanceOf(Array).and.have.length(3);
+				s.originalResources[0].should.be.an.instanceOf(Resource);
+				s.originalResources[1].should.be.an.instanceOf(Resource);
+				s.originalResources[2].should.be.an.instanceOf(Resource);
+				_.where(s.originalResources, { url: 'http://first-url.com' }).should.have.length(1);
+				_.where(s.originalResources, { url: 'http://second-url.com' }).should.have.length(1);
+				_.where(s.originalResources, { url: 'http://third-url.com' }).should.have.length(1);
 				done();
 			}).catch(done);
 		});
@@ -133,8 +133,8 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.beforeLoad().then(function() {
-				s.originalPageObjects[0].getFilename().should.be.eql('first.html');
+			s.prepare().then(function() {
+				s.originalResources[0].getFilename().should.be.eql('first.html');
 				done();
 			}).catch(done);
 		});
@@ -146,8 +146,8 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.beforeLoad().then(function() {
-				s.originalPageObjects[0].getFilename().should.be.eql('default.html');
+			s.prepare().then(function() {
+				s.originalResources[0].getFilename().should.be.eql('default.html');
 				done();
 			}).catch(done);
 		});

@@ -3,10 +3,10 @@ var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
 var Scraper = require('../lib/scraper');
-var PageObject = require('../lib/page-object');
+var Resource = require('../lib/resource');
 var loadCss = require('../lib/file-handlers/css');
 
-var testDirname = __dirname + '/.tmp/css';
+var testDirname = __dirname + '/.css-test';
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
 	directory: testDirname,
@@ -17,64 +17,64 @@ var defaultScraperOpts = {
 var scraper;
 
 describe('Css handler', function () {
-	describe('#loadCss(context, pageObject)', function() {
+	describe('#loadCss(context, resource)', function() {
 
 		beforeEach(function() {
 			scraper = new Scraper(defaultScraperOpts);
-			return scraper.beforeLoad();
+			return scraper.prepare();
 		});
 
 		afterEach(function() {
 			return fs.removeSync(testDirname);
 		});
 
-		it('should not call loadPageObject if no sources in css', function(done) {
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+		it('should not call loadResource if no sources in css', function(done) {
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 
-			var po = new PageObject('http://example.com', '1.css');
+			var po = new Resource('http://example.com', '1.css');
 			po.setText('');
 
 			loadCss(scraper, po).then(function() {
-				loadPageObjectSpy.called.should.be.eql(false);
+				loadResourceSpy.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadPageObject once with correct params', function(done) {
+		it('should call loadResource once with correct params', function(done) {
 			nock('http://example.com').get('/test.png').reply(200, 'OK');
 
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 
-			var po = new PageObject('http://example.com', '1.css');
+			var po = new Resource('http://example.com', '1.css');
 			po.setText('div {background: url(test.png)}');
 
 			loadCss(scraper, po).then(function() {
-				loadPageObjectSpy.calledOnce.should.be.eql(true);
-				loadPageObjectSpy.args[0][0].url.should.be.eql('http://example.com/test.png');
+				loadResourceSpy.calledOnce.should.be.eql(true);
+				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/test.png');
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadPageObject for each found source with correct params', function(done) {
+		it('should call loadResource for each found source with correct params', function(done) {
 			nock('http://example.com').get('/a.jpg').reply(200, 'OK');
 			nock('http://example.com').get('/b.jpg').reply(200, 'OK');
 			nock('http://example.com').get('/c.jpg').reply(200, 'OK');
 
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 			var css = '\
 				.a {background: url(a.jpg)} \
 				.b {background: url(\'b.jpg\')}\
 				.c {background: url("c.jpg")}\
 			';
 
-			var po = new PageObject('http://example.com', '1.css');
+			var po = new Resource('http://example.com', '1.css');
 			po.setText(css);
 
 			loadCss(scraper, po).then(function() {
-				loadPageObjectSpy.calledThrice.should.be.eql(true);
-				loadPageObjectSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
-				loadPageObjectSpy.args[1][0].url.should.be.eql('http://example.com/b.jpg');
-				loadPageObjectSpy.args[2][0].url.should.be.eql('http://example.com/c.jpg');
+				loadResourceSpy.calledThrice.should.be.eql(true);
+				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
+				loadResourceSpy.args[1][0].url.should.be.eql('http://example.com/b.jpg');
+				loadResourceSpy.args[2][0].url.should.be.eql('http://example.com/c.jpg');
 				done();
 			}).catch(done);
 		});
@@ -90,7 +90,7 @@ describe('Css handler', function () {
 				.c {background: url("images/c.jpg")}\
 			';
 
-			var po = new PageObject('http://example.com', '1.css');
+			var po = new Resource('http://example.com', '1.css');
 			po.setText(css);
 
 			return loadCss(scraper, po).then(function(){

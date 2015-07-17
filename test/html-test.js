@@ -3,10 +3,10 @@ var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
 var Scraper = require('../lib/scraper');
-var PageObject = require('../lib/page-object');
+var Resource = require('../lib/resource');
 var loadHtml = require('../lib/file-handlers/html');
 
-var testDirname = __dirname + '/.tmp/html';
+var testDirname = __dirname + '/.html-test';
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
 	directory: testDirname,
@@ -22,11 +22,11 @@ var defaultScraperOpts = {
 var scraper;
 
 describe('Html handler', function () {
-	describe('#loadHtml(context, pageObject)', function() {
+	describe('#loadHtml(context, resource)', function() {
 
 		beforeEach(function() {
 			scraper = new Scraper(defaultScraperOpts);
-			return scraper.beforeLoad();
+			return scraper.prepare();
 		});
 
 		afterEach(function() {
@@ -42,7 +42,7 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
@@ -60,7 +60,7 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
@@ -78,7 +78,7 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
@@ -88,22 +88,22 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not call loadPageObject if no sources in html', function(done) {
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+		it('should not call loadResource if no sources in html', function(done) {
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText('');
 
 			loadHtml(scraper, po).then(function() {
-				loadPageObjectSpy.called.should.be.eql(false);
+				loadResourceSpy.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should not call loadPageObject if source attr is empty', function(done) {
+		it('should not call loadResource if source attr is empty', function(done) {
 			nock('http://example.com').get('/test.png').reply(200, 'OK');
 
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 
 			var html = ' \
 				<html lang="en"> \
@@ -112,19 +112,19 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
-				loadPageObjectSpy.called.should.be.eql(false);
+				loadResourceSpy.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadPageObject once with correct params', function(done) {
+		it('should call loadResource once with correct params', function(done) {
 			nock('http://example.com').get('/test.png').reply(200, 'OK');
 
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 
 			var html = ' \
 				<html lang="en"> \
@@ -133,22 +133,22 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
-				loadPageObjectSpy.calledOnce.should.be.eql(true);
-				loadPageObjectSpy.args[0][0].url.should.be.eql('http://example.com/test.png');
+				loadResourceSpy.calledOnce.should.be.eql(true);
+				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/test.png');
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadPageObject for each found source with correct params', function(done) {
+		it('should call loadResource for each found source with correct params', function(done) {
 			nock('http://example.com').get('/a.jpg').reply(200, 'OK');
 			nock('http://example.com').get('/b.css').reply(200, 'OK');
 			nock('http://example.com').get('/c.js').reply(200, 'OK');
 
-			var loadPageObjectSpy = sinon.spy(scraper, 'loadPageObject');
+			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
 			var html = '\
 				<html> \
 				<head> \
@@ -161,15 +161,15 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			// order of loading is determined by order of sources in scraper options
 			loadHtml(scraper, po).then(function() {
-				loadPageObjectSpy.calledThrice.should.be.eql(true);
-				loadPageObjectSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
-				loadPageObjectSpy.args[1][0].url.should.be.eql('http://example.com/b.css');
-				loadPageObjectSpy.args[2][0].url.should.be.eql('http://example.com/c.js');
+				loadResourceSpy.calledThrice.should.be.eql(true);
+				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
+				loadResourceSpy.args[1][0].url.should.be.eql('http://example.com/b.css');
+				loadResourceSpy.args[2][0].url.should.be.eql('http://example.com/c.js');
 				done();
 			}).catch(done);
 		});
@@ -191,7 +191,7 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new PageObject('http://example.com', 'index.html');
+			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
 			return loadHtml(scraper, po).then(function(){
