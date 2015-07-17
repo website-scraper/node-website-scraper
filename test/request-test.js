@@ -4,6 +4,17 @@ var nock = require('nock');
 var request = require('../lib/request');
 
 describe('Request utils', function () {
+
+	beforeEach(function() {
+		nock.cleanAll();
+		nock.enableNetConnect();
+	});
+
+	afterEach(function() {
+		nock.cleanAll();
+		nock.enableNetConnect();
+	});
+
 	describe('#getDefaultOptions', function () {
 		it('should return object', function () {
 			request.getDefaultOptions().should.be.instanceof(Object);
@@ -27,10 +38,10 @@ describe('Request utils', function () {
 	});
 
 	describe('#makeRequest', function () {
-		var url = 'http://www.google.com';
-		nock(url).get('/').reply(200, 'Hello from Google!');
-
 		it('should return object with url and body properties', function (done) {
+			var url = 'http://www.google.com';
+			nock(url).get('/').reply(200, 'Hello from Google!');
+
 			request.makeRequest({}, url).then(function (data) {
 				data.should.have.properties(['url', 'body']);
 				done();

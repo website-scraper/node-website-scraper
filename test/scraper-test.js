@@ -1,4 +1,6 @@
 var should = require('should');
+var sinon = require('sinon');
+var nock = require('nock');
 var fs = require('fs-extra');
 var _ = require('underscore');
 var Scraper = require('../lib/scraper');
@@ -9,8 +11,15 @@ var urls = [ 'http://example.com' ];
 
 describe('Scraper', function () {
 
+	beforeEach(function() {
+		nock.cleanAll();
+		nock.disableNetConnect();
+	});
+
 	afterEach(function() {
-		return fs.removeSync(testDirname);
+		nock.cleanAll();
+		nock.enableNetConnect();
+		fs.removeSync(testDirname);
 	});
 
 	describe('#validate', function () {
@@ -73,26 +82,6 @@ describe('Scraper', function () {
 			}).catch(done);
 		});
 
-		it('should add subdirectories to loaded', function(done) {
-			var s = new Scraper({
-				urls: urls,
-				directory: testDirname,
-				subdirectories: [
-					{ directory: 'img', extensions: ['.jpg', '.png', '.svg'] },
-					{ directory: 'js', extensions: ['.js'] },
-					{ directory: 'css', extensions: ['.css'] }
-				]
-			});
-
-			s.prepare().then(function() {
-				s.loadedResources.should.have.length(3);
-				_.where(s.loadedResources, { filename: 'img' }).should.have.length(1);
-				_.where(s.loadedResources, { filename: 'js' }).should.have.length(1);
-				_.where(s.loadedResources, { filename: 'css' }).should.have.length(1);
-				done();
-			}).catch(done);
-		});
-
 		it('should create an Array of urls if string was passed', function(done) {
 			var s = new Scraper({
 				urls: 'http://not-array-url.com',
@@ -150,6 +139,102 @@ describe('Scraper', function () {
 				s.originalResources[0].getFilename().should.be.eql('default.html');
 				done();
 			}).catch(done);
+		});
+	});
+
+	describe('#load', function() {
+		it('should call loadResource for each url', function(done) {
+			nock('http://first-url.com').get('/').reply(200, 'OK');
+			nock('http://second-url.com').get('/').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: [
+					'http://first-url.com',
+					'http://second-url.com'
+				],
+				directory: testDirname
+			});
+
+			var loadResourceSpy = sinon.spy(s, 'loadResource');
+			s.prepare().then(s.load).then(function() {
+				loadResourceSpy.calledTwice.should.be.eql(true);
+				done();
+			}).catch(done);
+		});
+
+		it('should return array of objects with url and filename', function(done) {
+			nock('http://first-url.com').get('/').reply(200, 'OK');
+			nock('http://second-url.com').get('/').reply(500);
+
+			var s = new Scraper({
+				urls: [
+					'http://first-url.com',
+					'http://second-url.com'
+				],
+				directory: testDirname
+			});
+
+			s.prepare().then(s.load).then(function(res) {
+				res.should.be.instanceOf(Array);
+				res.should.have.length(2);
+				res[0].should.have.properties(['url', 'filename']);
+				res[1].should.have.properties(['url', 'filename']);
+				done();
+			}).catch(done);
+		});
+	});
+
+	describe('#errorCleanup', function() {
+		it('should throw error', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				return s.errorCleanup(new Error('everything was broken!'));
+			}).then(function() {
+				done(new Error('Promise should not be resolved'));
+			}).catch(function(err) {
+				err.should.be.instanceOf(Error);
+				err.message.should.be.eql('everything was broken!');
+				done();
+			});
+		});
+
+		it('should remove directory if error occurs and something was loaded', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				s.addLoadedResource(new Resource('http://some-resource.com'));
+				fs.existsSync(testDirname).should.be.eql(true);
+				return s.errorCleanup();
+			}).then(function() {
+				done(new Error('Promise should not be resolved'));
+			}).catch(function() {
+				fs.existsSync(testDirname).should.be.eql(false);
+				done();
+			});
+		});
+
+		it('should not remove directory if error occurs and nothing was loaded', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				fs.existsSync(testDirname).should.be.eql(true);
+				return s.errorCleanup();
+			}).then(function() {
+				done(new Error('Promise should not be resolved'));
+			}).catch(function() {
+				fs.existsSync(testDirname).should.be.eql(true);
+				done();
+			});
 		});
 	});
 });

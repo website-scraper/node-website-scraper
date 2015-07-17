@@ -22,16 +22,21 @@ var defaultScraperOpts = {
 var scraper;
 
 describe('Html handler', function () {
+
+	beforeEach(function() {
+		nock.cleanAll();
+		nock.disableNetConnect();
+		scraper = new Scraper(defaultScraperOpts);
+		scraper.prepare();
+	});
+
+	afterEach(function() {
+		nock.cleanAll();
+		nock.enableNetConnect();
+		fs.removeSync(testDirname);
+	});
+
 	describe('#loadHtml(context, resource)', function() {
-
-		beforeEach(function() {
-			scraper = new Scraper(defaultScraperOpts);
-			return scraper.prepare();
-		});
-
-		afterEach(function() {
-			return fs.removeSync(testDirname);
-		});
 
 		it('should remove base tag from text and update url for absolute href', function(done) {
 			var html = ' \

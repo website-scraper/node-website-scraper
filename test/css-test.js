@@ -17,16 +17,21 @@ var defaultScraperOpts = {
 var scraper;
 
 describe('Css handler', function () {
+
+	beforeEach(function() {
+		nock.cleanAll();
+		nock.disableNetConnect();
+		scraper = new Scraper(defaultScraperOpts);
+		scraper.prepare();
+	});
+
+	afterEach(function() {
+		nock.cleanAll();
+		nock.enableNetConnect();
+		fs.removeSync(testDirname);
+	});
+
 	describe('#loadCss(context, resource)', function() {
-
-		beforeEach(function() {
-			scraper = new Scraper(defaultScraperOpts);
-			return scraper.prepare();
-		});
-
-		afterEach(function() {
-			return fs.removeSync(testDirname);
-		});
 
 		it('should not call loadResource if no sources in css', function(done) {
 			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
