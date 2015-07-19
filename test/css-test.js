@@ -2,6 +2,7 @@ require('should');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
+var Promise = require('bluebird');
 var Scraper = require('../lib/scraper');
 var Resource = require('../lib/resource');
 var loadCss = require('../lib/file-handlers/css');
@@ -9,10 +10,7 @@ var loadCss = require('../lib/file-handlers/css');
 var testDirname = __dirname + '/.css-test';
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
-	directory: testDirname,
-	subdirectories: [
-		{ directory: 'local', extensions: ['.jpg'] }
-	]
+	directory: testDirname
 };
 var scraper;
 
@@ -85,14 +83,19 @@ describe('Css handler', function () {
 		});
 
 		it('should replace all sources in text with local files', function(done) {
-			nock('http://other-domain.com').get('/public/img/a.jpg').reply(200, 'OK');
-			nock('http://other-domain.com').get('/b.jpg').reply(200, 'OK');
-			nock('http://example.com').get('/images/c.jpg').once().reply(200, 'OK');
+			nock('http://first.com').get('/img/a.jpg').reply(200, 'OK');
+			nock('http://first.com').get('/b.jpg').reply(200, 'OK');
+			nock('http://second.com').get('/img/c.jpg').once().reply(200, 'OK');
+
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
+			loadStub.onSecondCall().returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
+			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
 
 			var css = '\
-				.a {background: url("http://other-domain.com/public/img/a.jpg")} \
-				.b {background: url("http://other-domain.com/b.jpg")}\
-				.c {background: url("images/c.jpg")}\
+				.a {background: url("http://first.com/img/a.jpg")} \
+				.b {background: url("http://first.com/b.jpg")}\
+				.c {background: url("img/c.jpg")}\
 			';
 
 			var po = new Resource('http://example.com', '1.css');
@@ -100,9 +103,9 @@ describe('Css handler', function () {
 
 			return loadCss(scraper, po).then(function(){
 				var text = po.getText();
-				text.should.not.containEql('http://other-domain.com/public/img/a.jpg');
-				text.should.not.containEql('http://other-domain.com/b.jpg');
-				text.should.not.containEql('images/c.jpg');
+				text.should.not.containEql('http://first.com/img/a.jpg');
+				text.should.not.containEql('http://first.com/b.jpg');
+				text.should.not.containEql('img/c.jpg');
 				text.should.containEql('local/a.jpg');
 				text.should.containEql('local/b.jpg');
 				text.should.containEql('local/c.jpg');

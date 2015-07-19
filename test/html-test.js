@@ -2,6 +2,7 @@ require('should');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
+var Promise = require('bluebird');
 var Scraper = require('../lib/scraper');
 var Resource = require('../lib/resource');
 var loadHtml = require('../lib/file-handlers/html');
@@ -10,9 +11,6 @@ var testDirname = __dirname + '/.html-test';
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
 	directory: testDirname,
-	subdirectories: [
-		{ directory: 'local', extensions: ['.jpg', '.css', '.js'] }
-	],
 	sources: [
 		{ selector: 'img', attr: 'src' },
 		{ selector: 'link[rel="stylesheet"]', attr: 'href' },
@@ -180,18 +178,23 @@ describe('Html handler', function () {
 		});
 
 		it('should replace all sources in text with local files', function(done) {
-			nock('http://other-domain.com').get('/public/img/a.jpg').reply(200, 'OK');
-			nock('http://other-domain.com').get('/b.css').reply(200, 'OK');
+			nock('http://example.com').get('/public/img/a.jpg').reply(200, 'OK');
+			nock('http://example.com').get('/b.css').reply(200, 'OK');
 			nock('http://example.com').get('/scripts/c.js').once().reply(200, 'OK');
+
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/public/img/a.jpg', 'local/a.jpg')));
+			loadStub.onSecondCall().returns(Promise.resolve(new Resource('http://example.com/b.css', 'local/b.css')));
+			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.jpg', 'local/c.js')));
 
 			var html = '\
 				<html> \
 				<head> \
-					<link rel="stylesheet" href="http://other-domain.com/b.css"> \
+					<link rel="stylesheet" href="http://example.com/a.css"> \
 					<script src="scripts/c.js"></script>\
 				</head> \
 				<body> \
-					<img src="http://other-domain.com/public/img/a.jpg"> \
+					<img src="http://example.com/public/img/a.jpg"> \
 				</body> \
 				</html>\
 			';
@@ -201,8 +204,8 @@ describe('Html handler', function () {
 
 			return loadHtml(scraper, po).then(function(){
 				var text = po.getText();
-				text.should.not.containEql('http://other-domain.com/public/img/a.jpg');
-				text.should.not.containEql('http://other-domain.com/b.css');
+				text.should.not.containEql('http://example.com/public/img/a.jpg');
+				text.should.not.containEql('http://example.com/b.css');
 				text.should.not.containEql('scripts/c.js');
 				text.should.containEql('local/a.jpg');
 				text.should.containEql('local/b.css');
