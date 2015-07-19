@@ -2,6 +2,7 @@ var should = require('should');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
+var path = require('path');
 var _ = require('underscore');
 var Scraper = require('../lib/scraper');
 var Resource = require('../lib/resource');
@@ -424,7 +425,7 @@ describe('Scraper', function () {
 			}).catch(done);
 		});
 
-		it('should return different filename if wanted filename is occupied', function(done) {
+		it('should return different filename if desired filename is occupied', function(done) {
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname,
@@ -447,7 +448,7 @@ describe('Scraper', function () {
 			}).catch(done);
 		});
 
-		it('should return different filename if wanted filename is occupied N times', function(done) {
+		it('should return different filename if desired filename is occupied N times', function(done) {
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname,
@@ -483,6 +484,97 @@ describe('Scraper', function () {
 
 				done();
 			}).catch(done);
+		});
+	});
+
+	describe('#load', function() {
+		it('should load resource', function(done) {
+			nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/a.png');
+				s.loadResource(r).then(function(lr) {
+					lr.should.be.eql(r);
+					lr.getUrl().should.be.eql('http://example.com/a.png');
+					lr.getFilename().should.be.not.empty;
+					lr.getText().should.be.eql('OK');
+
+					var text = fs.readFileSync(path.join(testDirname, lr.getFilename())).toString();
+					text.should.be.eql(lr.getText());
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should not load the same resource twice (should return already loaded)', function(done) {
+			nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				var r1 = new Resource('http://example.com/a.png');
+				var r2 = new Resource('http://example.com/a.png');
+				s.loadResource(r1).then(function() {
+					s.loadResource(r2).then(function(lr) {
+						lr.should.be.equal(r1);
+						lr.should.not.be.equal(r2);
+					});
+					done();
+				});
+			}).catch(done);
+		});
+	});
+
+	describe('#scrape', function() {
+		it('should call methods in sequence', function(done) {
+			nock('http://example.com').get('/').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			var validateSpy = sinon.spy(s, 'validate');
+			var prepareSpy = sinon.spy(s, 'prepare');
+			var loadSpy = sinon.spy(s, 'load');
+
+			s.scrape().then(function() {
+				validateSpy.calledOnce.should.be.eql(true);
+				prepareSpy.calledOnce.should.be.eql(true);
+				prepareSpy.calledAfter(validateSpy).should.be.eql(true);
+				loadSpy.calledOnce.should.be.eql(true);
+				loadSpy.calledAfter(prepareSpy).should.be.eql(true);
+				done();
+			}).catch(done);
+		});
+
+		it('should call errorCleanup on error', function(done) {
+			nock('http://example.com').get('/').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			var loadStub = sinon.stub(s, 'load');
+			loadStub.throws('Error');
+
+			var errorCleanupSpy = sinon.spy(s, 'errorCleanup');
+
+			s.scrape().then(function() {
+				done(new Error('Promise should not be resolved'));
+			}).catch(function() {
+				errorCleanupSpy.calledOnce.should.be.eql(true);
+				done();
+			});
 		});
 	});
 });
