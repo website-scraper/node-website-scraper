@@ -3,7 +3,7 @@ require('should');
 var nock = require('nock');
 var request = require('../lib/request');
 
-describe('Request utils', function () {
+describe('Request', function () {
 
 	beforeEach(function() {
 		nock.cleanAll();
