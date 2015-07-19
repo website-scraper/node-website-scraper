@@ -33,6 +33,7 @@
   "dependencies": {
     "bluebird": "^2.3.2",
     "cheerio": "0.11.0",
+    "compare-urls": "^1.0.0",
     "css-url-parser": "^0.1.0",
     "fs-extra": "^0.16.4",
     "request": "^2.42.0",

@@ -237,5 +237,42 @@ describe('Scraper', function () {
 			});
 		});
 	});
+
+	describe('#getLoadedResource', function() {
+		it('should find nothing if no resource with same url was loaded',function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				var a = new Resource('http://first-resource.com');
+				var loaded = s.getLoadedResource(a);
+				should(loaded).be.empty;
+				done();
+			}).catch(done);
+		});
+
+		it('should find loaded resource with same url', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.prepare().then(function() {
+				var a = new Resource('http://first-resource.com');
+				s.addLoadedResource(a);
+
+				var b = new Resource('http://first-resource.com');
+				var c = new Resource('http://first-resource.com/');
+				var d = new Resource('http://first-resource.com?');
+				should(s.getLoadedResource(b)).be.equal(a);
+				should(s.getLoadedResource(c)).be.equal(a);
+				should(s.getLoadedResource(d)).be.equal(a);
+
+				done();
+			}).catch(done);
+		});
+	});
 });
 
