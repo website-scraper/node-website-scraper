@@ -4,8 +4,8 @@ var nock = require('nock');
 var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
-var Scraper = require('../lib/scraper');
-var Resource = require('../lib/resource');
+var Scraper = require('../../lib/scraper');
+var Resource = require('../../lib/resource');
 
 var testDirname = __dirname + '/.scraper-test';
 var urls = [ 'http://example.com' ];

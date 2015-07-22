@@ -1,7 +1,7 @@
 require('should');
 
 var nock = require('nock');
-var request = require('../lib/request');
+var request = require('../../lib/request');
 
 describe('Request', function () {
 

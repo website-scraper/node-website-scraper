@@ -1,0 +1,6 @@
+@import "files/index-import-1.css";
+@import url("files/index-import-2.css");
+
+.index-image-1 {
+    background-image: url('http://example.com/files/index-image-1.png');
+}

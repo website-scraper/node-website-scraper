@@ -1,5 +1,5 @@
 require('should');
-var utils = require('../lib/utils');
+var utils = require('../../lib/utils');
 
 describe('Common utils', function () {
 	describe('#isUrl(url)', function () {

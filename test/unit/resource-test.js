@@ -1,6 +1,6 @@
 require('should');
 
-var Resource = require('../lib/resource');
+var Resource = require('../../lib/resource');
 
 describe('Resource', function() {
 	describe('#Resource', function() {

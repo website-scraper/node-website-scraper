@@ -3,9 +3,9 @@ var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
 var Promise = require('bluebird');
-var Scraper = require('../../lib/scraper');
-var Resource = require('../../lib/resource');
-var loadCss = require('../../lib/file-handlers/css');
+var Scraper = require('../../../lib/scraper');
+var Resource = require('../../../lib/resource');
+var loadCss = require('../../../lib/file-handlers/css');
 
 var testDirname = __dirname + '/.css-test';
 var defaultScraperOpts = {
