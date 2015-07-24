@@ -5,7 +5,7 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha"
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --dir ./coverage --report lcov -- -R spec --recursive ./test"
   },
   "repository": {
     "type": "git",
@@ -32,15 +32,18 @@
   "homepage": "https://github.com/s0ph1e/node-website-scraper",
   "dependencies": {
     "bluebird": "^2.3.2",
-    "fs-extra": "^0.16.4",
     "cheerio": "0.11.0",
+    "compare-urls": "^1.0.0",
+    "css-url-parser": "^0.1.0",
+    "fs-extra": "^0.16.4",
     "request": "^2.42.0",
-    "underscore": "^1.7.0",
-    "css-url-parser": "^0.1.0"
+    "underscore": "^1.7.0"
   },
   "devDependencies": {
     "should": "^5.0.0",
     "mocha": "^2.0.1",
-    "nock": "^1.6.0"
+    "nock": "^1.6.0",
+    "istanbul": "^0.3.17",
+    "sinon": "^1.15.4"
   }
 }
