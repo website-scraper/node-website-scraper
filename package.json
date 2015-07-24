@@ -35,16 +35,16 @@
     "cheerio": "0.11.0",
     "compare-urls": "^1.0.0",
     "css-url-parser": "^0.1.0",
-    "fs-extra": "^0.16.4",
+    "fs-extra": "^0.22.1",
     "request": "^2.42.0",
     "underscore": "^1.7.0"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.1.0",
     "istanbul": "^0.3.17",
-    "mocha": "^2.0.1",
-    "nock": "^1.6.0",
-    "should": "^5.0.0",
+    "mocha": "^2.2.5",
+    "nock": "^2.9.1",
+    "should": "^7.0.2",
     "sinon": "^1.15.4"
   }
 }
