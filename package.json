@@ -40,10 +40,11 @@
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "should": "^5.0.0",
+    "codeclimate-test-reporter": "^0.1.0",
+    "istanbul": "^0.3.17",
     "mocha": "^2.0.1",
     "nock": "^1.6.0",
-    "istanbul": "^0.3.17",
+    "should": "^5.0.0",
     "sinon": "^1.15.4"
   }
 }
