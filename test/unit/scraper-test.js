@@ -249,7 +249,7 @@ describe('Scraper', function () {
 			s.prepare().then(function() {
 				var a = new Resource('http://first-resource.com');
 				var loaded = s.getLoadedResource(a);
-				should(loaded).be.empty;
+				should(loaded).be.empty();
 				done();
 			}).catch(done);
 		});
@@ -287,7 +287,7 @@ describe('Scraper', function () {
 			s.prepare().then(function() {
 				var occupied = s.getOccupiedFilenames();
 				occupied.should.be.instanceOf(Array);
-				occupied.should.be.empty;
+				occupied.should.be.empty();
 				done();
 			}).catch(done);
 		});
@@ -501,7 +501,7 @@ describe('Scraper', function () {
 				s.loadResource(r).then(function(lr) {
 					lr.should.be.eql(r);
 					lr.getUrl().should.be.eql('http://example.com/a.png');
-					lr.getFilename().should.be.not.empty;
+					lr.getFilename().should.be.not.empty();
 					lr.getText().should.be.eql('OK');
 
 					var text = fs.readFileSync(path.join(testDirname, lr.getFilename())).toString();

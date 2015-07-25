@@ -4,18 +4,18 @@ var utils = require('../../lib/utils');
 describe('Common utils', function () {
 	describe('#isUrl(url)', function () {
 		it('should return true if url starts with "http[s]://"', function () {
-			utils.isUrl('http://google.com').should.be.true;
-			utils.isUrl('https://github.com').should.be.true;
+			utils.isUrl('http://google.com').should.be.true();
+			utils.isUrl('https://github.com').should.be.true();
 		});
 		it('should return true if url starts with "//"', function () {
-			utils.isUrl('//www.youtube.com').should.be.true;
+			utils.isUrl('//www.youtube.com').should.be.true();
 		});
 		it('should return false if url starts neither with "http[s]://" nor "//"', function () {
-			utils.isUrl('http//www.youtube.com').should.be.false;
-			utils.isUrl('http:/www.youtube.com').should.be.false;
-			utils.isUrl('htt://www.youtube.com').should.be.false;
-			utils.isUrl('://www.youtube.com').should.be.false;
-			utils.isUrl('www.youtube.com').should.be.false;
+			utils.isUrl('http//www.youtube.com').should.be.false();
+			utils.isUrl('http:/www.youtube.com').should.be.false();
+			utils.isUrl('htt://www.youtube.com').should.be.false();
+			utils.isUrl('://www.youtube.com').should.be.false();
+			utils.isUrl('www.youtube.com').should.be.false();
 		});
 	});
 
@@ -45,8 +45,8 @@ describe('Common utils', function () {
 			utils.trimFilename('index.html?12').should.be.equal('index.html');
 			utils.trimFilename('index.html#t?12').should.be.equal('index.html');
 			utils.trimFilename('index.html?12#t').should.be.equal('index.html');
-			utils.trimFilename('?12_jdlsk').should.be.empty;
-			utils.trimFilename('#index.html').should.be.empty;
+			utils.trimFilename('?12_jdlsk').should.be.empty();
+			utils.trimFilename('#index.html').should.be.empty();
 		});
 		it('should return unconvetred filename if there are no ?,#', function () {
 			utils.trimFilename('index.html').should.be.equal('index.html');
