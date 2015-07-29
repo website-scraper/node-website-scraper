@@ -6,10 +6,10 @@ var _ = require('underscore');
 var cheerio = require('cheerio');
 var scraper = require('../../index');
 
-var testDirname = __dirname + '/.complex';
-var mockDirname = __dirname + '/mocks/complex';
+var testDirname = __dirname + '/.base';
+var mockDirname = __dirname + '/mocks/base';
 
-describe('Functional', function() {
+describe('Functional base', function() {
 
 	beforeEach(function() {
 		nock.cleanAll();
