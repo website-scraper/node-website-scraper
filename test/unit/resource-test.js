@@ -7,10 +7,12 @@ describe('Resource', function() {
 	describe('#Resource', function() {
 		it('should return correct type based on extension', function() {
 			var html = new Resource('http://example.com', 'index.html');
+			var htm = new Resource('http://example.com', 'index.htm');
 			var css = new Resource('http://example.com/style.css', 'style.css');
 			var img = new Resource('http://example.com/img/logo.png', 'logo.png');
 
 			html.getType().should.be.eql(types.html);
+			htm.getType().should.be.eql(types.html);
 			css.getType().should.be.eql(types.css);
 			img.getType().should.be.eql(types.other);
 		});
