@@ -157,7 +157,7 @@ describe('Scraper', function () {
 			});
 
 			var loadResourceSpy = sinon.spy(s, 'loadResource');
-			s.prepare().then(s.load).then(function() {
+			s.prepare().bind(s).then(s.load).then(function() {
 				loadResourceSpy.calledTwice.should.be.eql(true);
 				done();
 			}).catch(done);
@@ -175,7 +175,7 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.prepare().then(s.load).then(function(res) {
+			s.prepare().bind(s).then(s.load).then(function(res) {
 				res.should.be.instanceOf(Array);
 				res.should.have.length(2);
 				res[0].should.have.properties(['url', 'filename']);
@@ -487,7 +487,7 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('#load', function() {
+	describe('#loadResource', function() {
 		it('should load resource', function(done) {
 			nock('http://example.com').get('/a.png').reply(200, 'OK');
 
