@@ -2,6 +2,7 @@ require('should');
 
 var nock = require('nock');
 var request = require('../../lib/request');
+var path = require('path');
 
 describe('Request', function () {
 
@@ -46,6 +47,23 @@ describe('Request', function () {
 				data.should.have.properties(['url', 'body']);
 				done();
 			}).catch(done);
+		});
+
+		describe('#makeRequest to local file', function () {
+			it('should return object with url and body properties', function (done) {
+				var pathDirName = __dirname.split(path.sep);
+				var pathLocalFile = pathDirName
+															.slice(0, pathDirName.length - 1);
+				pathLocalFile = pathLocalFile
+					.concat (['functional', 'local-page', 'local-website', 'index.html']);
+
+				var pathLocalFile = 'file:///' + pathLocalFile.join(path.sep);
+
+				request.makeRequest({}, pathLocalFile).then(function (data) {
+					data.should.have.properties(['url', 'body']);
+					done();
+				}).catch(done);
+			});
 		});
 	});
 });
