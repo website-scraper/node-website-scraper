@@ -10,6 +10,8 @@ Download website to a local directory (including all css, images, js, etc.)
 
 [![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
 
+You can try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://github.com/s0ph1e/web-scraper))
+
 ## Installation
 ```
 npm install website-scraper
