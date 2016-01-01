@@ -141,6 +141,24 @@ describe('Scraper', function () {
 				done();
 			}).catch(done);
 		});
+
+		it('should extend sources if recursive flag is set', function(done) {
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				sources: [
+					{ selector: 'img', attr: 'src' }
+				],
+				recursive: true
+			});
+
+			s.prepare().then(function() {
+				s.options.sources.should.have.length(2);
+				s.options.sources.should.containEql({ selector: 'img', attr: 'src' });
+				s.options.sources.should.containEql({ selector: 'a', attr: 'href' });
+				done();
+			}).catch(done);
+		});
 	});
 
 	describe('#load', function() {
