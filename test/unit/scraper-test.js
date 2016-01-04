@@ -551,6 +551,10 @@ describe('Scraper', function () {
 		});
 	});
 
+	describe('#getResourceHandler', function() {
+
+	});
+
 	describe('#scrape', function() {
 		it('should call methods in sequence', function(done) {
 			nock('http://example.com').get('/').reply(200, 'OK');
