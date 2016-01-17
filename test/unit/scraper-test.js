@@ -1,6 +1,8 @@
 var should = require('should');
 var sinon = require('sinon');
+require('sinon-as-promised');
 var nock = require('nock');
+var proxyquire = require('proxyquire');
 var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
@@ -552,7 +554,90 @@ describe('Scraper', function () {
 	});
 
 	describe('#getResourceHandler', function() {
+		var Scraper;
+		var noopStub;
+		var cssLoadStub;
+		var htmlLoadStub;
 
+		beforeEach(function() {
+			noopStub = sinon.stub().resolves();
+			cssLoadStub = sinon.stub().resolves();
+			htmlLoadStub = sinon.stub().resolves();
+
+			Scraper = proxyquire('../../lib/scraper', {
+				'underscore': {
+					'noop': noopStub
+				},
+				'./file-handlers/html': htmlLoadStub,
+				'./file-handlers/css': cssLoadStub
+			});
+		});
+
+		it('should return noop if resource has depth > max', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('html');
+				sinon.stub(r, 'getDepth').returns(10);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(true);
+					cssLoadStub.called.should.be.eql(false);
+					htmlLoadStub.called.should.be.eql(false);
+
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should return css loader if file has css type', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('css');
+				sinon.stub(r, 'getDepth').returns(1);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(false);
+					cssLoadStub.called.should.be.eql(true);
+					htmlLoadStub.called.should.be.eql(false);
+
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should return html & css loader if file has html type', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('html');
+				sinon.stub(r, 'getDepth').returns(1);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(false);
+					cssLoadStub.called.should.be.eql(true);
+					htmlLoadStub.called.should.be.eql(true);
+
+					done();
+				});
+			}).catch(done);
+		});
 	});
 
 	describe('#scrape', function() {
