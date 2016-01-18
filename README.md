@@ -19,7 +19,7 @@ npm install website-scraper
 
 ## Usage
 ```javascript
-var scraper = require('website-scraper'); 
+var scraper = require('website-scraper');
 var options = {
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save/',
@@ -38,7 +38,7 @@ scraper.scrape(options).then(function (result) {
 
 ## API
 ### scrape(options, callback)
-Makes requests to `urls` and saves all files found with `sources` to `directory`. 
+Makes requests to `urls` and saves all files found with `sources` to `directory`.
 
 **options** - object containing next options:
 
@@ -48,10 +48,12 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `sources:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
  - `subdirectories:` array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
- 
- 
+ - `recursive`: boolean, if `true` scraper will follow anchors in html files. Don't forget to set `maxDepth` to avoid infinite downloading *(optional, see example below)*
+ - `maxDepth`: positive number, maximum allowed depth for dependencies *(optional, see example below)*
+
+
 **callback** - callback function *(optional)*, includes following parameters:
- 
+
   - `error:` if error - `Error` object, if success - `null`
   - `result:` if error - `null`, if success - array if objects containing:
     - `url:` url of loaded page
@@ -59,20 +61,21 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
 
 
 ## Examples
-Let's scrape some pages from [http://nodejs.org/](http://nodejs.org/) with images, css, js files and save them to `/path/to/save/`. 
+#### Example 1
+Let's scrape some pages from [http://nodejs.org/](http://nodejs.org/) with images, css, js files and save them to `/path/to/save/`.
 Imagine we want to load:
   - [Home page](http://nodejs.org/) to `index.html`
   - [About page](http://nodejs.org/about/) to `about.html`
   - [Blog](http://blog.nodejs.org/) to `blog.html`
-  
+
 and separate files into directories:
 
-  - `img` for .jpg, .png, .svg (full path `/path/to/save/img`) 
+  - `img` for .jpg, .png, .svg (full path `/path/to/save/img`)
   - `js` for .js (full path `/path/to/save/js`)
   - `css` for .css (full path `/path/to/save/css`)
 
 ```javascript
-var scraper = require('website-scraper'); 
+var scraper = require('website-scraper');
 scraper.scrape({
   urls: [
     'http://nodejs.org/',	// Will be saved with default filename 'index.html'
@@ -100,4 +103,17 @@ scraper.scrape({
 }).catch(function(err){
   console.log(err);
 });
+```
+
+#### Example 2. Recursive downloading
+```javascript
+// Links from example.com will be followed
+// Links from links will be ignored because theirs depth = 2 is greater than maxDepth
+var scraper = require('website-scraper');
+scraper.scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  recursive: true,
+  maxDepth: 1
+}).then(console.log).catch(console.log);
 ```
