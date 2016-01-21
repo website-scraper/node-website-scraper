@@ -44,7 +44,9 @@
     "istanbul": "^0.4.0",
     "mocha": "^2.2.5",
     "nock": "^2.9.1",
+    "proxyquire": "^1.7.3",
     "should": "^7.0.2",
-    "sinon": "^1.15.4"
+    "sinon": "^1.15.4",
+    "sinon-as-promised": "^4.0.0"
   }
 }

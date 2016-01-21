@@ -1,6 +1,8 @@
 var should = require('should');
 var sinon = require('sinon');
+require('sinon-as-promised');
 var nock = require('nock');
+var proxyquire = require('proxyquire');
 var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
@@ -138,6 +140,24 @@ describe('Scraper', function () {
 
 			s.prepare().then(function() {
 				s.originalResources[0].getFilename().should.be.eql('default.html');
+				done();
+			}).catch(done);
+		});
+
+		it('should extend sources if recursive flag is set', function(done) {
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				sources: [
+					{ selector: 'img', attr: 'src' }
+				],
+				recursive: true
+			});
+
+			s.prepare().then(function() {
+				s.options.sources.should.have.length(2);
+				s.options.sources.should.containEql({ selector: 'img', attr: 'src' });
+				s.options.sources.should.containEql({ selector: 'a', attr: 'href' });
 				done();
 			}).catch(done);
 		});
@@ -527,6 +547,93 @@ describe('Scraper', function () {
 						lr.should.be.equal(r1);
 						lr.should.not.be.equal(r2);
 					});
+					done();
+				});
+			}).catch(done);
+		});
+	});
+
+	describe('#getResourceHandler', function() {
+		var Scraper;
+		var noopStub;
+		var cssLoadStub;
+		var htmlLoadStub;
+
+		beforeEach(function() {
+			noopStub = sinon.stub().resolves();
+			cssLoadStub = sinon.stub().resolves();
+			htmlLoadStub = sinon.stub().resolves();
+
+			Scraper = proxyquire('../../lib/scraper', {
+				'underscore': {
+					'noop': noopStub
+				},
+				'./file-handlers/html': htmlLoadStub,
+				'./file-handlers/css': cssLoadStub
+			});
+		});
+
+		it('should return noop if resource has depth > max', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('html');
+				sinon.stub(r, 'getDepth').returns(10);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(true);
+					cssLoadStub.called.should.be.eql(false);
+					htmlLoadStub.called.should.be.eql(false);
+
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should return css loader if file has css type', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('css');
+				sinon.stub(r, 'getDepth').returns(1);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(false);
+					cssLoadStub.called.should.be.eql(true);
+					htmlLoadStub.called.should.be.eql(false);
+
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should return html & css loader if file has html type', function(done) {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				maxDepth: 2
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/');
+				sinon.stub(r, 'getType').returns('html');
+				sinon.stub(r, 'getDepth').returns(1);
+
+				s.getResourceHandler(r).call(s, r).then(function() {
+					noopStub.called.should.be.eql(false);
+					cssLoadStub.called.should.be.eql(true);
+					htmlLoadStub.called.should.be.eql(true);
+
 					done();
 				});
 			}).catch(done);

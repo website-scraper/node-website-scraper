@@ -4,7 +4,7 @@ var Resource = require('../../lib/resource');
 var types = require('../../lib/config/resource-types');
 
 describe('Resource', function() {
-	describe('#Resource', function() {
+	describe('#getType', function() {
 		it('should return correct type based on extension', function() {
 			var html = new Resource('http://example.com', 'index.html');
 			var htm = new Resource('http://example.com', 'index.htm');
@@ -66,6 +66,58 @@ describe('Resource', function() {
 			res.setParent(html);
 			res.setHtmlData({ tagName: 'img', attributeName: 'src' });
 			res.getType().should.be.eql(types.other);
+		});
+	});
+
+	describe('#setDepth', function () {
+		it('should set depth', function() {
+			var o = new Resource('http://google.com');
+			o.setDepth(555);
+			o.depth.should.be.eql(555);
+		});
+	});
+
+	describe('#getDepth', function () {
+		it('should return depth if object has it', function() {
+			var o = new Resource('http://google.com');
+			o.setDepth(123);
+			o.getDepth().should.be.eql(123);
+		});
+
+		it('should return 0 if object has no depth', function() {
+			var o = new Resource('http://google.com');
+			o.getDepth().should.be.eql(0);
+		});
+
+	});
+
+	describe('#createChild', function () {
+		it('should return Resource', function() {
+			var parent = new Resource('http://example.com');
+			var child = parent.createChild('http://google.com');
+			child.should.be.instanceOf(Resource);
+		});
+
+		it('should set correct url and filename', function() {
+			var parent = new Resource('http://example.com');
+			var child = parent.createChild('http://google.com', 'google.html');
+			child.getUrl().should.be.eql('http://google.com');
+			child.getFilename().should.be.eql('google.html');
+		});
+
+		it('should set parent', function() {
+			var parent = new Resource('http://example.com');
+			var child = parent.createChild('http://google.com');
+			child.parent.should.be.equal(parent);
+		});
+
+		it('should set depth', function() {
+			var parent = new Resource('http://example.com');
+			var child = parent.createChild('http://google.com');
+			child.getDepth().should.be.eql(1);
+
+			var childOfChild = child.createChild('http://google.com.ua');
+			childOfChild.getDepth().should.be.eql(2);
 		});
 	});
 });
