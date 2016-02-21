@@ -56,6 +56,21 @@ describe('Common utils', function () {
 		});
 	});
 
+	describe('#getHashFromUrl', function () {
+		it('should return hash from url', function () {
+			utils.getHashFromUrl('#').should.be.equal('#');
+			utils.getHashFromUrl('#hash').should.be.equal('#hash');
+			utils.getHashFromUrl('page.html#hash').should.be.equal('#hash');
+			utils.getHashFromUrl('http://example.com/page.html#hash').should.be.equal('#hash');
+		});
+
+		it('should return empty string if url doesn\'t contain hash', function () {
+			utils.getHashFromUrl('').should.be.equal('');
+			utils.getHashFromUrl('page.html?a=b').should.be.equal('');
+			utils.getHashFromUrl('http://example.com/page.html?a=b').should.be.equal('');
+		});
+	});
+
 	describe('#getRelativePath', function () {
 		it('should return relative path', function () {
 			utils.getRelativePath('css/1.css', 'img/1.png').should.be.equal('../img/1.png');

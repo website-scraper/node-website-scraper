@@ -14,7 +14,8 @@ var defaultScraperOpts = {
 	sources: [
 		{ selector: 'img', attr: 'src' },
 		{ selector: 'link[rel="stylesheet"]', attr: 'href' },
-		{ selector: 'script', attr: 'src' }
+		{ selector: 'script', attr: 'src'},
+		{ selector: 'a', attr: 'href' }
 	]
 };
 var scraper;
@@ -213,5 +214,57 @@ describe('Html handler', function () {
 				done();
 			}).catch(done);
 		});
+
+		it('should keep hash in url for html resources', function (done) {
+			nock('http://example.com').get('/page1.html').reply(200, 'OK');
+
+			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+			sinon.stub(resourceStub, 'getType').returns('html');
+			sinon.stub(scraper, 'loadResource').returns(Promise.resolve(resourceStub));
+
+			var html = '\
+				<html> \
+				<body> \
+					<a href="http://example.com/page1.html#hash">link</a> \
+				</body> \
+				</html>\
+			';
+
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
+
+			return loadHtml(scraper, po).then(function(){
+				var text = po.getText();
+				text.should.containEql('local/page1.html#hash');
+				done();
+			}).catch(done);
+		});
+
+		it('should remove hash from url for not-html resources', function (done) {
+			nock('http://example.com').get('/page1.html').reply(200, 'OK');
+
+			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+			sinon.stub(resourceStub, 'getType').returns('other');
+			sinon.stub(scraper, 'loadResource').returns(Promise.resolve(resourceStub));
+
+			var html = '\
+				<html> \
+				<body> \
+					<a href="http://example.com/page1.html#hash">link</a> \
+				</body> \
+				</html>\
+			';
+
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
+
+			return loadHtml(scraper, po).then(function(){
+				var text = po.getText();
+				text.should.not.containEql('local/page1.html#hash');
+				text.should.containEql('local/page1.html');
+				done();
+			}).catch(done);
+		});
+
 	});
 });
