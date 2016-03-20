@@ -4,6 +4,8 @@ cache:
   directories:
     - node_modules
 node_js:
+  - "5.1"
+  - "4.2"
   - "4.1"
   - "4.0"
   - "0.12"
@@ -12,3 +14,4 @@ node_js:
   - "iojs"
 after_success:
   - codeclimate-test-reporter < coverage/lcov.info
+  - coveralls < coverage/lcov.info
