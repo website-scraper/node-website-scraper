@@ -266,5 +266,24 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
+		it('should not encode text to html entities', function (done) {
+			var html = '\
+				<html> \
+				<body> \
+					<p>Этот текст не должен быть преобразован в html entities</p>\
+				</body> \
+				</html>\
+			';
+
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
+
+			return loadHtml(scraper, po).then(function(){
+				var text = po.getText();
+				text.should.containEql('Этот текст не должен быть преобразован в html entities');
+				done();
+			}).catch(done);
+		});
+
 	});
 });
