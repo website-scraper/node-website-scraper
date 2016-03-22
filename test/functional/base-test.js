@@ -4,7 +4,7 @@ var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
 var cheerio = require('cheerio');
-var scraper = require('../../index');
+var scrape = require('../../index');
 
 var testDirname = __dirname + '/.base';
 var mockDirname = __dirname + '/mocks/base';
@@ -65,7 +65,7 @@ describe('Functional base', function() {
 		// mocks for blog.html
 		nock('http://example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
 
-		scraper.scrape(options).then(function(result) {
+		scrape(options).then(function(result) {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
 			result.should.containEql({ url: 'http://example.com/', filename: 'index.html' });
