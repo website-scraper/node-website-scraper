@@ -1,8 +1,6 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var path = require('path');
-var _ = require('underscore');
 var scrape = require('../../index');
 
 var testDirname = __dirname + '/.resources-without-ext';

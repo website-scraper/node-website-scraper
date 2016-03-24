@@ -1,0 +1,29 @@
+extends: "eslint:recommended"
+env:
+  node: true
+rules:
+  consistent-return: "error"
+  curly: "error"
+  default-case: "error"
+  dot-notation: "error"
+  eqeqeq: "error"
+  no-extend-native: "error"
+  no-implicit-coercion: "error"
+  no-loop-func: "error"
+  no-multi-spaces: "error"
+  no-throw-literal: "error"
+  global-require: "error"
+  no-path-concat: "error"
+  brace-style: ["error", "stroustrup", {allowSingleLine: true}]
+  camelcase: "error"
+  consistent-this: ["error", "self"]
+  indent: ["error", "tab", {SwitchCase: 1}]
+  linebreak-style: ["error", "unix"]
+  eol-last: "error"
+  quotes: ["error", "single"]
+  semi: "error"
+  space-infix-ops: "error"
+  space-unary-ops: "error"
+  func-names: "warn"
+  space-before-function-paren: "warn"
+  no-spaced-func: "warn"

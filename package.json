@@ -5,7 +5,8 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --dir ./coverage --report lcov -- -R spec --recursive ./test"
+    "test": "istanbul cover _mocha --dir ./coverage --report lcov -- -R spec --recursive ./test && npm run eslint",
+    "eslint": "eslint lib/** index.js"
   },
   "repository": {
     "type": "git",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "codeclimate-test-reporter": "^0.3.1",
     "coveralls": "^2.11.8",
+    "eslint": "^2.4.0",
     "istanbul": "^0.4.0",
     "mocha": "^2.2.5",
     "nock": "^7.5.0",
