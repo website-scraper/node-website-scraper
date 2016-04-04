@@ -161,6 +161,33 @@ describe('Scraper', function () {
 				done();
 			}).catch(done);
 		});
+
+		it('should bind request object to makeRequest method', function(done) {
+			var requestStub = sinon.stub().resolves();
+			var Scraper = proxyquire('../../lib/scraper', {
+				'./request': requestStub
+			});
+
+			var reqOpts = {
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
+				}
+			};
+
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname
+			});
+			s.options.request = reqOpts;
+
+			s.prepare().then(function() {
+				s.makeRequest('http://example.com').then(function() {
+					requestStub.calledOnce.should.be.eql(true);
+					requestStub.calledWith(reqOpts).should.be.eql(true);
+					done();
+				}).catch(done);
+			}).catch(done);
+		});
 	});
 
 	describe('#load', function() {
