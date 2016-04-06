@@ -41,11 +41,11 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
 
 **options** - object containing next options:
 
- - `urls:` array of urls to load and filenames for them *(required, see example below)*
- - `directory:` path to save loaded files *(required)*
- - `defaultFilename:` filename for index page *(optional, default: 'index.html')*
- - `sources:` array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
- - `subdirectories:` array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
+ - `urls`: array of urls to load and filenames for them *(required, see example below)*
+ - `directory`: path to save loaded files *(required)*
+ - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
+ - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
+ - `subdirectories`: array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
  - `recursive`: boolean, if `true` scraper will follow anchors in html files. Don't forget to set `maxDepth` to avoid infinite downloading *(optional, see example below)*
  - `maxDepth`: positive number, maximum allowed depth for dependencies *(optional, see example below)*
@@ -53,10 +53,11 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
 
 **callback** - callback function *(optional)*, includes following parameters:
 
-  - `error:` if error - `Error` object, if success - `null`
-  - `result:` if error - `null`, if success - array if objects containing:
-    - `url:` url of loaded page
-    - `filename:` filename where page was saved (relative to `directory`)
+  - `error`: if error - `Error` object, if success - `null`
+  - `result`: if error - `null`, if success - array of objects containing:
+    - `url`: url of loaded page
+    - `filename`: filename where page was saved (relative to `directory`)
+    - `assets`: array of children resources (each of them contains `url`, `filename`, `assets`)
 
 
 ## Examples
