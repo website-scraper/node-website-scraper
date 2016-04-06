@@ -66,9 +66,18 @@ describe('Functional base', function() {
 		scrape(options).then(function(result) {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
-			result.should.containEql({ url: 'http://example.com/', filename: 'index.html' });
-			result.should.containEql({ url: 'http://example.com/about', filename: 'about.html' });
-			result.should.containEql({ url: 'http://blog.example.com/', filename: 'blog.html' }); // url after redirect
+
+			result[0].should.have.properties({ url: 'http://example.com/', filename: 'index.html' });
+			result[0].should.have.properties('assets');
+			result[0].assets.should.be.instanceOf(Array).and.have.length(4);
+
+			result[1].should.have.properties({ url: 'http://example.com/about', filename: 'about.html' });
+			result[1].should.have.properties('assets');
+			result[1].assets.should.be.instanceOf(Array).and.have.length(4);
+
+			result[2].should.have.properties({ url: 'http://blog.example.com/', filename: 'blog.html' }); // url after redirect
+			result[2].should.have.properties('assets');
+			result[2].assets.should.be.instanceOf(Array).and.have.length(1);
 
 			// should create directory and subdirectories
 			fs.existsSync(testDirname).should.be.eql(true);
