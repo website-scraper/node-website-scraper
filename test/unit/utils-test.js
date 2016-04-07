@@ -1,5 +1,6 @@
 require('should');
 var utils = require('../../lib/utils');
+var Resource = require('../../lib/resource');
 
 describe('Common utils', function () {
 	describe('#isUrl(url)', function () {
@@ -76,6 +77,31 @@ describe('Common utils', function () {
 			utils.getRelativePath('css/1.css', 'img/1.png').should.be.equal('../img/1.png');
 			utils.getRelativePath('index.html', 'img/1.png').should.be.equal('img/1.png');
 			utils.getRelativePath('css/1.css', 'css/2.css').should.be.equal('2.css');
+		});
+	});
+
+	describe('#createOutputObject', function () {
+		it('should create output object recursively', function() {
+			var root = new Resource('http://google.com', 'google.html');
+			root.createChild('http://child-one.com', 'child.html');
+			root.createChild('http://child-two.com', 'child2.html');
+
+			var expected = {
+				url: 'http://google.com',
+				filename: 'google.html',
+				assets: [{
+					url: 'http://child-one.com',
+					filename: 'child.html',
+					assets: []
+				}, {
+					url: 'http://child-two.com',
+					filename: 'child2.html',
+					assets: []
+				}]
+			};
+
+			var result = utils.createOutputObject(root);
+			result.should.eql(expected);
 		});
 	});
 });
