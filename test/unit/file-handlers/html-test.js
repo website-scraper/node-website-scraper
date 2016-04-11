@@ -13,6 +13,7 @@ var defaultScraperOpts = {
 	directory: testDirname,
 	sources: [
 		{ selector: 'img', attr: 'src' },
+		{ selector: 'img', attr: 'srcset' },
 		{ selector: 'link[rel="stylesheet"]', attr: 'href' },
 		{ selector: 'script', attr: 'src'},
 		{ selector: 'a', attr: 'href' }
@@ -272,8 +273,9 @@ describe('Html handler', function () {
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
 			sinon.stub(scraper, 'loadResource')
-				.withArgs(image45Stub).returns(Promise.resolve(image45Stub))
-				.withArgs(image150Stub).returns(Promise.resolve(image150Stub));
+				.onFirstCall().returns(Promise.resolve(image45Stub))
+				.onSecondCall().returns(Promise.resolve(image150Stub))
+				.onThirdCall().returns(Promise.resolve(image45Stub));
 
 			var html = '\
 				<html> \
