@@ -78,12 +78,4 @@ describe('Common utils', function () {
 			utils.getRelativePath('css/1.css', 'css/2.css').should.be.equal('2.css');
 		});
 	});
-
-	describe('#parseUrlFromSrcset', function () {
-		it('should return array of urls from srcset', function () {
-			var input = 'http://example.com/image150.jpg 150w, http://example.com/image45.jpg 45w';
-			var expected = ['http://example.com/image150.jpg', 'http://example.com/image45.jpg']
-			utils.parseUrlFromSrcset(input).should.be.eql(expected);
-		})
-	})
 });
