@@ -43,7 +43,7 @@
   "devDependencies": {
     "codeclimate-test-reporter": "^0.3.1",
     "coveralls": "^2.11.8",
-    "eslint": "^2.4.0",
+    "eslint": "^2.8.0",
     "istanbul": "^0.4.0",
     "mocha": "^2.2.5",
     "nock": "^8.0.0",
