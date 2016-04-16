@@ -19,24 +19,25 @@ npm install website-scraper
 
 ## Usage
 ```javascript
-var scrape = require('website-scraper');
+var scraper = require('website-scraper');
 var options = {
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save/',
 };
 
 // with callback
-scrape(options, function (error, result) {
+scraper.scrape(options, function (error, result) {
 	/* some code here */
 });
 
 // or with promise
-scrape(options).then(function (result) {
+scraper.scrape(options).then(function (result) {
 	/* some code here */
 });
 ```
 
 ## API
+### scrape(options, callback)
 Makes requests to `urls` and saves all files found with `sources` to `directory`.
 
 **options** - object containing next options:
@@ -75,8 +76,8 @@ and separate files into directories:
   - `css` for .css (full path `/path/to/save/css`)
 
 ```javascript
-var scrape = require('website-scraper');
-scrape({
+var scraper = require('website-scraper');
+scraper.scrape({
   urls: [
     'http://nodejs.org/',	// Will be saved with default filename 'index.html'
     {url: 'http://nodejs.org/about', filename: 'about.html'},
@@ -109,8 +110,8 @@ scrape({
 ```javascript
 // Links from example.com will be followed
 // Links from links will be ignored because theirs depth = 2 is greater than maxDepth
-var scrape = require('website-scraper');
-scrape({
+var scraper = require('website-scraper');
+scraper.scrape({
   urls: ['http://example.com/'],
   directory: '/path/to/save',
   recursive: true,
