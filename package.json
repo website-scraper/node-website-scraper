@@ -36,7 +36,7 @@
     "cheerio": "0.20.0",
     "compare-urls": "^1.0.0",
     "css-url-parser": "^1.0.0",
-    "fs-extra": "^0.27.0",
+    "fs-extra": "^0.28.0",
     "request": "^2.42.0",
     "underscore": "^1.7.0"
   },
