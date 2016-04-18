@@ -38,6 +38,7 @@
     "css-url-parser": "^1.0.0",
     "fs-extra": "^0.28.0",
     "request": "^2.42.0",
+    "srcset": "^1.0.0",
     "underscore": "^1.7.0"
   },
   "devDependencies": {
