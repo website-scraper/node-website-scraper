@@ -5,7 +5,7 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover _mocha --dir ./coverage --report lcov -- -R spec --recursive ./test && npm run eslint",
+    "test": "istanbul cover _mocha --dir ./coverage --report lcov -- -R spec --recursive --timeout 7000 ./test && npm run eslint",
     "eslint": "eslint lib/** index.js"
   },
   "repository": {
@@ -36,7 +36,7 @@
     "cheerio": "0.20.0",
     "compare-urls": "^1.0.0",
     "css-url-parser": "^1.0.0",
-    "fs-extra": "^0.27.0",
+    "fs-extra": "^0.28.0",
     "request": "^2.42.0",
     "srcset": "^1.0.0",
     "underscore": "^1.7.0"
