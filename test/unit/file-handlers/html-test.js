@@ -1,4 +1,5 @@
 require('should');
+var _ = require('underscore');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
@@ -321,5 +322,53 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
+		it('should not prettifyUrls by default', function(done) {
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body><a href="other-page/index.html">Other page</a></body> \
+				</html>\
+			';
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
+
+			return loadHtml(scraper, po).then(function () {
+				var text = po.getText();
+				text.should.containEql('a href="other-page/index.html"');
+				done();
+			}).catch(done);
+		});
+
+		it('should prettifyUrls if specified', function(done) {
+			scraper = new Scraper(_.extend({
+				defaultFilename: 'index.html',
+				prettifyUrls: true
+			}, defaultScraperOpts));
+			scraper.prepare();
+
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body><a href="other-page/index.html">Other page</a></body> \
+				</html>\
+			';
+
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
+
+			return loadHtml(scraper, po).then(function () {
+				var text = po.getText();
+
+				text.should.containEql('a href="other-page/"');
+
+				done();
+			}).catch(done);
+		});
 	});
 });

@@ -45,6 +45,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `urls`: array of urls to load and filenames for them *(required, see example below)*
  - `directory`: path to save loaded files *(required)*
  - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
+ - `prettifyUrls`: whether urls should be 'prettified', by having the `defaultFilename` removed *(optional, default: false)*
  - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
  - `subdirectories`: array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
