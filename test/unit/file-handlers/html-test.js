@@ -342,7 +342,7 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not prettifyUrls if specified', function(done) {
+		it('should prettifyUrls if specified', function(done) {
 			scraper = new Scraper(_.extend({
 				defaultFilename: 'index.html',
 				prettifyUrls: true
