@@ -43,6 +43,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
 **options** - object containing next options:
 
  - `urls`: array of urls to load and filenames for them *(required, see example below)*
+ - `urlFilter`: function which is called for each url to check whether it should be scraped. *(optional, see example below)*
  - `directory`: path to save loaded files *(required)*
  - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
  - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
@@ -116,5 +117,21 @@ scraper.scrape({
   directory: '/path/to/save',
   recursive: true,
   maxDepth: 1
+}).then(console.log).catch(console.log);
+```
+
+#### Example 3. Recursive downloading of entire website
+```javascript
+// Links from example.com will be followed
+// Links to other websites will be ignored, because of the urlFilter
+var scraper = require('website-scraper');
+scraper.scrape({
+  urls: ['http://example.com/'],
+  urlFilter: function(url){
+    return url.indexOf('http://example.com') === 0;
+  },
+  directory: '/path/to/save',
+  recursive: true,
+  maxDepth: 100
 }).then(console.log).catch(console.log);
 ```
