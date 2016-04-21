@@ -120,18 +120,15 @@ scraper.scrape({
 }).then(console.log).catch(console.log);
 ```
 
-#### Example 3. Recursive downloading of entire website
+#### Example 3. Filtering out external resources
 ```javascript
-// Links from example.com will be followed
-// Links to other websites will be ignored, because of the urlFilter
+// Links to other websites are filtered out by the urlFilter
 var scraper = require('website-scraper');
 scraper.scrape({
   urls: ['http://example.com/'],
   urlFilter: function(url){
     return url.indexOf('http://example.com') === 0;
   },
-  directory: '/path/to/save',
-  recursive: true,
-  maxDepth: 100
+  directory: '/path/to/save'
 }).then(console.log).catch(console.log);
 ```
