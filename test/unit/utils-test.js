@@ -30,6 +30,10 @@ describe('Common utils', function () {
 			utils.getUrl('http://google.com', 'http://my.site.com/').should.be.equal('http://my.site.com/');
 			utils.getUrl('http://google.com/qwe/qwe/qwe', '//my.site.com').should.be.equal('http://my.site.com/');
 		});
+		it('should use the protocol from the url, if the path is a protocol-less url', function (){
+			utils.getUrl('http://my.site.com', '//cdn.com/library.js').should.be.equal('http://cdn.com/library.js');
+			utils.getUrl('https://my.site.com', '//cdn.com/library.js').should.be.equal('https://cdn.com/library.js');
+		});
 	});
 
 	describe('#getUnixPath(path)', function () {

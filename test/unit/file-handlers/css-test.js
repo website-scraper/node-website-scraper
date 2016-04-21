@@ -112,5 +112,36 @@ describe('Css handler', function () {
 				done();
 			}).catch(done);
 		});
+
+		it('should not replace the sources in text, for which loadResource returned null', function(done) {
+			nock('http://second.com').get('/img/c.jpg').once().reply(200, 'OK');
+
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(null));
+			loadStub.onSecondCall().returns(Promise.resolve(null));
+			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
+
+			var css = '\
+				.a {background: url("http://first.com/img/a.jpg")} \
+				.b {background: url("http://first.com/b.jpg")}\
+				.c {background: url("img/c.jpg")}\
+			';
+
+			var po = new Resource('http://example.com', '1.css');
+			po.setText(css);
+
+			return loadCss(scraper, po).then(function(){
+				var text = po.getText();
+				text.should.containEql('http://first.com/img/a.jpg');
+				text.should.containEql('http://first.com/b.jpg');
+				text.should.not.containEql('local/a.jpg');
+				text.should.not.containEql('local/b.jpg');
+
+				text.should.not.containEql('img/c.jpg');
+				text.should.containEql('local/c.jpg');
+				
+				done();
+			}).catch(done);
+		});
 	});
 });
