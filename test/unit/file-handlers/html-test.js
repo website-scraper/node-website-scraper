@@ -1,4 +1,5 @@
 require('should');
+var _ = require('underscore');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
@@ -179,43 +180,6 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not replace the sources in text, for which loadResource returned null', function(done) {
-			nock('http://example.com').get('/scripts/c.js').once().reply(200, 'OK');
-
-			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(null));
-			loadStub.onSecondCall().returns(Promise.resolve(null));
-			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.js', 'local/c.js')));
-
-			var html = '\
-				<html> \
-				<head> \
-					<link rel="stylesheet" href="http://example.com/b.css"> \
-					<script src="scripts/c.js"></script>\
-				</head> \
-				<body> \
-					<img src="http://example.com/public/img/a.jpg"> \
-				</body> \
-				</html>\
-			';
-
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
-
-			return loadHtml(scraper, po).then(function(){
-				var text = po.getText();
-				text.should.containEql('http://example.com/public/img/a.jpg');
-				text.should.containEql('http://example.com/b.css');
-				text.should.not.containEql('local/a.jpg');
-				text.should.not.containEql('local/b.css');
-
-				text.should.not.containEql('scripts/c.js');
-				text.should.containEql('local/c.js');
-
-				done();
-			}).catch(done);
-		});
-
 		it('should replace all sources in text with local files', function(done) {
 			nock('http://example.com').get('/public/img/a.jpg').reply(200, 'OK');
 			nock('http://example.com').get('/b.css').reply(200, 'OK');
@@ -358,21 +322,40 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not replace the replace the sources of img tags with srcset attribute, for which loadResource returned null', function (done) {
-			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
+		it('should not prettifyUrls by default', function(done) {
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
 
-			sinon.stub(scraper, 'loadResource')
-				.onFirstCall().returns(Promise.resolve(null))
-				.onSecondCall().returns(Promise.resolve(image150Stub))
-				.onThirdCall().returns(Promise.resolve(null));
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body><a href="other-page/index.html">Other page</a></body> \
+				</html>\
+			';
+			var po = new Resource('http://example.com', 'index.html');
+			po.setText(html);
 
-			var html = '\
-				<html> \
-				<body> \
-					<img src="http://example.com/image45.jpg" \
-					srcset="http://example.com/image150.jpg 150w, http://example.com/image45.jpg 45w" \
-					sizes="(max-width: 45px) 100vw, 45px" width="45" height="45"> \
-				</body> \
+			return loadHtml(scraper, po).then(function () {
+				var text = po.getText();
+				text.should.containEql('a href="other-page/index.html"');
+				done();
+			}).catch(done);
+		});
+
+		it('should prettifyUrls if specified', function(done) {
+			scraper = new Scraper(_.extend({
+				defaultFilename: 'index.html',
+				prettifyUrls: true
+			}, defaultScraperOpts));
+			scraper.prepare();
+
+			var loadStub = sinon.stub(scraper, 'loadResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body><a href="other-page/index.html">Other page</a></body> \
 				</html>\
 			';
 
@@ -382,15 +365,10 @@ describe('Html handler', function () {
 			return loadHtml(scraper, po).then(function () {
 				var text = po.getText();
 
-				text.should.containEql('http://example.com/image45.jpg');
-				text.should.not.containEql('src="local/image45.jpg"');
-
-				text.should.not.containEql('http://example.com/image150.jpg');
-				text.should.containEql('srcset="local/image150.jpg 150w, http://example.com/image45.jpg 45w"');
+				text.should.containEql('a href="other-page/"');
 
 				done();
 			}).catch(done);
 		});
-
 	});
 });
