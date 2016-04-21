@@ -45,6 +45,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `urls`: array of urls to load and filenames for them *(required, see example below)*
  - `urlFilter`: function which is called for each url to check whether it should be scraped. *(optional, see example below)*
  - `directory`: path to save loaded files *(required)*
+ - `filenameGenerator`: name of one of the bundled filenameGenerators, or a custom filenameGenerator function *(optional, default: 'byType')*
  - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
  - `prettifyUrls`: whether urls should be 'prettified', by having the `defaultFilename` removed *(optional, default: false)*
  - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
@@ -61,6 +62,19 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
     - `url`: url of loaded page
     - `filename`: filename where page was saved (relative to `directory`)
     - `assets`: array of children resources (each of them contains `url`, `filename`, `assets`)
+
+### Filename Generators
+The filename generator determines where the scraped files are saved.
+
+#### byType (default)
+When the `byType` filenameGenerator is used the downloaded files are saved by type (as defined by the `subdirectories` setting) 
+or directly in the `directory` folder, if no subdirectory is specified for the specific type.
+
+#### bySiteStructure
+When the `bySiteStructure` filenameGenerator is used the downloaded files are saved in `directory` using same structure as on the website:
+- `/` => `DIRECTORY/index.html`
+- `/about` => `DIRECTORY/about/index.html`
+- `/resources/javascript/libraries/jquery.min.js` => `DIRECTORY/resources/javascript/libraries/jquery.min.js`
 
 
 ## Examples
@@ -130,6 +144,25 @@ scraper.scrape({
   urlFilter: function(url){
     return url.indexOf('http://example.com') === 0;
   },
+  directory: '/path/to/save'
+}).then(console.log).catch(console.log);
+```
+
+#### Example 4. Downloading an entire website
+```javascript
+// Downloads all the crawlable files of example.com.
+// The files are saved in the same structure as the structure of the website, by using the `bySiteStructure` filenameGenerator.
+// Links to other websites are filtered out by the urlFilter
+var scraper = require('website-scraper');
+scraper.scrape({
+  urls: ['http://example.com/'],
+  urlFilter: function(url){
+      return url.indexOf('http://example.com') === 0;
+  },
+  recursive: true,
+  maxDepth: 100,
+  prettifyUrls: true,
+  filenameGenerator: 'bySiteStructure',
   directory: '/path/to/save'
 }).then(console.log).catch(console.log);
 ```
