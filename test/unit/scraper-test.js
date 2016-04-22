@@ -578,6 +578,50 @@ describe('Scraper', function () {
 				});
 			}).catch(done);
 		});
+
+		it('should load the resource if the urlFilter returns true', function(done){
+			nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: ['http://example.com', 'http://google.com'],
+				directory: testDirname,
+				urlFilter: function(url){
+					return url.indexOf('http://example.com') !== -1;
+				}
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://example.com/a.png');
+				s.loadResource(r).then(function(lr) {
+					lr.should.be.eql(r);
+					lr.getUrl().should.be.eql('http://example.com/a.png');
+					lr.getFilename().should.be.not.empty();
+					lr.getText().should.be.eql('OK');
+
+					var text = fs.readFileSync(path.join(testDirname, lr.getFilename())).toString();
+					text.should.be.eql(lr.getText());
+					done();
+				});
+			}).catch(done);
+		});
+
+		it('should return an promise resolved with null if the urlFilter returns false', function(done){
+			var s = new Scraper({
+				urls: ['http://google.com'],
+				directory: testDirname,
+				urlFilter: function(url){
+					return url.indexOf('http://example.com') !== -1;
+				}
+			});
+
+			s.prepare().then(function() {
+				var r = new Resource('http://google.com/a.png');
+				s.loadResource(r).then(function(lr) {
+					should.equal(lr, null);
+					done();
+				});
+			}).catch(done);
+		});
 	});
 
 	describe('#getResourceHandler', function() {

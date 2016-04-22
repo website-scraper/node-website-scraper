@@ -43,6 +43,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
 **options** - object containing next options:
 
  - `urls`: array of urls to load and filenames for them *(required, see example below)*
+ - `urlFilter`: function which is called for each url to check whether it should be scraped. *(optional, see example below)*
  - `directory`: path to save loaded files *(required)*
  - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
  - `prettifyUrls`: whether urls should be 'prettified', by having the `defaultFilename` removed *(optional, default: false)*
@@ -117,5 +118,18 @@ scraper.scrape({
   directory: '/path/to/save',
   recursive: true,
   maxDepth: 1
+}).then(console.log).catch(console.log);
+```
+
+#### Example 3. Filtering out external resources
+```javascript
+// Links to other websites are filtered out by the urlFilter
+var scraper = require('website-scraper');
+scraper.scrape({
+  urls: ['http://example.com/'],
+  urlFilter: function(url){
+    return url.indexOf('http://example.com') === 0;
+  },
+  directory: '/path/to/save'
 }).then(console.log).catch(console.log);
 ```
