@@ -359,7 +359,7 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not replace the replace the sources of img tags with srcset attribute, for which loadResource returned null', function (done) {
+		it('should not replace the sources of img tags with srcset attribute, for which loadResource returned null', function (done) {
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
 			sinon.stub(scraper, 'loadResource')
