@@ -605,9 +605,9 @@ describe('Scraper', function () {
 			}).catch(done);
 		});
 
-		it('should not return an promise resolved with null if the urlFilter returns false', function(done){
+		it('should return an promise resolved with null if the urlFilter returns false', function(done){
 			var s = new Scraper({
-				urls: ['http://example.com', 'http://google.com'],
+				urls: ['http://google.com'],
 				directory: testDirname,
 				urlFilter: function(url){
 					return url.indexOf('http://example.com') !== -1;
