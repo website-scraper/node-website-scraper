@@ -5,7 +5,7 @@ var nock = require('nock');
 var proxyquire = require('proxyquire');
 var fs = require('fs-extra');
 var path = require('path');
-var _ = require('underscore');
+var _ = require('lodash');
 var Scraper = require('../../lib/scraper');
 var Resource = require('../../lib/resource');
 
@@ -112,9 +112,9 @@ describe('Scraper', function () {
 				s.originalResources[0].should.be.an.instanceOf(Resource);
 				s.originalResources[1].should.be.an.instanceOf(Resource);
 				s.originalResources[2].should.be.an.instanceOf(Resource);
-				_.where(s.originalResources, { url: 'http://first-url.com' }).should.have.length(1);
-				_.where(s.originalResources, { url: 'http://second-url.com' }).should.have.length(1);
-				_.where(s.originalResources, { url: 'http://third-url.com' }).should.have.length(1);
+				_.filter(s.originalResources, { url: 'http://first-url.com' }).should.have.length(1);
+				_.filter(s.originalResources, { url: 'http://second-url.com' }).should.have.length(1);
+				_.filter(s.originalResources, { url: 'http://third-url.com' }).should.have.length(1);
 				done();
 			}).catch(done);
 		});
@@ -469,7 +469,7 @@ describe('Scraper', function () {
 			htmlLoadStub = sinon.stub().resolves();
 
 			Scraper = proxyquire('../../lib/scraper', {
-				'underscore': {
+				'lodash': {
 					'noop': noopStub
 				},
 				'./file-handlers/html': htmlLoadStub,

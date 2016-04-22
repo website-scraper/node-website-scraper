@@ -37,9 +37,9 @@
     "compare-urls": "^1.0.0",
     "css-url-parser": "^1.0.0",
     "fs-extra": "^0.28.0",
+    "lodash": "^4.11.1",
     "request": "^2.42.0",
-    "srcset": "^1.0.0",
-    "underscore": "^1.7.0"
+    "srcset": "^1.0.0"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.3.1",
