@@ -1,5 +1,5 @@
 require('should');
-var _ = require('underscore');
+var _ = require('lodash');
 var sinon = require('sinon');
 var nock = require('nock');
 var fs = require('fs-extra');
