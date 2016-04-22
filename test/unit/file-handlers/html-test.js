@@ -1,9 +1,10 @@
 require('should');
 var _ = require('lodash');
+var Promise = require('bluebird');
 var sinon = require('sinon');
+require('sinon-as-promised')(Promise);
 var nock = require('nock');
 var fs = require('fs-extra');
-var Promise = require('bluebird');
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
 var loadHtml = require('../../../lib/file-handlers/html');
@@ -167,15 +168,18 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+			var parentResource = new Resource('http://example.com', 'index.html');
+			parentResource.setText(html);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
 			// order of loading is determined by order of sources in scraper options
-			loadHtml(scraper, po).then(function() {
+			loadHtml(scraper, parentResource).then(function() {
 				loadResourceSpy.calledThrice.should.be.eql(true);
 				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
 				loadResourceSpy.args[1][0].url.should.be.eql('http://example.com/b.css');
 				loadResourceSpy.args[2][0].url.should.be.eql('http://example.com/c.js');
+
+				updateChildSpy.calledThrice.should.be.eql(true);
 				done();
 			}).catch(done);
 		});
@@ -200,11 +204,12 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+			var parentResource = new Resource('http://example.com', 'index.html');
+			parentResource.setText(html);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return loadHtml(scraper, po).then(function(){
-				var text = po.getText();
+			return loadHtml(scraper, parentResource).then(function(){
+				var text = parentResource.getText();
 				text.should.containEql('http://example.com/public/img/a.jpg');
 				text.should.containEql('http://example.com/b.css');
 				text.should.not.containEql('local/a.jpg');
@@ -212,6 +217,8 @@ describe('Html handler', function () {
 
 				text.should.not.containEql('scripts/c.js');
 				text.should.containEql('local/c.js');
+
+				updateChildSpy.calledOnce.should.be.eql(true);
 
 				done();
 			}).catch(done);
@@ -325,14 +332,14 @@ describe('Html handler', function () {
 		});
 
 		it('should handle img tag with srcset attribute correctly', function (done) {
-
 			var image45Stub = new Resource('http://example.com/image45.jpg', 'local/image45.jpg');
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
 			sinon.stub(scraper, 'loadResource')
-				.onFirstCall().returns(Promise.resolve(image45Stub))
-				.onSecondCall().returns(Promise.resolve(image150Stub))
-				.onThirdCall().returns(Promise.resolve(image45Stub));
+				.onFirstCall().resolves(image45Stub)
+				.onSecondCall().resolves(image150Stub)
+				.onThirdCall().resolves(image45Stub);
+
 
 			var html = '\
 				<html> \
@@ -344,11 +351,14 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+			var parentResource = new Resource('http://example.com', 'index.html');
+			parentResource.setText(html);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return loadHtml(scraper, po).then(function () {
-				var text = po.getText();
+			return loadHtml(scraper, parentResource).then(function () {
+				var text = parentResource.getText();
+
+				updateChildSpy.calledThrice.should.be.eql(true);
 
 				text.should.not.containEql('http://example.com/image45.jpg');
 				text.should.not.containEql('http://example.com/image150.jpg');
@@ -363,9 +373,9 @@ describe('Html handler', function () {
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
 			sinon.stub(scraper, 'loadResource')
-				.onFirstCall().returns(Promise.resolve(null))
-				.onSecondCall().returns(Promise.resolve(image150Stub))
-				.onThirdCall().returns(Promise.resolve(null));
+				.onFirstCall().resolves(null)
+				.onSecondCall().resolves(image150Stub)
+				.onThirdCall().resolves(null);
 
 			var html = '\
 				<html> \
@@ -377,11 +387,14 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+			var parentResource = new Resource('http://example.com', 'index.html');
+			parentResource.setText(html);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return loadHtml(scraper, po).then(function () {
-				var text = po.getText();
+			return loadHtml(scraper, parentResource).then(function () {
+				var text = parentResource.getText();
+
+				updateChildSpy.calledOnce.should.be.eql(true);
 
 				text.should.containEql('http://example.com/image45.jpg');
 				text.should.not.containEql('src="local/image45.jpg"');
