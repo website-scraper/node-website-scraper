@@ -98,17 +98,20 @@ describe('Css handler', function () {
 				.c {background: url("img/c.jpg")}\
 			';
 
-			var po = new Resource('http://example.com', '1.css');
-			po.setText(css);
+			var parentResource = new Resource('http://example.com', '1.css');
+			parentResource.setText(css);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return loadCss(scraper, po).then(function(){
-				var text = po.getText();
+			return loadCss(scraper, parentResource).then(function(){
+				var text = parentResource.getText();
 				text.should.not.containEql('http://first.com/img/a.jpg');
 				text.should.not.containEql('http://first.com/b.jpg');
 				text.should.not.containEql('img/c.jpg');
 				text.should.containEql('local/a.jpg');
 				text.should.containEql('local/b.jpg');
 				text.should.containEql('local/c.jpg');
+
+				updateChildSpy.calledThrice.should.be.eql(true);
 				done();
 			}).catch(done);
 		});
@@ -127,11 +130,12 @@ describe('Css handler', function () {
 				.c {background: url("img/c.jpg")}\
 			';
 
-			var po = new Resource('http://example.com', '1.css');
-			po.setText(css);
+			var parentResource = new Resource('http://example.com', '1.css');
+			parentResource.setText(css);
+			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return loadCss(scraper, po).then(function(){
-				var text = po.getText();
+			return loadCss(scraper, parentResource).then(function(){
+				var text = parentResource.getText();
 				text.should.containEql('http://first.com/img/a.jpg');
 				text.should.containEql('http://first.com/b.jpg');
 				text.should.not.containEql('local/a.jpg');
@@ -139,6 +143,8 @@ describe('Css handler', function () {
 
 				text.should.not.containEql('img/c.jpg');
 				text.should.containEql('local/c.jpg');
+
+				updateChildSpy.calledOnce.should.be.eql(true);
 				
 				done();
 			}).catch(done);
