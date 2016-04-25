@@ -1,5 +1,7 @@
 .idea
+.DS_Store
 .gitignore
 .travis.yml
+.eslintrc*
 coverage
 test
