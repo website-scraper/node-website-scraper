@@ -19,7 +19,7 @@ describe('Functional resources without extensions', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should load resources without extensions with correct type', function(done) {
+	it('should load resources without extensions with correct type and wrap with extensions', function(done) {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -49,7 +49,7 @@ describe('Functional resources without extensions', function() {
 
 		scraper.scrape(options).then(function() {
 			// should load css file and fonts from css file
-			fs.existsSync(testDirname + '/css').should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
+			fs.existsSync(testDirname + '/css.css').should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
 			fs.existsSync(testDirname + '/UyBMtLsHKBKXelqf4x7VRQ.woff2').should.be.eql(true);
 			fs.existsSync(testDirname + '/1YwB1sO8YE1Lyjf12WNiUA.woff2').should.be.eql(true);
 
@@ -58,7 +58,7 @@ describe('Functional resources without extensions', function() {
 			fs.existsSync(testDirname + '/google.png').should.be.eql(true);
 
 			// should load html file and its sources from iframe
-			fs.existsSync(testDirname + '/iframe').should.be.eql(true);
+			fs.existsSync(testDirname + '/iframe.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/cat.png').should.be.eql(true);
 
 			done();
