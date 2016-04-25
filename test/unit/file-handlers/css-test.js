@@ -1,8 +1,10 @@
 require('should');
+var Promise = require('bluebird');
 var sinon = require('sinon');
+require('sinon-as-promised')(Promise);
+var proxyquire = require('proxyquire');
 var nock = require('nock');
 var fs = require('fs-extra');
-var Promise = require('bluebird');
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
 var loadCss = require('../../../lib/file-handlers/css');
@@ -32,7 +34,7 @@ describe('Css handler', function () {
 	describe('#loadCss(context, resource)', function() {
 
 		it('should not call loadResource if no sources in css', function(done) {
-			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
+			var loadResourceSpy = sinon.stub(scraper, 'loadResource');
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('');
@@ -174,28 +176,35 @@ describe('Css handler', function () {
 		});
 
 		it('should replace resource only if it completely equals to path (should not change partially matched names)', function(done) {
+			var cssUrls = [
+				'style.css', 'mystyle.css', 'another-style.css',
+				'image.png', 'another-image.png', 'new-another-image.png'
+			];
 
+			var loadCss = proxyquire('../../../lib/file-handlers/css', {
+				'css-url-parser': sinon.stub().returns(cssUrls)
+			});
+
+			// Order of calling loadStub depends on order of cssUrls returned by `css-url-parser`
+			// So first time it will be called with cssUrls[0], second time -> cssUrls[1]
 			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onCall(0).returns(Promise.resolve(new Resource('http://example.com/style.css', 'local/style.css')));
-			loadStub.onCall(1).returns(Promise.resolve(new Resource('http://example.com/style.css', 'local/style.css')));
-			loadStub.onCall(2).returns(Promise.resolve(new Resource('http://example.com/mystyle.css', 'local/mystyle.css')));
-			loadStub.onCall(3).returns(Promise.resolve(new Resource('http://example.com/style.css', 'local/style.css')));
-			loadStub.onCall(4).returns(Promise.resolve(new Resource('http://example.com/another_style.css', 'local/another_style.css')));
-			loadStub.onCall(5).returns(Promise.resolve(new Resource('http://example.com/image.png', 'local/image.png')));
-			loadStub.onCall(6).returns(Promise.resolve(new Resource('http://example.com/image.png', 'local/image.png')));
-			loadStub.onCall(7).returns(Promise.resolve(new Resource('http://example.com/another-image.png', 'local/another-image.png')));
-			loadStub.onCall(8).returns(Promise.resolve(new Resource('http://example.com/new-another-image.png', 'local/new-another-image.png')));
+			loadStub.onCall(0).resolves(new Resource('http://example.com/style.css', 'local/style.css'));
+			loadStub.onCall(1).resolves(new Resource('http://example.com/mystyle.css', 'local/mystyle.css'));
+			loadStub.onCall(2).resolves(new Resource('http://example.com/another_style.css', 'local/another_style.css'));
+			loadStub.onCall(3).resolves(new Resource('http://example.com/image.png', 'local/image.png'));
+			loadStub.onCall(4).resolves(new Resource('http://example.com/another-image.png', 'local/another-image.png'));
+			loadStub.onCall(5).resolves(new Resource('http://example.com/new-another-image.png', 'local/new-another-image.png'));
 
 			var css = '\
-				@import "style.css"     \
-				@import style.css       \
-				@import \'mystyle.css\' \
-				@import (\'style.css\') \
-				@import url(\'another-style.css\') \
-				.a {background: url("image.png")} \
-				.b {background: url(image.png)} \
-				.c {background: url("another-image.png")}\
-				.d {background: url(\'new-another-image.png\')}\
+				@import "style.css";     \
+				@import \'style.css\';   \
+				@import \'mystyle.css\'; \
+				@import url(\'style.css\') ;\
+				@import url(\'another-style.css\'); \
+				.a {background: url("image.png")} ;\
+				.b {background: url(image.png)}; \
+				.c {background: url("another-image.png")};\
+				.d {background: url(\'new-another-image.png\')};\
 			';
 
 			var po = new Resource('http://example.com', '1.css');
@@ -205,10 +214,10 @@ describe('Css handler', function () {
 				var text = po.getText();
 
 				text.should.containEql('@import "local/style.css"');
-				text.should.containEql('@import local/style.css');
+				text.should.containEql('@import \'local/style.css\'');
 				text.should.containEql('@import \'local/mystyle.css\'');
-				text.should.containEql('@import (\'local/style.css\') ');
-				text.should.containEql('@import url(\local/another_style.css\')');
+				text.should.containEql('@import url(\'local/style.css\')');
+				text.should.containEql('@import url(\'local/another_style.css\')');
 
 				text.should.containEql('.a {background: url("local/image.png")}');
 				text.should.containEql('.b {background: url(local/image.png)}');
