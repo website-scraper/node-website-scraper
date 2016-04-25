@@ -2,33 +2,21 @@ require('should');
 var Promise = require('bluebird');
 var sinon = require('sinon');
 require('sinon-as-promised')(Promise);
-var proxyquire = require('proxyquire');
-var nock = require('nock');
-var fs = require('fs-extra');
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
 var loadCss = require('../../../lib/file-handlers/css');
 
-var testDirname = __dirname + '/.css-test';
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
-	directory: testDirname
+	directory: __dirname + '/.css-test'
 };
 var scraper;
 
 describe('Css handler', function () {
 
 	beforeEach(function() {
-		nock.cleanAll();
-		nock.disableNetConnect();
 		scraper = new Scraper(defaultScraperOpts);
 		scraper.prepare();
-	});
-
-	afterEach(function() {
-		nock.cleanAll();
-		nock.enableNetConnect();
-		fs.removeSync(testDirname);
 	});
 
 	describe('#loadCss(context, resource)', function() {
@@ -46,9 +34,7 @@ describe('Css handler', function () {
 		});
 
 		it('should call loadResource once with correct params', function(done) {
-			nock('http://example.com').get('/test.png').reply(200, 'OK');
-
-			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
+			var loadResourceSpy = sinon.stub(scraper, 'loadResource').resolves();
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('div {background: url(test.png)}');
@@ -61,11 +47,7 @@ describe('Css handler', function () {
 		});
 
 		it('should call loadResource for each found source with correct params', function(done) {
-			nock('http://example.com').get('/a.jpg').reply(200, 'OK');
-			nock('http://example.com').get('/b.jpg').reply(200, 'OK');
-			nock('http://example.com').get('/c.jpg').reply(200, 'OK');
-
-			var loadResourceSpy = sinon.spy(scraper, 'loadResource');
+			var loadResourceSpy = sinon.stub(scraper, 'loadResource').resolves();
 			var css = '\
 				.a {background: url(a.jpg)} \
 				.b {background: url(\'b.jpg\')}\
@@ -85,14 +67,10 @@ describe('Css handler', function () {
 		});
 
 		it('should replace all sources in text with local files', function(done) {
-			nock('http://first.com').get('/img/a.jpg').reply(200, 'OK');
-			nock('http://first.com').get('/b.jpg').reply(200, 'OK');
-			nock('http://second.com').get('/img/c.jpg').once().reply(200, 'OK');
-
 			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
-			loadStub.onSecondCall().returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
-			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
+			loadStub.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
+			loadStub.onSecondCall().resolves(new Resource('http://first.com/b.jpg', 'local/b.jpg'));
+			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
 
 			var css = '\
 				.a {background: url("http://first.com/img/a.jpg")} \
@@ -119,12 +97,10 @@ describe('Css handler', function () {
 		});
 
 		it('should not replace the sources in text, for which loadResource returned null', function(done) {
-			nock('http://second.com').get('/img/c.jpg').once().reply(200, 'OK');
-
 			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(null));
-			loadStub.onSecondCall().returns(Promise.resolve(null));
-			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
+			loadStub.onFirstCall().resolves(null);
+			loadStub.onSecondCall().resolves(null);
+			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
 
 			var css = '\
 				.a {background: url("http://first.com/img/a.jpg")} \
@@ -153,7 +129,7 @@ describe('Css handler', function () {
 		});
 
 		it('should replace all occurencies of the same sources in text with local files', function(done) {
-			sinon.stub(scraper, 'loadResource').returns(Promise.resolve(new Resource('http://example.com/img.jpg', 'local/img.jpg')));
+			sinon.stub(scraper, 'loadResource').resolves(new Resource('http://example.com/img.jpg', 'local/img.jpg'));
 
 			var css = '\
 				.a {background: url("http://example.com/img.jpg")} \
@@ -176,17 +152,11 @@ describe('Css handler', function () {
 		});
 
 		it('should replace resource only if it completely equals to path (should not change partially matched names)', function(done) {
-			var cssUrls = [
-				'style.css', 'mystyle.css', 'another-style.css',
-				'image.png', 'another-image.png', 'new-another-image.png'
-			];
+			// Next order of urls will be returned by css-url-parser
+			// 'style.css', 'mystyle.css', 'another-style.css', 'image.png', 'another-image.png', 'new-another-image.png'
 
-			var loadCss = proxyquire('../../../lib/file-handlers/css', {
-				'css-url-parser': sinon.stub().returns(cssUrls)
-			});
-
-			// Order of calling loadStub depends on order of cssUrls returned by `css-url-parser`
-			// So first time it will be called with cssUrls[0], second time -> cssUrls[1]
+			// Order of args for calling loadStub depends on order of css urls
+			// first time it will be called with cssUrls[0], second time -> cssUrls[1]
 			var loadStub = sinon.stub(scraper, 'loadResource');
 			loadStub.onCall(0).resolves(new Resource('http://example.com/style.css', 'local/style.css'));
 			loadStub.onCall(1).resolves(new Resource('http://example.com/mystyle.css', 'local/mystyle.css'));
