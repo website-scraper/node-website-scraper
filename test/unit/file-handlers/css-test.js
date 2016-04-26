@@ -16,7 +16,6 @@ describe('Css handler', function () {
 
 	beforeEach(function() {
 		scraper = new Scraper(defaultScraperOpts);
-		scraper.prepare();
 	});
 
 	describe('#loadCss(context, resource)', function() {
