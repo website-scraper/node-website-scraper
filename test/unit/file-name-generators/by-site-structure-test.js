@@ -4,7 +4,7 @@ var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators
 
 var options = { defaultFilename: 'index.html' };
 
-describe('byTypeFilenameGenerator', function() {
+describe('byStructureFilenameGenerator', function() {
 	it('should return the normalized absolute path of the resource url', function(){
 		var r1 = new Resource('http://example.com/some/path/a.png');
 		bySiteStructureFilenameGenerator(r1, options).should.equal('/some/path/a.png');
@@ -41,5 +41,5 @@ describe('byTypeFilenameGenerator', function() {
 	it('should normalize to safe absolute paths, without ..', function(){
 		var r = new Resource('http://example.com/some/path/../../../../images/a.png');
 		bySiteStructureFilenameGenerator(r, options).should.equal('/images/a.png');
-	})
+	});
 });
