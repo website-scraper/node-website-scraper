@@ -7,6 +7,7 @@ Download website to a local directory (including all css, images, js, etc.)
 [![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Dependency Status](https://david-dm.org/s0ph1e/node-website-scraper.svg?style=flat)](https://david-dm.org/s0ph1e/node-website-scraper)
+[![Gitter](https://badges.gitter.im/s0ph1e/node-website-scraper.svg)](https://gitter.im/s0ph1e/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 [![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
 
