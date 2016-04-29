@@ -210,7 +210,7 @@ describe('Scraper', function () {
 			}).catch(done);
 		});
 
-		it('should return array of objects with url, filename and assets', function(done) {
+		it('should return array of objects with url, filename and childre', function(done) {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
 
@@ -225,8 +225,8 @@ describe('Scraper', function () {
 			s.prepare().bind(s).then(s.load).then(function(res) {
 				res.should.be.instanceOf(Array);
 				res.should.have.length(2);
-				res[0].should.have.properties(['url', 'filename', 'assets']);
-				res[1].should.have.properties(['url', 'filename', 'assets']);
+				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
+				res[1].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
 				done();
 			}).catch(done);
 		});
