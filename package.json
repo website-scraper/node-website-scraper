@@ -1,6 +1,6 @@
 {
   "name": "website-scraper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
   "main": "index.js",
