@@ -107,5 +107,17 @@ describe('Common utils', function () {
 			var result = utils.createOutputObject(root);
 			result.should.eql(expected);
 		});
+
+		it('should not fail on referential loop', function() {
+			var root = new Resource('http://example.com', 'index.html');
+			var child1 = root.createChild('http://child-one.com', 'child1.html');
+			var child2 = root.createChild('http://child-two.com', 'child2.html');
+			// create referential loop
+			var rootCopy = child1.createChild('http://example.com');
+			child1.updateChild(rootCopy, root);
+
+			var result = utils.createOutputObject(root);
+			result.should.be.not.empty();
+		});
 	});
 });
