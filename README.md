@@ -62,7 +62,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
   - `result`: if error - `null`, if success - array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects containing:
     - `url`: url of loaded page
     - `filename`: filename where page was saved (relative to `directory`)
-    - `children`: array of children Resources
+    - `assets`: array of children Resources
 
 ### Filename Generators
 The filename generator determines where the scraped files are saved.
