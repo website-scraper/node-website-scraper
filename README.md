@@ -49,11 +49,13 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `filenameGenerator`: name of one of the bundled filenameGenerators, or a custom filenameGenerator function *(optional, default: 'byType')*
  - `defaultFilename`: filename for index page *(optional, default: 'index.html')*
  - `prettifyUrls`: whether urls should be 'prettified', by having the `defaultFilename` removed *(optional, default: false)*
- - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see default value in `lib/config/defaults.js`)*
+ - `sources`: array of objects to load, specifies selectors and attribute values to select files for loading *(optional, see example below)*
  - `subdirectories`: array of objects, specifies subdirectories for file extensions. If `null` all files will be saved to `directory` *(optional, see example below)*
  - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
  - `recursive`: boolean, if `true` scraper will follow anchors in html files. Don't forget to set `maxDepth` to avoid infinite downloading *(optional, see example below)*
  - `maxDepth`: positive number, maximum allowed depth for dependencies *(optional, see example below)*
+ 
+Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
 
 
 **callback** - callback function *(optional)*, includes following parameters:
