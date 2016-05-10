@@ -14,7 +14,7 @@ rules:
   no-throw-literal: "error"
   global-require: "error"
   no-path-concat: "error"
-  brace-style: ["error", "stroustrup", {allowSingleLine: true}]
+  brace-style: ["error", "1tbs", {allowSingleLine: true}]
   camelcase: "error"
   consistent-this: ["error", "self"]
   indent: ["error", "tab", {SwitchCase: 1}]
