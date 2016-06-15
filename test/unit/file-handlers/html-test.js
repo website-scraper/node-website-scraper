@@ -83,20 +83,22 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not call loadResource if no sources in html', function(done) {
-			var loadResourceStub = sinon.stub(scraper, 'loadResource').resolves();
+		it('should not call requestResource if no sources in html', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
+			sinon.stub(scraper, 'loadResource').resolves();
 
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText('');
 
 			loadHtml(scraper, po).then(function() {
-				loadResourceStub.called.should.be.eql(false);
+				requestResourceStub.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should not call loadResource if source attr is empty', function(done) {
-			var loadResourceStub = sinon.stub(scraper, 'loadResource').resolves();
+		it('should not call requestResource if source attr is empty', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
+			sinon.stub(scraper, 'loadResource').resolves();
 
 			var html = ' \
 				<html lang="en"> \
@@ -109,13 +111,14 @@ describe('Html handler', function () {
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
-				loadResourceStub.called.should.be.eql(false);
+				requestResourceStub.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadResource once with correct params', function(done) {
-			var loadResourceStub = sinon.stub(scraper, 'loadResource').resolves();
+		it('should call requestResource once with correct params', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
+			sinon.stub(scraper, 'loadResource').resolves();
 
 			var html = ' \
 				<html lang="en"> \
@@ -128,17 +131,19 @@ describe('Html handler', function () {
 			po.setText(html);
 
 			loadHtml(scraper, po).then(function() {
-				loadResourceStub.calledOnce.should.be.eql(true);
-				loadResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
+				requestResourceStub.calledOnce.should.be.eql(true);
+				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadResource for each found source with correct params', function(done) {
-			var loadResourceStub = sinon.stub(scraper, 'loadResource');
-			loadResourceStub.onFirstCall().resolves(new Resource('http://example.com/a.jpg', 'a.jpg'));
-			loadResourceStub.onSecondCall().resolves(new Resource('http://example.com/b.css', 'b.css'));
-			loadResourceStub.onThirdCall().resolves(new Resource('http://example.com/c.js', 'c.js'));
+		it('should call requestResource for each found source with correct params', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
+			sinon.stub(scraper, 'loadResource').resolves();
+
+			requestResourceStub.onFirstCall().resolves(new Resource('http://example.com/a.jpg', 'a.jpg'));
+			requestResourceStub.onSecondCall().resolves(new Resource('http://example.com/b.css', 'b.css'));
+			requestResourceStub.onThirdCall().resolves(new Resource('http://example.com/c.js', 'c.js'));
 
 			var html = '\
 				<html> \
@@ -158,21 +163,23 @@ describe('Html handler', function () {
 
 			// order of loading is determined by order of sources in scraper options
 			loadHtml(scraper, parentResource).then(function() {
-				loadResourceStub.calledThrice.should.be.eql(true);
-				loadResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
-				loadResourceStub.args[1][0].url.should.be.eql('http://example.com/b.css');
-				loadResourceStub.args[2][0].url.should.be.eql('http://example.com/c.js');
+				requestResourceStub.calledThrice.should.be.eql(true);
+				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
+				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.css');
+				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.js');
 
 				updateChildSpy.calledThrice.should.be.eql(true);
 				done();
 			}).catch(done);
 		});
 
-		it('should not replace the sources in text, for which loadResource returned null', function(done) {
-			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(null));
-			loadStub.onSecondCall().returns(Promise.resolve(null));
-			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.js', 'local/c.js')));
+		it('should not replace the sources in text, for which requestResource returned null', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
+			sinon.stub(scraper, 'loadResource').resolves();
+
+			requestResourceStub.onFirstCall().returns(Promise.resolve(null));
+			requestResourceStub.onSecondCall().returns(Promise.resolve(null));
+			requestResourceStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.js', 'local/c.js')));
 
 			var html = '\
 				<html> \
@@ -207,10 +214,12 @@ describe('Html handler', function () {
 		});
 
 		it('should replace all sources in text with local files', function(done) {
-			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/public/img/a.jpg', 'local/a.jpg')));
-			loadStub.onSecondCall().returns(Promise.resolve(new Resource('http://example.com/b.css', 'local/b.css')));
-			loadStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.jpg', 'local/c.js')));
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
+			sinon.stub(scraper, 'loadResource').resolves();
+
+			requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/public/img/a.jpg', 'local/a.jpg')));
+			requestResourceStub.onSecondCall().returns(Promise.resolve(new Resource('http://example.com/b.css', 'local/b.css')));
+			requestResourceStub.onThirdCall().returns(Promise.resolve(new Resource('http://example.com/img/c.jpg', 'local/c.js')));
 
 			var html = '\
 				<html> \
@@ -241,8 +250,10 @@ describe('Html handler', function () {
 
 		it('should keep hash in url for html resources', function (done) {
 			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+			sinon.stub(scraper, 'loadResource').resolves();
+
 			sinon.stub(resourceStub, 'getType').returns('html');
-			sinon.stub(scraper, 'loadResource').returns(Promise.resolve(resourceStub));
+			sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
 
 			var html = '\
 				<html> \
@@ -264,8 +275,10 @@ describe('Html handler', function () {
 
 		it('should remove hash from url for not-html resources', function (done) {
 			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+			sinon.stub(scraper, 'loadResource').resolves();
+
 			sinon.stub(resourceStub, 'getType').returns('other');
-			sinon.stub(scraper, 'loadResource').returns(Promise.resolve(resourceStub));
+			sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
 
 			var html = '\
 				<html> \
@@ -306,10 +319,12 @@ describe('Html handler', function () {
 		});
 
 		it('should handle img tag with srcset attribute correctly', function (done) {
+			sinon.stub(scraper, 'loadResource').resolves();
+
 			var image45Stub = new Resource('http://example.com/image45.jpg', 'local/image45.jpg');
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
-			sinon.stub(scraper, 'loadResource')
+			sinon.stub(scraper, 'requestResource')
 				.onFirstCall().resolves(image45Stub)
 				.onSecondCall().resolves(image150Stub)
 				.onThirdCall().resolves(image45Stub);
@@ -343,10 +358,11 @@ describe('Html handler', function () {
 			}).catch(done);
 		});
 
-		it('should not replace the sources of img tags with srcset attribute, for which loadResource returned null', function (done) {
+		it('should not replace the sources of img tags with srcset attribute, for which requestResource returned null', function (done) {
+			sinon.stub(scraper, 'loadResource').resolves();
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
-			sinon.stub(scraper, 'loadResource')
+			sinon.stub(scraper, 'requestResource')
 				.onFirstCall().resolves(null)
 				.onSecondCall().resolves(image150Stub)
 				.onThirdCall().resolves(null);
@@ -381,8 +397,10 @@ describe('Html handler', function () {
 		});
 
 		it('should not prettifyUrls by default', function(done) {
-			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
+			sinon.stub(scraper, 'loadResource').resolves();
+
+			requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
 
 			var html = ' \
 				<html lang="en"> \
@@ -406,8 +424,10 @@ describe('Html handler', function () {
 				prettifyUrls: true
 			}, defaultScraperOpts));
 
-			var loadStub = sinon.stub(scraper, 'loadResource');
-			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
+			sinon.stub(scraper, 'loadResource').resolves();
+
+			requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
 
 			var html = ' \
 				<html lang="en"> \

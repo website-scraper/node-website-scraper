@@ -258,7 +258,7 @@ describe('Scraper', function () {
 
 			s.prepare().then(function() {
 				var resource = new Resource('http://some-resource.com');
-				s.addRequestedResourcePromise(resource.getUrl(), resource);
+				s.addLoadedResource(resource);
 				fs.existsSync(testDirname).should.be.eql(true);
 				return s.errorCleanup();
 			}).then(function() {
@@ -296,7 +296,7 @@ describe('Scraper', function () {
 
 			s.prepare().then(function() {
 				var a = new Resource('http://first-resource.com');
-				var loaded = s.getRequestedResourcePromise(a.getUrl());
+				var loaded = s.getLoadedResourcePromise(a.getUrl());
 				should(loaded).be.empty();
 				done();
 			}).catch(done);
@@ -310,14 +310,14 @@ describe('Scraper', function () {
 
 			s.prepare().then(function() {
 				var a = new Resource('http://first-resource.com');
-				s.addRequestedResourcePromise(a.getUrl(), a);
+				s.addLoadedResourcePromise(a.getUrl(), a);
 
 				var b = new Resource('http://first-resource.com');
 				var c = new Resource('http://first-resource.com/');
 				var d = new Resource('http://first-resource.com?');
-				should(s.getRequestedResourcePromise(b.getUrl())).be.equal(a);
-				should(s.getRequestedResourcePromise(c.getUrl())).be.equal(a);
-				should(s.getRequestedResourcePromise(d.getUrl())).be.equal(a);
+				should(s.getLoadedResourcePromise(b.getUrl())).be.equal(a);
+				should(s.getLoadedResourcePromise(c.getUrl())).be.equal(a);
+				should(s.getLoadedResourcePromise(d.getUrl())).be.equal(a);
 
 				done();
 			}).catch(done);
