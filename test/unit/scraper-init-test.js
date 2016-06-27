@@ -35,7 +35,7 @@ describe('Scraper initialization', function () {
 				directory: '/my/absolute/path'
 			});
 			var expected3 = '/my/absolute/path';
-			s3.options.directory.should.eql(expected3);
+			s3.options.directory.should.equalFileSystemPath(expected3);
 		});
 	});
 

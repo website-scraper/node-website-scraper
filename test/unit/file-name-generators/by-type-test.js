@@ -1,4 +1,5 @@
 require('should');
+require('../../utils/assertions');
 var sinon = require('sinon');
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
@@ -56,7 +57,7 @@ describe('byTypeFilenameGenerator', function() {
 
         var r = new Resource('http://example.com/a.png');
         var filename = byTypeFilenameGenerator(r, s.options, s.occupiedFileNames);
-        filename.should.be.eql('img/a.png');
+        filename.should.equalFileSystemPath('img/a.png');
     });
 
     it('should return different filename if desired filename is occupied', function() {
