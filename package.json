@@ -5,7 +5,7 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover _mocha --dir ./coverage --report lcov -- -R spec --recursive --timeout 7000 ./test && npm run eslint",
+    "test": "istanbul cover node_modules/mocha/bin/_mocha --dir ./coverage --report lcov -- -R spec --recursive --timeout 7000 ./test && npm run eslint",
     "eslint": "eslint lib/** index.js"
   },
   "repository": {

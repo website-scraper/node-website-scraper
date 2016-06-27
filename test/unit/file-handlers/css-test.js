@@ -20,33 +20,33 @@ describe('Css handler', function () {
 
 	describe('#loadCss(context, resource)', function() {
 
-		it('should not call loadResource if no sources in css', function(done) {
-			var loadResourceSpy = sinon.stub(scraper, 'loadResource');
+		it('should not call requestResource if no sources in css', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('');
 
 			loadCss(scraper, po).then(function() {
-				loadResourceSpy.called.should.be.eql(false);
+				requestResourceStub.called.should.be.eql(false);
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadResource once with correct params', function(done) {
-			var loadResourceSpy = sinon.stub(scraper, 'loadResource').resolves();
+		it('should call requestResource once with correct params', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('div {background: url(test.png)}');
 
 			loadCss(scraper, po).then(function() {
-				loadResourceSpy.calledOnce.should.be.eql(true);
-				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/test.png');
+				requestResourceStub.calledOnce.should.be.eql(true);
+				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
 				done();
 			}).catch(done);
 		});
 
-		it('should call loadResource for each found source with correct params', function(done) {
-			var loadResourceSpy = sinon.stub(scraper, 'loadResource').resolves();
+		it('should call requestResource for each found source with correct params', function(done) {
+			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 			var css = '\
 				.a {background: url(a.jpg)} \
 				.b {background: url(\'b.jpg\')}\
@@ -57,16 +57,16 @@ describe('Css handler', function () {
 			po.setText(css);
 
 			loadCss(scraper, po).then(function() {
-				loadResourceSpy.calledThrice.should.be.eql(true);
-				loadResourceSpy.args[0][0].url.should.be.eql('http://example.com/a.jpg');
-				loadResourceSpy.args[1][0].url.should.be.eql('http://example.com/b.jpg');
-				loadResourceSpy.args[2][0].url.should.be.eql('http://example.com/c.jpg');
+				requestResourceStub.calledThrice.should.be.eql(true);
+				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
+				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.jpg');
+				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.jpg');
 				done();
 			}).catch(done);
 		});
 
 		it('should replace all sources in text with local files', function(done) {
-			var loadStub = sinon.stub(scraper, 'loadResource');
+			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
 			loadStub.onSecondCall().resolves(new Resource('http://first.com/b.jpg', 'local/b.jpg'));
 			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
@@ -95,8 +95,8 @@ describe('Css handler', function () {
 			}).catch(done);
 		});
 
-		it('should not replace the sources in text, for which loadResource returned null', function(done) {
-			var loadStub = sinon.stub(scraper, 'loadResource');
+		it('should not replace the sources in text, for which requestResource returned null', function(done) {
+			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onFirstCall().resolves(null);
 			loadStub.onSecondCall().resolves(null);
 			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
@@ -128,7 +128,7 @@ describe('Css handler', function () {
 		});
 
 		it('should replace all occurencies of the same sources in text with local files', function(done) {
-			sinon.stub(scraper, 'loadResource').resolves(new Resource('http://example.com/img.jpg', 'local/img.jpg'));
+			sinon.stub(scraper, 'requestResource').resolves(new Resource('http://example.com/img.jpg', 'local/img.jpg'));
 
 			var css = '\
 				.a {background: url("http://example.com/img.jpg")} \
@@ -156,7 +156,7 @@ describe('Css handler', function () {
 
 			// Order of args for calling loadStub depends on order of css urls
 			// first time it will be called with cssUrls[0], second time -> cssUrls[1]
-			var loadStub = sinon.stub(scraper, 'loadResource');
+			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onCall(0).resolves(new Resource('http://example.com/style.css', 'local/style.css'));
 			loadStub.onCall(1).resolves(new Resource('http://example.com/mystyle.css', 'local/mystyle.css'));
 			loadStub.onCall(2).resolves(new Resource('http://example.com/another_style.css', 'local/another_style.css'));
