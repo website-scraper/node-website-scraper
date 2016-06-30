@@ -47,17 +47,17 @@ describe('Common utils', function () {
 
 	describe('#getFilenameFromUrl(url)', function () {
 		it('should return last path item as filename & trim all after first ? or #', function () {
-			utils.getFilenameFromUrl('http://example.com/index.html').should.be.equal('index.html');
-			utils.getFilenameFromUrl('http://example.com/p/a/t/h/index.html').should.be.equal('index.html');
-			utils.getFilenameFromUrl('http://example.com/index.html?12').should.be.equal('index.html');
-			utils.getFilenameFromUrl('http://example.com/index.html#t?12').should.be.equal('index.html');
-			utils.getFilenameFromUrl('http://example.com/index.html?12#t').should.be.equal('index.html');
+			utils.getFilenameFromUrl('http://example.com/index.html').should.equalFileSystemPath('index.html');
+			utils.getFilenameFromUrl('http://example.com/p/a/t/h/index.html').should.equalFileSystemPath('index.html');
+			utils.getFilenameFromUrl('http://example.com/index.html?12').should.equalFileSystemPath('index.html');
+			utils.getFilenameFromUrl('http://example.com/index.html#t?12').should.equalFileSystemPath('index.html');
+			utils.getFilenameFromUrl('http://example.com/index.html?12#t').should.equalFileSystemPath('index.html');
 			utils.getFilenameFromUrl('http://example.com/?12_jdlsk').should.be.empty();
 			utils.getFilenameFromUrl('http://example.com/#index.html').should.be.empty();
 			utils.getFilenameFromUrl('http://example.com/').should.be.empty();
 		});
-		it('should return unconvetred filename if there are no ?,#', function () {
-			utils.getFilenameFromUrl('index.html').should.be.equal('index.html');
+		it('should return unconverted filename if there are no ?,#', function () {
+			utils.getFilenameFromUrl('index.html').should.equalFileSystemPath('index.html');
 		});
 	});
 

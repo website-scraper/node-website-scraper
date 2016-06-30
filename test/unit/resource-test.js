@@ -102,7 +102,7 @@ describe('Resource', function() {
 			var parent = new Resource('http://example.com');
 			var child = parent.createChild('http://google.com', 'google.html');
 			child.getUrl().should.be.eql('http://google.com');
-			child.getFilename().should.be.eql('google.html');
+			child.getFilename().should.equalFileSystemPath('google.html');
 		});
 
 		it('should set parent', function() {

@@ -17,7 +17,7 @@ describe('Scraper initialization', function () {
 				directory: ''
 			});
 			var expected1 = currentProcessDir;
-			s1.options.directory.should.eql(expected1);
+			s1.options.directory.should.equalFileSystemPath(expected1);
 		});
 
 		it('should use absolute path for directory if directory contains relative path', function () {
@@ -26,7 +26,7 @@ describe('Scraper initialization', function () {
 				directory: 'my/relative/path'
 			});
 			var expected2 = path.join(currentProcessDir, 'my/relative/path');
-			s2.options.directory.should.eql(expected2);
+			s2.options.directory.should.equalFileSystemPath(expected2);
 		});
 
 		it('should use absolute path for directory if directory contains absolute path', function () {
@@ -35,7 +35,7 @@ describe('Scraper initialization', function () {
 				directory: '/my/absolute/path'
 			});
 			var expected3 = '/my/absolute/path';
-			s3.options.directory.should.eql(expected3);
+			s3.options.directory.should.equalFileSystemPath(expected3);
 		});
 	});
 
@@ -55,7 +55,7 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.options.defaultFilename.should.eql(defaultsMock.defaultFilename);
+			s.options.defaultFilename.should.equalFileSystemPath(defaultsMock.defaultFilename);
 		});
 
 		it('should use defaultFilename sources if defaultFilename were passed', function () {
@@ -65,7 +65,7 @@ describe('Scraper initialization', function () {
 				defaultFilename: 'myNewFileName.txt'
 			});
 
-			s.options.defaultFilename.should.eql('myNewFileName.txt');
+			s.options.defaultFilename.should.equalFileSystemPath('myNewFileName.txt');
 		});
 	});
 
