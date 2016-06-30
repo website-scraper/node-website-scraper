@@ -2,6 +2,7 @@
 .DS_Store
 .gitignore
 .travis.yml
+appveyor.yml
 .eslintrc*
 coverage
 test
