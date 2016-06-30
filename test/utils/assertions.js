@@ -2,7 +2,7 @@ var _ = require('lodash');
 var path = require('path');
 var should = require('should');
 should.Assertion.add('equalFileSystemPath', function(value, description){
-    value = value.replace(/\//g, path.sep);
+    value = path.normalize(value);
     if(process.platform == 'win32' && _.startsWith(value, path.sep)){
         value = __dirname.split(path.sep)[0] + value;
     }
