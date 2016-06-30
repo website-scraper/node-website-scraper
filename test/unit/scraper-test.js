@@ -126,7 +126,7 @@ describe('Scraper', function () {
 			});
 
 			s.prepare().then(function() {
-				s.originalResources[0].getFilename().should.be.eql('first.html');
+				s.originalResources[0].getFilename().should.equalFileSystemPath('first.html');
 				done();
 			}).catch(done);
 		});
@@ -139,7 +139,7 @@ describe('Scraper', function () {
 			});
 
 			s.prepare().then(function() {
-				s.originalResources[0].getFilename().should.be.eql('default.html');
+				s.originalResources[0].getFilename().should.equalFileSystemPath('default.html');
 				done();
 			}).catch(done);
 		});
