@@ -43,4 +43,11 @@ describe('byStructureFilenameGenerator', function() {
 		var r = new Resource('http://example.com/some/path/../../../../images/a.png');
 		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('images/a.png');
 	});
+
+	it('should not replace thrice dot in filenames', function() {
+		// if it replaces them we receive 'some/path/../../../../etc/passwd'
+		// path.resolve('some/path/../../../../etc/passwd'); = '/etc/passwd' => which is not safe
+		var r = new Resource('http://example.com/some/path/.../.../.../.../etc/passwd');
+		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('some/path/.../.../.../.../etc/passwd');
+	});
 });
