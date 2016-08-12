@@ -28,7 +28,7 @@ describe('Html handler', function () {
 
 	describe('#loadHtml(context, resource)', function() {
 
-		it('should remove base tag from text and update url for absolute href', function(done) {
+		it('should remove base tag from text and update url for absolute href', function() {
 			var html = ' \
 				<html lang="en"> \
 				<head> \
@@ -40,13 +40,12 @@ describe('Html handler', function () {
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				po.getUrl().should.be.eql('http://some-other-domain.com/src');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should remove base tag from text and update url for relative href', function(done) {
+		it('should remove base tag from text and update url for relative href', function() {
 			var html = ' \
 				<html lang="en"> \
 				<head> \
@@ -58,13 +57,12 @@ describe('Html handler', function () {
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				po.getUrl().should.be.eql('http://example.com/src');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not remove base tag if it doesn\'t have href attribute', function(done) {
+		it('should not remove base tag if it doesn\'t have href attribute', function() {
 			var html = ' \
 				<html lang="en"> \
 				<head> \
@@ -76,27 +74,25 @@ describe('Html handler', function () {
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				po.getUrl().should.be.eql('http://example.com');
 				po.getText().should.containEql('<base target="_blank">');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not call requestResource if no sources in html', function(done) {
+		it('should not call requestResource if no sources in html', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 			sinon.stub(scraper, 'loadResource').resolves();
 
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText('');
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				requestResourceStub.called.should.be.eql(false);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not call requestResource if source attr is empty', function(done) {
+		it('should not call requestResource if source attr is empty', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -110,13 +106,12 @@ describe('Html handler', function () {
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				requestResourceStub.called.should.be.eql(false);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should call requestResource once with correct params', function(done) {
+		it('should call requestResource once with correct params', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -130,14 +125,13 @@ describe('Html handler', function () {
 			var po = new Resource('http://example.com', 'index.html');
 			po.setText(html);
 
-			loadHtml(scraper, po).then(function() {
+			return loadHtml(scraper, po).then(function() {
 				requestResourceStub.calledOnce.should.be.eql(true);
 				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should call requestResource for each found source with correct params', function(done) {
+		it('should call requestResource for each found source with correct params', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -162,18 +156,17 @@ describe('Html handler', function () {
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
 			// order of loading is determined by order of sources in scraper options
-			loadHtml(scraper, parentResource).then(function() {
+			return loadHtml(scraper, parentResource).then(function() {
 				requestResourceStub.calledThrice.should.be.eql(true);
 				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
 				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.css');
 				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.js');
 
 				updateChildSpy.calledThrice.should.be.eql(true);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not replace the sources in text, for which requestResource returned null', function(done) {
+		it('should not replace the sources in text, for which requestResource returned null', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -208,12 +201,10 @@ describe('Html handler', function () {
 				text.should.containEql('local/c.js');
 
 				updateChildSpy.calledOnce.should.be.eql(true);
-
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should replace all sources in text with local files', function(done) {
+		it('should replace all sources in text with local files', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -244,11 +235,10 @@ describe('Html handler', function () {
 				text.should.containEql('local/a.jpg');
 				text.should.containEql('local/b.css');
 				text.should.containEql('local/c.js');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should keep hash in url for html resources', function (done) {
+		it('should keep hash in url for html resources', function () {
 			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -269,11 +259,10 @@ describe('Html handler', function () {
 			return loadHtml(scraper, po).then(function(){
 				var text = po.getText();
 				text.should.containEql('local/page1.html#hash');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should remove hash from url for not-html resources', function (done) {
+		it('should remove hash from url for not-html resources', function () {
 			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -295,11 +284,10 @@ describe('Html handler', function () {
 				var text = po.getText();
 				text.should.not.containEql('local/page1.html#hash');
 				text.should.containEql('local/page1.html');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not encode text to html entities', function (done) {
+		it('should not encode text to html entities', function () {
 			var html = '\
 				<html> \
 				<body> \
@@ -314,11 +302,10 @@ describe('Html handler', function () {
 			return loadHtml(scraper, po).then(function () {
 				var text = po.getText();
 				text.should.containEql('Этот текст не должен быть преобразован в html entities');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should handle img tag with srcset attribute correctly', function (done) {
+		it('should handle img tag with srcset attribute correctly', function () {
 			sinon.stub(scraper, 'loadResource').resolves();
 
 			var image45Stub = new Resource('http://example.com/image45.jpg', 'local/image45.jpg');
@@ -353,12 +340,10 @@ describe('Html handler', function () {
 				text.should.not.containEql('http://example.com/image150.jpg');
 				text.should.containEql('src="local/image45.jpg"');
 				text.should.containEql('srcset="local/image150.jpg 150w, local/image45.jpg 45w"');
-
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not replace the sources of img tags with srcset attribute, for which requestResource returned null', function (done) {
+		it('should not replace the sources of img tags with srcset attribute, for which requestResource returned null', function () {
 			sinon.stub(scraper, 'loadResource').resolves();
 			var image150Stub = new Resource('http://example.com/image150.jpg', 'local/image150.jpg');
 
@@ -391,12 +376,10 @@ describe('Html handler', function () {
 
 				text.should.not.containEql('http://example.com/image150.jpg');
 				text.should.containEql('srcset="local/image150.jpg 150w, http://example.com/image45.jpg 45w"');
-
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not prettifyUrls by default', function(done) {
+		it('should not prettifyUrls by default', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 			sinon.stub(scraper, 'loadResource').resolves();
 
@@ -414,11 +397,10 @@ describe('Html handler', function () {
 			return loadHtml(scraper, po).then(function () {
 				var text = po.getText();
 				text.should.containEql('a href="other-page/index.html"');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should prettifyUrls if specified', function(done) {
+		it('should prettifyUrls if specified', function() {
 			scraper = new Scraper(_.extend({
 				defaultFilename: 'index.html',
 				prettifyUrls: true
@@ -441,11 +423,8 @@ describe('Html handler', function () {
 
 			return loadHtml(scraper, po).then(function () {
 				var text = po.getText();
-
 				text.should.containEql('a href="other-page/"');
-
-				done();
-			}).catch(done);
+			});
 		});
 	});
 });
