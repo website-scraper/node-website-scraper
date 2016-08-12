@@ -20,32 +20,30 @@ describe('Css handler', function () {
 
 	describe('#loadCss(context, resource)', function() {
 
-		it('should not call requestResource if no sources in css', function(done) {
+		it('should not call requestResource if no sources in css', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('');
 
-			loadCss(scraper, po).then(function() {
+			return loadCss(scraper, po).then(function() {
 				requestResourceStub.called.should.be.eql(false);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should call requestResource once with correct params', function(done) {
+		it('should call requestResource once with correct params', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 
 			var po = new Resource('http://example.com', '1.css');
 			po.setText('div {background: url(test.png)}');
 
-			loadCss(scraper, po).then(function() {
+			return loadCss(scraper, po).then(function() {
 				requestResourceStub.calledOnce.should.be.eql(true);
 				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should call requestResource for each found source with correct params', function(done) {
+		it('should call requestResource for each found source with correct params', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
 			var css = '\
 				.a {background: url(a.jpg)} \
@@ -56,16 +54,15 @@ describe('Css handler', function () {
 			var po = new Resource('http://example.com', '1.css');
 			po.setText(css);
 
-			loadCss(scraper, po).then(function() {
+			return loadCss(scraper, po).then(function() {
 				requestResourceStub.calledThrice.should.be.eql(true);
 				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
 				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.jpg');
 				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.jpg');
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should replace all sources in text with local files', function(done) {
+		it('should replace all sources in text with local files', function() {
 			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
 			loadStub.onSecondCall().resolves(new Resource('http://first.com/b.jpg', 'local/b.jpg'));
@@ -91,11 +88,10 @@ describe('Css handler', function () {
 				text.should.containEql('local/c.jpg');
 
 				updateChildSpy.calledThrice.should.be.eql(true);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should not replace the sources in text, for which requestResource returned null', function(done) {
+		it('should not replace the sources in text, for which requestResource returned null', function() {
 			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onFirstCall().resolves(null);
 			loadStub.onSecondCall().resolves(null);
@@ -122,12 +118,10 @@ describe('Css handler', function () {
 				text.should.containEql('local/c.jpg');
 
 				updateChildSpy.calledOnce.should.be.eql(true);
-				
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should replace all occurencies of the same sources in text with local files', function(done) {
+		it('should replace all occurencies of the same sources in text with local files', function() {
 			sinon.stub(scraper, 'requestResource').resolves(new Resource('http://example.com/img.jpg', 'local/img.jpg'));
 
 			var css = '\
@@ -146,11 +140,10 @@ describe('Css handler', function () {
 				text.should.not.containEql('http://example.com/img.jpg');
 				text.should.containEql('local/img.jpg');
 				numberOfLocalResourceMatches.should.be.eql(3);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should replace resource only if it completely equals to path (should not change partially matched names)', function(done) {
+		it('should replace resource only if it completely equals to path (should not change partially matched names)', function() {
 			// Next order of urls will be returned by css-url-parser
 			// 'style.css', 'mystyle.css', 'another-style.css', 'image.png', 'another-image.png', 'new-another-image.png'
 
@@ -192,9 +185,7 @@ describe('Css handler', function () {
 				text.should.containEql('.b {background: url(local/image.png)}');
 				text.should.containEql('.c {background: url("local/another-image.png")}');
 				text.should.containEql('.d {background: url(\'local/new-another-image.png\')}');
-
-				done();
-			}).catch(done);
+			});
 		});
 	});
 });
