@@ -1,7 +1,7 @@
 require('should');
 var byTypeFilenameGenerator = require('../../../lib/filename-generators/by-type');
 var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators/by-site-structure');
-var getFileNameGenerator = require('../../../lib/filename-generators/filename-generator-getter');
+var getFileNameGenerator = require('../../../lib/filename-generators');
 
 describe('FilenameGeneratorGetter', function () {
 	it('should return the matching fileNameGenerator if the name of a fileGenerator is passed', function(){
