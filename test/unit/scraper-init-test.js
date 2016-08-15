@@ -1,44 +1,14 @@
 var should = require('should');
 var proxyquire = require('proxyquire');
+var sinon = require('sinon');
 var path = require('path');
 var Scraper = require('../../lib/scraper');
+var Resource = require('../../lib/resource');
 
 var testDirname = __dirname + '/.scraper-init-test';
 var urls = [ 'http://example.com' ];
 
 describe('Scraper initialization', function () {
-
-	describe('directory', function() {
-		var currentProcessDir = process.cwd();
-
-		it('should use absolute path for directory if directory is empty string', function () {
-			var s1 = new Scraper({
-				urls: urls,
-				directory: ''
-			});
-			var expected1 = currentProcessDir;
-			s1.options.directory.should.equalFileSystemPath(expected1);
-		});
-
-		it('should use absolute path for directory if directory contains relative path', function () {
-			var s2 = new Scraper({
-				urls: urls,
-				directory: 'my/relative/path'
-			});
-			var expected2 = path.join(currentProcessDir, 'my/relative/path');
-			s2.options.directory.should.equalFileSystemPath(expected2);
-		});
-
-		it('should use absolute path for directory if directory contains absolute path', function () {
-			var s3 = new Scraper({
-				urls: urls,
-				directory: '/my/absolute/path'
-			});
-			var expected3 = '/my/absolute/path';
-			s3.options.directory.should.equalFileSystemPath(expected3);
-		});
-	});
-
 	describe('defaultFilename', function() {
 		var defaultsMock, Scraper;
 
@@ -97,9 +67,24 @@ describe('Scraper initialization', function () {
 
 			s.options.sources.should.eql([ { selector: 'img', attr: 'src' } ]);
 		});
+
+		it('should extend sources if recursive flag is set', function() {
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				sources: [
+					{ selector: 'img', attr: 'src' }
+				],
+				recursive: true
+			});
+
+			s.options.sources.should.have.length(2);
+			s.options.sources.should.containEql({ selector: 'img', attr: 'src' });
+			s.options.sources.should.containEql({ selector: 'a', attr: 'href' });
+		});
 	});
 
-	describe('subdirectories', function() {
+	describe('subdirectories', function () {
 		var defaultsMock, Scraper;
 
 		before(function() {
@@ -191,6 +176,116 @@ describe('Scraper initialization', function () {
 				a: 555,
 				b: 2
 			});
+		});
+	});
+
+	describe('makeRequest', function () {
+		it('should bind request object to makeRequest method', function() {
+			var requestStub = sinon.stub().resolves();
+			var Scraper = proxyquire('../../lib/scraper', {
+				'./request': requestStub,
+				'./config/defaults': {
+					request: {}
+				}
+			});
+
+			var reqOpts = {
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
+				}
+			};
+
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				request: reqOpts
+			});
+
+			return s.makeRequest('http://example.com').then(function() {
+				requestStub.calledOnce.should.be.eql(true);
+				requestStub.calledWith(reqOpts).should.be.eql(true);
+			});
+		});
+	});
+
+	describe('absoluteDirectoryPath', function () {
+
+		it('should create absolute path if directory is relative path', function () {
+			var s = new Scraper({
+				urls: urls,
+				directory: 'my/relative/path'
+			});
+
+			var expected = path.join(process.cwd(), 'my/relative/path');
+			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+		});
+
+		it('should use directory if directory is absolute path', function () {
+			var s = new Scraper({
+				urls: urls,
+				directory: '/my/absolute/path'
+			});
+
+			var expected = '/my/absolute/path';
+			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+		});
+
+		it('should not define absoluteDirectoryPath if no directory were passed', function () {
+			var s = new Scraper({
+				urls: urls
+			});
+
+			should(s.options.absoluteDirectoryPath).eql(undefined);
+		});
+	});
+
+	describe('urls', function () {
+		it('should create an Array of urls if string was passed', function() {
+			var s = new Scraper({
+				urls: 'http://not-array-url.com',
+				directory: testDirname
+			});
+
+			s.options.urls.should.be.an.instanceOf(Array).and.have.length(1);
+			s.options.urls[0].should.be.eql('http://not-array-url.com');
+		});
+	});
+
+	describe('originalResources', function () {
+		it('should create Resource object for each url', function() {
+			var s = new Scraper({
+				urls: [
+					'http://first-url.com',
+					{ url: 'http://second-url.com' },
+					{ url: 'http://third-url.com' }
+				],
+				directory: testDirname
+			});
+
+			s.originalResources.should.be.an.instanceOf(Array).and.have.length(3);
+			s.originalResources[0].should.be.an.instanceOf(Resource);
+			s.originalResources[0].url.should.be.eql('http://first-url.com');
+			s.originalResources[1].should.be.an.instanceOf(Resource);
+			s.originalResources[1].url.should.be.eql('http://second-url.com');
+			s.originalResources[2].should.be.an.instanceOf(Resource);
+			s.originalResources[2].url.should.be.eql('http://third-url.com');
+		});
+
+		it('should use urls filename', function() {
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com', filename: 'first.html' },
+				directory: testDirname
+			});
+			s.originalResources[0].getFilename().should.equalFileSystemPath('first.html');
+		});
+
+		it('should use default filename if no url filename was provided', function() {
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				defaultFilename: 'default.html',
+				directory: testDirname
+			});
+			s.originalResources[0].getFilename().should.equalFileSystemPath('default.html');
 		});
 	});
 });
