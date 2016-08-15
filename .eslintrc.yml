@@ -27,3 +27,5 @@ rules:
   func-names: "warn"
   space-before-function-paren: "warn"
   no-spaced-func: "warn"
+  keyword-spacing: "error"
+  space-before-blocks: "error"
