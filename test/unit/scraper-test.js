@@ -225,7 +225,7 @@ describe('Scraper', function () {
 			});
 			var a = new Resource('http://first-resource.com');
 			var loaded = s.getLoadedResourcePromise(a.getUrl());
-			should(loaded).be.empty();
+			should(loaded).be.eql(undefined);
 		});
 
 		it('should find loaded resource with same url', function() {
