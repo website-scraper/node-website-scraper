@@ -322,6 +322,70 @@ describe('Scraper', function () {
 				should.equal(lr, null);
 			});
 		});
+
+		describe('ignoring mid-chain errors', function() {
+			it('should ignore error if ignoreErrors option is true and request failed', function() {
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					ignoreErrors: true
+				});
+				s.requestResource = sinon.stub().rejects(new Error('Request failed!'));
+
+				var r = new Resource('http://example.com/a.png');
+				return s.loadResource(r).then(function() {
+					should(true).be.eql(true);
+				});
+			});
+
+			it('should ignore error if ignoreErrors option is true and file handler failed', function() {
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					ignoreErrors: true
+				});
+				var r = new Resource('http://example.com/', 'index.html');
+
+				// Stub handler function to return rejected promise
+				s.getResourceHandler = sinon.stub().returns(sinon.stub().rejects(new Error('Handler failed!')));
+				s.requestResource = sinon.stub().resolves(r);
+
+				return s.loadResource(r).then(function() {
+					should(true).be.eql(true);
+				});
+			});
+
+			it('should fail if ignoreErrors option is false and request failed', function() {
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					ignoreErrors: false
+				});
+				s.requestResource = sinon.stub().rejects(new Error('Request failed!'));
+
+				var r = new Resource('http://example.com/a.png');
+				return s.loadResource(r).catch(function() {
+					should(true).be.eql(true);
+				});
+			});
+
+			it('should fail if ignoreErrors option is false and file handler failed', function() {
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					ignoreErrors: false
+				});
+				var r = new Resource('http://example.com/', 'index.html');
+
+				// Stub handler function to return rejected promise
+				s.getResourceHandler = sinon.stub().returns(sinon.stub().rejects(new Error('Handler failed!')));
+				s.requestResource = sinon.stub().resolves(r);
+
+				return s.loadResource(r).catch(function() {
+					should(true).be.eql(true);
+				});
+			});
+		});
 	});
 
 	describe('#getResourceHandler', function() {
