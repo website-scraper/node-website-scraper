@@ -16,6 +16,7 @@ describe('Css handler', function () {
 
 	beforeEach(function() {
 		scraper = new Scraper(defaultScraperOpts);
+		sinon.stub(scraper, 'loadResource').resolves();
 	});
 
 	describe('#loadCss(context, resource)', function() {
