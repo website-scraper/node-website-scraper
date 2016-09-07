@@ -29,3 +29,4 @@ rules:
   no-spaced-func: "warn"
   keyword-spacing: "error"
   space-before-blocks: "error"
+  no-console: "error"
