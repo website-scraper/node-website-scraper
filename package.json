@@ -33,7 +33,7 @@
   "homepage": "https://github.com/s0ph1e/node-website-scraper",
   "dependencies": {
     "bluebird": "^3.0.1",
-    "cheerio": "0.20.0",
+    "cheerio": "0.22.0",
     "css-url-parser": "^1.0.0",
     "debug": "^2.2.0",
     "fs-extra": "^0.30.0",
