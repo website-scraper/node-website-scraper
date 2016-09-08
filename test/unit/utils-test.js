@@ -61,6 +61,23 @@ describe('Common utils', function () {
 		});
 	});
 
+	describe('#getFilepathFromUrl', function () {
+		it('should return empty sting if url has no pathname', function() {
+			utils.getFilepathFromUrl('http://example.com').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com/').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com?').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com?abc=3').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com#').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com#test').should.be.empty();
+		});
+		it('should return path if url has pathname', function() {
+			utils.getFilepathFromUrl('http://example.com/some/path').should.equalFileSystemPath('some/path');
+		});
+		it('should return path including filename if url has pathname', function() {
+			utils.getFilepathFromUrl('http://example.com/some/path/file.js').should.equalFileSystemPath('some/path/file.js');
+		});
+	});
+
 	describe('#getHashFromUrl', function () {
 		it('should return hash from url', function () {
 			utils.getHashFromUrl('#').should.be.equal('#');

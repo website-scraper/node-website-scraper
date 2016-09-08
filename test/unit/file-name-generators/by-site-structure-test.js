@@ -33,10 +33,6 @@ describe('byStructureFilenameGenerator', function() {
 		var r3 = new Resource('http://example.com');
 		r3.isHtml = isHtmlMock;
 		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('index.html');
-
-		var r4 = new Resource('');
-		r4.isHtml = isHtmlMock;
-		bySiteStructureFilenameGenerator(r4, options).should.equalFileSystemPath('index.html');
 	});
 
 	it('should normalize to safe relative paths, without ..', function(){
