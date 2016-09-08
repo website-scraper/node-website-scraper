@@ -1,4 +1,5 @@
-require('should');
+var _ = require('lodash');
+var should = require('should');
 require('../../utils/assertions');
 var Resource = require('../../../lib/resource');
 var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators/by-site-structure');
@@ -45,5 +46,20 @@ describe('byStructureFilenameGenerator', function() {
 		// path.resolve('some/path/../../../../etc/passwd'); = '/etc/passwd' => which is not safe
 		var r = new Resource('http://example.com/some/path/.../.../.../.../etc/passwd');
 		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('some/path/.../.../.../.../etc/passwd');
+	});
+
+	it('should shorten filename', function() {
+		var resourceFilename = _.repeat('1', 1000) + '.png';
+		var r = new Resource('http://example.com/' + resourceFilename);
+		var filename = bySiteStructureFilenameGenerator(r, options);
+		should(filename.length).be.lessThan(255);
+	});
+
+	it('should shorten filename if url contains query', function() {
+		var resourceFilename = _.repeat('1', 1000) + '.png';
+		var r = new Resource('http://example.com/index.html?file=' + resourceFilename);
+		// TODO: mock html
+		var filename = bySiteStructureFilenameGenerator(r, options);
+		should(filename.length).be.lessThan(255);
 	});
 });

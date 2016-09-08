@@ -109,7 +109,7 @@ describe('byTypeFilenameGenerator', function() {
         should(filename.length).be.lessThan(255);
     });
 
-    it('should return different shorten filename if first shorten filename is occupied', function() {
+    it('should return different short filename if first short filename is occupied', function() {
         var resourceFilename = _.repeat('a', 1000) + '.png';
 
         var r1 = new Resource('http://first-example.com/a.png', resourceFilename);
