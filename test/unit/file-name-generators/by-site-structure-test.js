@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var should = require('should');
 require('../../utils/assertions');
+var sinon = require('sinon');
 var Resource = require('../../../lib/resource');
 var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators/by-site-structure');
 
@@ -19,9 +20,7 @@ describe('byStructureFilenameGenerator', function() {
 	});
 
 	it('should add the defaultFilename to the path, for html resources without extension', function(){
-		var isHtmlMock = function(){
-			return true;
-		};
+		var isHtmlMock = sinon.stub().returns(true);
 
 		var r1 = new Resource('http://example.com/some/path/');
 		r1.isHtml = isHtmlMock;
@@ -55,10 +54,10 @@ describe('byStructureFilenameGenerator', function() {
 		should(filename.length).be.lessThan(255);
 	});
 
-	it('should shorten filename if url contains query', function() {
-		var resourceFilename = _.repeat('1', 1000) + '.png';
-		var r = new Resource('http://example.com/index.html?file=' + resourceFilename);
-		// TODO: mock html
+	it('should shorten filename if resource is html without ext and url contains query', function() {
+		var resourceFilename = _.repeat('1', 1000);
+		var r = new Resource('http://example.com/path?a=' + resourceFilename);
+		r.isHtml = sinon.stub().returns(true);
 		var filename = bySiteStructureFilenameGenerator(r, options);
 		should(filename.length).be.lessThan(255);
 	});
