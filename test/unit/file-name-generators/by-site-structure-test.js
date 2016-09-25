@@ -54,11 +54,12 @@ describe('byStructureFilenameGenerator', function() {
 		should(filename.length).be.lessThan(255);
 	});
 
-	it('should shorten filename if resource is html without ext and url contains query', function() {
-		var resourceFilename = _.repeat('1', 1000);
-		var r = new Resource('http://example.com/path?a=' + resourceFilename);
+	it('should shorten filename if resource is html without ext and default name is too long', function() {
+		var defaultFilename = _.repeat('1', 1000) + '.html';
+		var r = new Resource('http://example.com/path');
 		r.isHtml = sinon.stub().returns(true);
-		var filename = bySiteStructureFilenameGenerator(r, options);
+		var filepath = bySiteStructureFilenameGenerator(r, { defaultFilename: defaultFilename });
+		var filename = _.last(filepath.split('/'));
 		should(filename.length).be.lessThan(255);
 	});
 });
