@@ -72,10 +72,10 @@ describe('Common utils', function () {
 			utils.getFilepathFromUrl('http://example.com#test').should.be.empty();
 		});
 		it('should return path if url has pathname', function() {
-			utils.getFilepathFromUrl('http://example.com/some/path').should.equalFileSystemPath('some/path');
+			utils.getFilepathFromUrl('http://example.com/some/path').should.equal('some/path');
 		});
 		it('should return path including filename if url has pathname', function() {
-			utils.getFilepathFromUrl('http://example.com/some/path/file.js').should.equalFileSystemPath('some/path/file.js');
+			utils.getFilepathFromUrl('http://example.com/some/path/file.js').should.equal('some/path/file.js');
 		});
 	});
 
