@@ -1,4 +1,5 @@
-require('should');
+var _ = require('lodash');
+var should = require('should');
 require('../../utils/assertions');
 var sinon = require('sinon');
 var Scraper = require('../../../lib/scraper');
@@ -100,4 +101,28 @@ describe('byTypeFilenameGenerator', function() {
         f4.should.not.equalFileSystemPath(r2.getFilename());
         f4.should.not.equalFileSystemPath(r3.getFilename());
     });
+
+    it('should shorten filename', function() {
+        var resourceFilename = _.repeat('a', 1000) + '.png';
+        var r = new Resource('http://example.com/a.png', resourceFilename);
+        var filename = byTypeFilenameGenerator(r, s.options, s.occupiedFileNames);
+        should(filename.length).be.lessThan(255);
+    });
+
+    it('should return different short filename if first short filename is occupied', function() {
+        var resourceFilename = _.repeat('a', 1000) + '.png';
+
+        var r1 = new Resource('http://first-example.com/a.png', resourceFilename);
+        var r2 = new Resource('http://second-example.com/a.png', resourceFilename);
+
+        var f1 = byTypeFilenameGenerator(r1, s.options, s.occupiedFileNames);
+        should(f1.length).be.lessThan(255);
+        s.addOccupiedFileName(f1);
+
+        var f2 = byTypeFilenameGenerator(r2, s.options, s.occupiedFileNames);
+        should(f2.length).be.lessThan(255);
+
+        should(f2).not.be.eql(f1);
+    });
+
 });

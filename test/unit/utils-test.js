@@ -1,4 +1,5 @@
-require('should');
+var should = require('should');
+var _ = require('lodash');
 var utils = require('../../lib/utils');
 var Resource = require('../../lib/resource');
 
@@ -61,6 +62,23 @@ describe('Common utils', function () {
 		});
 	});
 
+	describe('#getFilepathFromUrl', function () {
+		it('should return empty sting if url has no pathname', function() {
+			utils.getFilepathFromUrl('http://example.com').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com/').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com?').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com?abc=3').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com#').should.be.empty();
+			utils.getFilepathFromUrl('http://example.com#test').should.be.empty();
+		});
+		it('should return path if url has pathname', function() {
+			utils.getFilepathFromUrl('http://example.com/some/path').should.equal('some/path');
+		});
+		it('should return path including filename if url has pathname', function() {
+			utils.getFilepathFromUrl('http://example.com/some/path/file.js').should.equal('some/path/file.js');
+		});
+	});
+
 	describe('#getHashFromUrl', function () {
 		it('should return hash from url', function () {
 			utils.getHashFromUrl('#').should.be.equal('#');
@@ -81,6 +99,54 @@ describe('Common utils', function () {
 			utils.getRelativePath('css/1.css', 'img/1.png').should.be.equal('../img/1.png');
 			utils.getRelativePath('index.html', 'img/1.png').should.be.equal('img/1.png');
 			utils.getRelativePath('css/1.css', 'css/2.css').should.be.equal('2.css');
+		});
+	});
+
+	describe('#shortenFilename', function() {
+		it('should leave file with length < 255 as is', function() {
+			var f1 = _.repeat('a', 25);
+			should(f1.length).be.eql(25);
+			should(utils.shortenFilename(f1)).be.eql(f1);
+
+			var f2 = _.repeat('a', 25) + '.txt';
+			should(f2.length).be.eql(29);
+			should(utils.shortenFilename(f2)).be.eql(f2);
+		});
+
+		it('should shorten file with length = 255', function() {
+			var f1 = _.repeat('a', 255);
+			should(f1.length).be.eql(255);
+			should(utils.shortenFilename(f1).length).be.lessThan(255);
+		});
+
+		it('should shorten file with length > 255', function() {
+			var f1 = _.repeat('a', 1255);
+			should(f1.length).be.eql(1255);
+			should(utils.shortenFilename(f1).length).be.lessThan(255);
+		});
+
+		it('should shorten file with length = 255 and keep extension', function() {
+			var f1 = _.repeat('a', 251) + '.txt';
+			should(f1.length).be.eql(255);
+			should(utils.shortenFilename(f1).length).be.lessThan(255);
+			should(utils.shortenFilename(f1).split('.')[1]).be.eql('txt');
+		});
+
+		it('should shorten file with length > 255 and keep extension', function() {
+			var f1 = _.repeat('a', 1251) + '.txt';
+			should(f1.length).be.eql(1255);
+			should(utils.shortenFilename(f1).length).be.lessThan(255);
+			should(utils.shortenFilename(f1).split('.')[1]).be.eql('txt');
+		});
+
+		it('should shorten file with length > 255 to have basename length 20 chars', function() {
+			var f1 = _.repeat('a', 500);
+			should(f1.length).be.eql(500);
+			should(utils.shortenFilename(f1).split('.')[0].length).be.eql(20);
+
+			var f2 = _.repeat('a', 500) + '.txt';
+			should(f2.length).be.eql(504);
+			should(utils.shortenFilename(f2).split('.')[0].length).be.eql(20);
 		});
 	});
 });

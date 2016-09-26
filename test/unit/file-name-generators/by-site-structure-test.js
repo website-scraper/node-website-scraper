@@ -1,5 +1,7 @@
-require('should');
+var _ = require('lodash');
+var should = require('should');
 require('../../utils/assertions');
+var sinon = require('sinon');
 var Resource = require('../../../lib/resource');
 var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators/by-site-structure');
 
@@ -18,9 +20,7 @@ describe('byStructureFilenameGenerator', function() {
 	});
 
 	it('should add the defaultFilename to the path, for html resources without extension', function(){
-		var isHtmlMock = function(){
-			return true;
-		};
+		var isHtmlMock = sinon.stub().returns(true);
 
 		var r1 = new Resource('http://example.com/some/path/');
 		r1.isHtml = isHtmlMock;
@@ -33,10 +33,6 @@ describe('byStructureFilenameGenerator', function() {
 		var r3 = new Resource('http://example.com');
 		r3.isHtml = isHtmlMock;
 		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('index.html');
-
-		var r4 = new Resource('');
-		r4.isHtml = isHtmlMock;
-		bySiteStructureFilenameGenerator(r4, options).should.equalFileSystemPath('index.html');
 	});
 
 	it('should normalize to safe relative paths, without ..', function(){
@@ -49,5 +45,21 @@ describe('byStructureFilenameGenerator', function() {
 		// path.resolve('some/path/../../../../etc/passwd'); = '/etc/passwd' => which is not safe
 		var r = new Resource('http://example.com/some/path/.../.../.../.../etc/passwd');
 		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('some/path/.../.../.../.../etc/passwd');
+	});
+
+	it('should shorten filename', function() {
+		var resourceFilename = _.repeat('1', 1000) + '.png';
+		var r = new Resource('http://example.com/' + resourceFilename);
+		var filename = bySiteStructureFilenameGenerator(r, options);
+		should(filename.length).be.lessThan(255);
+	});
+
+	it('should shorten filename if resource is html without ext and default name is too long', function() {
+		var defaultFilename = _.repeat('1', 1000) + '.html';
+		var r = new Resource('http://example.com/path');
+		r.isHtml = sinon.stub().returns(true);
+		var filepath = bySiteStructureFilenameGenerator(r, { defaultFilename: defaultFilename });
+		var filename = _.last(filepath.split('/'));
+		should(filename.length).be.lessThan(255);
 	});
 });
