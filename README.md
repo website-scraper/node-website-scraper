@@ -172,3 +172,12 @@ scraper.scrape({
   directory: '/path/to/save'
 }).then(console.log).catch(console.log);
 ```
+
+## Log and debug
+This module uses [debug](https://github.com/visionmedia/debug) to log events. To enable logs you should use environment variable `DEBUG`.
+Next command will log everything from website-scraper
+```bash
+export DEBUG=website-scraper*; node app.js
+```
+
+Module has different loggers for levels: `website-scraper:error`, `website-scraper:warn`, `website-scraper:info`, `website-scraper:debug`, `website-scraper:log`. Please read [debug](https://github.com/visionmedia/debug) documentation to find how to include/exclude specific loggers.
