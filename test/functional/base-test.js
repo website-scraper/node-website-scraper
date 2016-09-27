@@ -62,7 +62,7 @@ describe('Functional base', function() {
 		nock('http://example.com/').get('/files/index-image-2.png').reply(200, 'OK');
 
 		// mocks for blog.html
-		nock('http://example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
+		nock('http://blog.example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
 
 		scraper.scrape(options).then(function(result) {
 			// should return right result

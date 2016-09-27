@@ -8,6 +8,7 @@ var path = require('path');
 var _ = require('lodash');
 var Scraper = require('../../lib/scraper');
 var Resource = require('../../lib/resource');
+var Promise = require('bluebird');
 
 var testDirname = __dirname + '/.scraper-test';
 var urls = [ 'http://example.com' ];
@@ -247,143 +248,144 @@ describe('Scraper', function () {
 	});
 
 	describe('#loadResource', function() {
-		it('should load resource', function() {
-			nock('http://example.com').get('/a.png').reply(200, 'OK');
-
+		it('should save resource to FS', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
+			s.getResourceHandler = sinon.stub().returns(_.noop);
+			sinon.spy(s, 'addLoadedResourcePromise');
 
-			var r = new Resource('http://example.com/a.png');
-			return s.loadResource(r).then(function(lr) {
-				lr.should.be.eql(r);
-				lr.getUrl().should.be.eql('http://example.com/a.png');
-				lr.getFilename().should.be.not.empty();
-				lr.getText().should.be.eql('OK');
+			var r = new Resource('http://example.com/a.png', 'a.png');
+			r.setText('some text');
 
-				var text = fs.readFileSync(path.join(testDirname, lr.getFilename())).toString();
-				text.should.be.eql(lr.getText());
+			return s.loadResource(r).then(function() {
+				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
+				text.should.be.eql(r.getText());
+				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
 			});
 		});
 
-		it('should not load the same resource twice (should return already loaded)', function() {
-			nock('http://example.com').get('/a.png').reply(200, 'OK');
-
+		it('should not save the same resource twice (should skip already loaded)', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
+			s.getResourceHandler = sinon.stub().returns(_.noop);
 
-			var r1 = new Resource('http://example.com/a.png');
-			var r2 = new Resource('http://example.com/a.png');
-			return s.loadResource(r1).then(function() {
-				return s.loadResource(r2).then(function(lr) {
-					lr.should.be.equal(r1);
-					lr.should.not.be.equal(r2);
+			sinon.stub(s, 'getLoadedResourcePromise')
+				.withArgs('http://example.com/a.png')
+				.onFirstCall().returns()
+				.onSecondCall().returns(Promise.resolve());
+
+			sinon.spy(s, 'addLoadedResourcePromise');
+
+			var r = new Resource('http://example.com/a.png', 'a.png');
+
+			return s.loadResource(r).then(function() {
+				s.getLoadedResourcePromise.calledOnce.should.be.eql(true);
+				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
+				return s.loadResource(r).then(function() {
+					s.getLoadedResourcePromise.calledTwice.should.be.eql(true);
+					s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
 				});
 			});
 		});
 
-		it('should load the resource if the urlFilter returns true', function(){
-			nock('http://example.com').get('/a.png').reply(200, 'OK');
+		it('should call handleError on error', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			var dummyError = new Error('resource handler error');
+			var failedResourceHandlerStub = sinon.stub().rejects(dummyError);
+			sinon.stub(s, 'getResourceHandler').returns(failedResourceHandlerStub);
 
+			sinon.stub(s, 'handleError').resolves();
+
+			var r = new Resource('http://example.com/a.png', 'a.png');
+			r.setText('some text');
+
+			return s.loadResource(r).finally(function() {
+				s.handleError.calledOnce.should.be.eql(true);
+				s.handleError.calledWith(dummyError).should.be.eql(true);
+			});
+		});
+	});
+
+	describe('#requestResource', function() {
+
+		describe('url filtering', function() {
+			it('should request the resource if the urlFilter returns true', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					urlFilter: function() { return true; }
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should return promise resolved with null if the urlFilter returns false', function(){
+				var s = new Scraper({
+					urls: ['http://google.com'],
+					directory: testDirname,
+					urlFilter: function(){ return false; }
+				});
+
+				var r = new Resource('http://google.com/a.png');
+				return s.requestResource(r).then(function(rr) {
+					should.equal(rr, null);
+				});
+			});
+		});
+
+		it('should call handleError on error', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			nock('http://example.com').get('/a.png').replyWithError('err');
+			sinon.stub(s, 'handleError').resolves();
+
+			var r = new Resource('http://example.com/a.png');
+
+			return s.requestResource(r).finally(function() {
+				s.handleError.calledOnce.should.be.eql(true);
+			});
+		});
+	});
+
+	describe('#handleError', function() {
+		it('should ignore error and return resolved promise if ignoreErrors option is true', function() {
 			var s = new Scraper({
 				urls: ['http://example.com'],
 				directory: testDirname,
-				urlFilter: function(){
-					return true;
-				}
+				ignoreErrors: true
 			});
-
-			var r = new Resource('http://example.com/a.png');
-			return s.loadResource(r).then(function(lr) {
-				lr.should.be.eql(r);
-				lr.getUrl().should.be.eql('http://example.com/a.png');
-				lr.getFilename().should.be.not.empty();
-				lr.getText().should.be.eql('OK');
-
-				var text = fs.readFileSync(path.join(testDirname, lr.getFilename())).toString();
-				text.should.be.eql(lr.getText());
+			return s.handleError(new Error('Request failed!')).then(function() {
+				should(true).be.eql(true);
 			});
 		});
 
-		it('should return promise resolved with null if the urlFilter returns false', function(){
+		it('should return rejected promise if ignoreErrors option is false', function() {
 			var s = new Scraper({
-				urls: ['http://google.com'],
+				urls: ['http://example.com'],
 				directory: testDirname,
-				urlFilter: function(){
-					return false;
-				}
+				ignoreErrors: false
 			});
-
-			var r = new Resource('http://google.com/a.png');
-			return s.loadResource(r).then(function(lr) {
-				should.equal(lr, null);
-			});
-		});
-
-		describe('ignoring mid-chain errors', function() {
-			it('should ignore error if ignoreErrors option is true and request failed', function() {
-				var s = new Scraper({
-					urls: ['http://example.com'],
-					directory: testDirname,
-					ignoreErrors: true
-				});
-				s.requestResource = sinon.stub().rejects(new Error('Request failed!'));
-
-				var r = new Resource('http://example.com/a.png');
-				return s.loadResource(r).then(function() {
-					should(true).be.eql(true);
-				});
-			});
-
-			it('should ignore error if ignoreErrors option is true and file handler failed', function() {
-				var s = new Scraper({
-					urls: ['http://example.com'],
-					directory: testDirname,
-					ignoreErrors: true
-				});
-				var r = new Resource('http://example.com/', 'index.html');
-
-				// Stub handler function to return rejected promise
-				s.getResourceHandler = sinon.stub().returns(sinon.stub().rejects(new Error('Handler failed!')));
-				s.requestResource = sinon.stub().resolves(r);
-
-				return s.loadResource(r).then(function() {
-					should(true).be.eql(true);
-				});
-			});
-
-			it('should fail if ignoreErrors option is false and request failed', function() {
-				var s = new Scraper({
-					urls: ['http://example.com'],
-					directory: testDirname,
-					ignoreErrors: false
-				});
-				s.requestResource = sinon.stub().rejects(new Error('Request failed!'));
-
-				var r = new Resource('http://example.com/a.png');
-				return s.loadResource(r).catch(function() {
-					should(true).be.eql(true);
-				});
-			});
-
-			it('should fail if ignoreErrors option is false and file handler failed', function() {
-				var s = new Scraper({
-					urls: ['http://example.com'],
-					directory: testDirname,
-					ignoreErrors: false
-				});
-				var r = new Resource('http://example.com/', 'index.html');
-
-				// Stub handler function to return rejected promise
-				s.getResourceHandler = sinon.stub().returns(sinon.stub().rejects(new Error('Handler failed!')));
-				s.requestResource = sinon.stub().resolves(r);
-
-				return s.loadResource(r).catch(function() {
-					should(true).be.eql(true);
-				});
+			return s.handleError(new Error('Request failed!')).then(function() {
+				should(false).be.eql(true);
+			}).catch(function() {
+				should(true).be.eql(true);
 			});
 		});
 	});

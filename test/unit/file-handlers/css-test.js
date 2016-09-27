@@ -188,5 +188,25 @@ describe('Css handler', function () {
 				text.should.containEql('.d {background: url(\'local/new-another-image.png\')}');
 			});
 		});
+
+		it('should wait for all children promises fulfilled and then return parent resource', function() {
+			var loadStub = sinon.stub(scraper, 'requestResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/resource1', 'resource1')));
+			loadStub.onSecondCall().returns(Promise.resolve(null));
+			loadStub.onThirdCall().returns(Promise.reject(new Error('some error')));
+
+			var css = '\
+				.a {background: url("resource1")} \
+				.b {background: url("resource2")}\
+				.c {background: url("resource3")}\
+			';
+
+			var parentResource = new Resource('http://example.com/index.css', 'index.css');
+			parentResource.setText(css);
+
+			return loadCss(scraper, parentResource).then(function(resource) {
+				resource.should.be.eql(parentResource);
+			});
+		});
 	});
 });
