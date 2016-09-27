@@ -208,37 +208,6 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('absoluteDirectoryPath', function () {
-
-		it('should create absolute path if directory is relative path', function () {
-			var s = new Scraper({
-				urls: urls,
-				directory: 'my/relative/path'
-			});
-
-			var expected = path.join(process.cwd(), 'my/relative/path');
-			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
-		});
-
-		it('should use directory if directory is absolute path', function () {
-			var s = new Scraper({
-				urls: urls,
-				directory: '/my/absolute/path'
-			});
-
-			var expected = '/my/absolute/path';
-			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
-		});
-
-		it('should not define absoluteDirectoryPath if no directory were passed', function () {
-			var s = new Scraper({
-				urls: urls
-			});
-
-			should(s.options.absoluteDirectoryPath).eql(undefined);
-		});
-	});
-
 	describe('urls', function () {
 		it('should create an Array of urls if string was passed', function() {
 			var s = new Scraper({

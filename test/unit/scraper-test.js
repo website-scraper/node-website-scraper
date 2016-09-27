@@ -186,8 +186,6 @@ describe('Scraper', function () {
 			fs.existsSync(testDirname).should.be.eql(false);
 
 			return s.load().then(function() {
-				var resource = new Resource('http://some-resource.com');
-				s.addLoadedResource(resource);
 				fs.existsSync(testDirname).should.be.eql(true);
 				return s.errorCleanup(new Error('everything was broken!'));
 			}).then(function() {
