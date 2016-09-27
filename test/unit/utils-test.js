@@ -1,7 +1,7 @@
 var should = require('should');
 var _ = require('lodash');
 var utils = require('../../lib/utils');
-var Resource = require('../../lib/resource');
+var Promise = require('bluebird');
 
 describe('Common utils', function () {
 	describe('#isUrl(url)', function () {
@@ -147,6 +147,24 @@ describe('Common utils', function () {
 			var f2 = _.repeat('a', 500) + '.txt';
 			should(f2.length).be.eql(504);
 			should(utils.shortenFilename(f2).split('.')[0].length).be.eql(20);
+		});
+	});
+
+	describe('#waitAllFulfilled', function() {
+		it('should resolve when all promises are resolved', function() {
+			var p1 = Promise.resolve();
+			var p2 = Promise.resolve();
+			return utils.waitAllFulfilled([p1, p2]).then(function() {
+				should(true).be.eql(true);
+			});
+		});
+
+		it('should resolve when some promises are rejected', function() {
+			var p1 = Promise.resolve();
+			var p2 = Promise.reject();
+			return utils.waitAllFulfilled([p1, p2]).then(function() {
+				should(true).be.eql(true);
+			});
 		});
 	});
 });

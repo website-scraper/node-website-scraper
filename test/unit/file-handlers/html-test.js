@@ -415,5 +415,30 @@ describe('Html handler', function () {
 				text.should.containEql('a href="other-page/"');
 			});
 		});
+
+		it('should wait for all children promises fulfilled and then return parent resource', function() {
+			var loadStub = sinon.stub(scraper, 'requestResource');
+			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/resource1', 'resource1')));
+			loadStub.onSecondCall().returns(Promise.resolve(null));
+			loadStub.onThirdCall().returns(Promise.reject(new Error('some error')));
+
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body>\
+				<a href="resource1">1</a>\
+				<a href="resource2">2</a>\
+				<a href="resource3">3</a>\
+				</body> \
+				</html>\
+			';
+
+			var parentResource = new Resource('http://example.com/', 'index.html');
+			parentResource.setText(html);
+
+			return loadHtml(scraper, parentResource).then(function(resource) {
+				resource.should.be.eql(parentResource);
+			});
+		});
 	});
 });
