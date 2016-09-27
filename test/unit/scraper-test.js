@@ -291,6 +291,26 @@ describe('Scraper', function () {
 				});
 			});
 		});
+
+		it('should call handleError on error', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			var dummyError = new Error('resource handler error');
+			var failedResourceHandlerStub = sinon.stub().rejects(dummyError);
+			sinon.stub(s, 'getResourceHandler').returns(failedResourceHandlerStub);
+
+			sinon.stub(s, 'handleError').resolves();
+
+			var r = new Resource('http://example.com/a.png', 'a.png');
+			r.setText('some text');
+
+			return s.loadResource(r).finally(function() {
+				s.handleError.calledOnce.should.be.eql(true);
+				s.handleError.calledWith(dummyError).should.be.eql(true);
+			});
+		});
 	});
 
 	describe('#requestResource', function() {
@@ -328,6 +348,20 @@ describe('Scraper', function () {
 			});
 		});
 
+		it('should call handleError on error', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			nock('http://example.com').get('/a.png').replyWithError('err');
+			sinon.stub(s, 'handleError').resolves();
+
+			var r = new Resource('http://example.com/a.png');
+
+			return s.requestResource(r).finally(function() {
+				s.handleError.calledOnce.should.be.eql(true);
+			});
+		});
 	});
 
 	describe('#handleError', function() {
