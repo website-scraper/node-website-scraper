@@ -208,34 +208,23 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('absoluteDirectoryPath', function () {
-
-		it('should create absolute path if directory is relative path', function () {
-			var s = new Scraper({
-				urls: urls,
-				directory: 'my/relative/path'
+	describe('getResourceHandler', function () {
+		it('should bind options to getResourceHandler', function() {
+			var getHandlerStub = sinon.stub();
+			var Scraper = proxyquire('../../lib/scraper', {
+				'./file-handlers': getHandlerStub
 			});
 
-			var expected = path.join(process.cwd(), 'my/relative/path');
-			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
-		});
-
-		it('should use directory if directory is absolute path', function () {
 			var s = new Scraper({
-				urls: urls,
-				directory: '/my/absolute/path'
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100
 			});
+			var r = new Resource('http://first-url.com');
 
-			var expected = '/my/absolute/path';
-			s.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
-		});
-
-		it('should not define absoluteDirectoryPath if no directory were passed', function () {
-			var s = new Scraper({
-				urls: urls
-			});
-
-			should(s.options.absoluteDirectoryPath).eql(undefined);
+			s.getResourceHandler(r);
+			getHandlerStub.calledOnce.should.be.eql(true);
+			getHandlerStub.calledWith({maxDepth: 100}, r).should.be.eql(true);
 		});
 	});
 
