@@ -208,6 +208,26 @@ describe('Scraper initialization', function () {
 		});
 	});
 
+	describe('getResourceHandler', function () {
+		it('should bind options to getResourceHandler', function() {
+			var getHandlerStub = sinon.stub();
+			var Scraper = proxyquire('../../lib/scraper', {
+				'./file-handlers': getHandlerStub
+			});
+
+			var s = new Scraper({
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100
+			});
+			var r = new Resource('http://first-url.com');
+
+			s.getResourceHandler(r);
+			getHandlerStub.calledOnce.should.be.eql(true);
+			getHandlerStub.calledWith({maxDepth: 100}, r).should.be.eql(true);
+		});
+	});
+
 	describe('urls', function () {
 		it('should create an Array of urls if string was passed', function() {
 			var s = new Scraper({
