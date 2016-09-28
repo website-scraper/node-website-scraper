@@ -19,7 +19,7 @@ describe('Css handler', function () {
 		sinon.stub(scraper, 'loadResource').resolves();
 	});
 
-	describe('#loadCss(context, resource)', function() {
+	describe('#loadCss', function() {
 
 		it('should not call requestResource if no sources in css', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
@@ -74,7 +74,7 @@ describe('Css handler', function () {
 			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
 
 			return loadCss(scraper, parentResourceMock).then(function() {
-				scraper.loadResource.calledOnce.should.be.eql(true);
+				scraper.loadResource.called.should.be.eql(true);
 				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
 			});
 		});
