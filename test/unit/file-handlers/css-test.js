@@ -63,6 +63,22 @@ describe('Css handler', function () {
 			});
 		});
 
+		it('should call loadResource with resource returned by requestResource', function() {
+			var css = '\
+				.a {background: url(a.jpg)} \
+			';
+
+			var parentResourceMock = new Resource('http://example.com');
+			parentResourceMock.setText(css);
+			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.png');
+			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
+
+			return loadCss(scraper, parentResourceMock).then(function() {
+				scraper.loadResource.calledOnce.should.be.eql(true);
+				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
+			});
+		});
+
 		it('should replace all sources in text with local files', function() {
 			var loadStub = sinon.stub(scraper, 'requestResource');
 			loadStub.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
