@@ -68,13 +68,13 @@ describe('Css handler', function () {
 				.a {background: url(a.jpg)} \
 			';
 
-			var parentResourceMock = new Resource('http://example.com');
+			var parentResourceMock = new Resource('http://example.com', 'index.css');
 			parentResourceMock.setText(css);
 			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.png');
 			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
 
 			return loadCss(scraper, parentResourceMock).then(function() {
-				scraper.loadResource.called.should.be.eql(true);
+				scraper.loadResource.calledOnce.should.be.eql(true);
 				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
 			});
 		});
