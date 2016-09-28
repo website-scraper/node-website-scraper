@@ -19,7 +19,7 @@ describe('Css handler', function () {
 		sinon.stub(scraper, 'loadResource').resolves();
 	});
 
-	describe('#loadCss(context, resource)', function() {
+	describe('#loadCss', function() {
 
 		it('should not call requestResource if no sources in css', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
@@ -60,6 +60,22 @@ describe('Css handler', function () {
 				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
 				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.jpg');
 				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.jpg');
+			});
+		});
+
+		it('should call loadResource with resource returned by requestResource', function() {
+			var css = '\
+				.a {background: url(a.jpg)} \
+			';
+
+			var parentResourceMock = new Resource('http://example.com', 'index.css');
+			parentResourceMock.setText(css);
+			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.png');
+			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
+
+			return loadCss(scraper, parentResourceMock).then(function() {
+				scraper.loadResource.calledOnce.should.be.eql(true);
+				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
 			});
 		});
 

@@ -27,10 +27,11 @@ describe('Html handler', function () {
 		sinon.stub(scraper, 'loadResource').resolves();
 	});
 
-	describe('#loadHtml(context, resource)', function() {
+	describe('#loadHtml', function() {
 
-		it('should remove base tag from text and update url for absolute href', function() {
-			var html = ' \
+		describe('<base> tag', function () {
+			it('should remove base tag from text and update url for absolute href', function() {
+				var html = ' \
 				<html lang="en"> \
 				<head> \
 				<base href="http://some-other-domain.com/src">\
@@ -38,16 +39,16 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function() {
-				po.getUrl().should.be.eql('http://some-other-domain.com/src');
+				return loadHtml(scraper, po).then(function() {
+					po.getUrl().should.be.eql('http://some-other-domain.com/src');
+				});
 			});
-		});
 
-		it('should remove base tag from text and update url for relative href', function() {
-			var html = ' \
+			it('should remove base tag from text and update url for relative href', function() {
+				var html = ' \
 				<html lang="en"> \
 				<head> \
 				<base href="/src">\
@@ -55,16 +56,16 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function() {
-				po.getUrl().should.be.eql('http://example.com/src');
+				return loadHtml(scraper, po).then(function() {
+					po.getUrl().should.be.eql('http://example.com/src');
+				});
 			});
-		});
 
-		it('should not remove base tag if it doesn\'t have href attribute', function() {
-			var html = ' \
+			it('should not remove base tag if it doesn\'t have href attribute', function() {
+				var html = ' \
 				<html lang="en"> \
 				<head> \
 				<base target="_blank">\
@@ -72,14 +73,17 @@ describe('Html handler', function () {
 				<body></body> \
 				</html>\
 			';
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function() {
-				po.getUrl().should.be.eql('http://example.com');
-				po.getText().should.containEql('<base target="_blank">');
+				return loadHtml(scraper, po).then(function() {
+					po.getUrl().should.be.eql('http://example.com');
+					po.getText().should.containEql('<base target="_blank">');
+				});
 			});
+
 		});
+
 
 		it('should not call requestResource if no sources in html', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
@@ -163,6 +167,25 @@ describe('Html handler', function () {
 			});
 		});
 
+		it('should call loadResource with resource returned by requestResource', function() {
+			var html = ' \
+				<html lang="en"> \
+				<head></head> \
+				<body><img src="test.png"></body> \
+				</html>\
+			';
+
+			var parentResourceMock = new Resource('http://example.com', 'request.html');
+			parentResourceMock.setText(html);
+			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.jpg');
+			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
+
+			return loadHtml(scraper, parentResourceMock).then(function() {
+				scraper.loadResource.calledOnce.should.be.eql(true);
+				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
+			});
+		});
+
 		it('should not replace the sources in text, for which requestResource returned null', function() {
 			var requestResourceStub = sinon.stub(scraper, 'requestResource');
 
@@ -233,13 +256,14 @@ describe('Html handler', function () {
 			});
 		});
 
-		it('should keep hash in url for html resources', function () {
-			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+		describe('hash in urls', function () {
+			it('should keep hash in url for html resources', function () {
+				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 
-			sinon.stub(resourceStub, 'getType').returns('html');
-			sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
+				sinon.stub(resourceStub, 'getType').returns('html');
+				sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
 
-			var html = '\
+				var html = '\
 				<html> \
 				<body> \
 					<a href="http://example.com/page1.html#hash">link</a> \
@@ -247,22 +271,22 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function(){
-				var text = po.getText();
-				text.should.containEql('local/page1.html#hash');
+				return loadHtml(scraper, po).then(function(){
+					var text = po.getText();
+					text.should.containEql('local/page1.html#hash');
+				});
 			});
-		});
 
-		it('should remove hash from url for not-html resources', function () {
-			var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+			it('should remove hash from url for not-html resources', function () {
+				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 
-			sinon.stub(resourceStub, 'getType').returns('other');
-			sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
+				sinon.stub(resourceStub, 'getType').returns('other');
+				sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
 
-			var html = '\
+				var html = '\
 				<html> \
 				<body> \
 					<a href="http://example.com/page1.html#hash">link</a> \
@@ -270,13 +294,14 @@ describe('Html handler', function () {
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function(){
-				var text = po.getText();
-				text.should.not.containEql('local/page1.html#hash');
-				text.should.containEql('local/page1.html');
+				return loadHtml(scraper, po).then(function(){
+					var text = po.getText();
+					text.should.not.containEql('local/page1.html#hash');
+					text.should.containEql('local/page1.html');
+				});
 			});
 		});
 
@@ -370,49 +395,51 @@ describe('Html handler', function () {
 			});
 		});
 
-		it('should not prettifyUrls by default', function() {
-			var requestResourceStub = sinon.stub(scraper, 'requestResource');
-			requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+		describe('prettifyUrls', function () {
+			it('should not prettifyUrls by default', function() {
+				var requestResourceStub = sinon.stub(scraper, 'requestResource');
+				requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
 
-			var html = ' \
+				var html = ' \
 				<html lang="en"> \
 				<head></head> \
 				<body><a href="other-page/index.html">Other page</a></body> \
 				</html>\
 			';
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function () {
-				var text = po.getText();
-				text.should.containEql('a href="other-page/index.html"');
+				return loadHtml(scraper, po).then(function () {
+					var text = po.getText();
+					text.should.containEql('a href="other-page/index.html"');
+				});
 			});
-		});
 
-		it('should prettifyUrls if specified', function() {
-			scraper = new Scraper(_.extend({
-				defaultFilename: 'index.html',
-				prettifyUrls: true
-			}, defaultScraperOpts));
+			it('should prettifyUrls if specified', function() {
+				scraper = new Scraper(_.extend({
+					defaultFilename: 'index.html',
+					prettifyUrls: true
+				}, defaultScraperOpts));
 
-			var requestResourceStub = sinon.stub(scraper, 'requestResource');
-			sinon.stub(scraper, 'loadResource').resolves();
+				var requestResourceStub = sinon.stub(scraper, 'requestResource');
+				sinon.stub(scraper, 'loadResource').resolves();
 
-			requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
+				requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
 
-			var html = ' \
+				var html = ' \
 				<html lang="en"> \
 				<head></head> \
 				<body><a href="other-page/index.html">Other page</a></body> \
 				</html>\
 			';
 
-			var po = new Resource('http://example.com', 'index.html');
-			po.setText(html);
+				var po = new Resource('http://example.com', 'index.html');
+				po.setText(html);
 
-			return loadHtml(scraper, po).then(function () {
-				var text = po.getText();
-				text.should.containEql('a href="other-page/"');
+				return loadHtml(scraper, po).then(function () {
+					var text = po.getText();
+					text.should.containEql('a href="other-page/"');
+				});
 			});
 		});
 
