@@ -15,7 +15,7 @@ describe('E2E', function() {
 	});
 
 	after(function() {
-		console.log('Scraping completed. Go to ' + resultDirname + ' to check te results');
+		console.log('Scraping completed. Go to ' + resultDirname + ' to check results');
 	});
 
 	urls.forEach(function(url) {
