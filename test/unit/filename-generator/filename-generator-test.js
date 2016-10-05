@@ -1,6 +1,6 @@
 var should = require('should');
 var sinon = require('sinon');
-var FilenameGenerator = require('../../../lib/filename-generator/filename-generator');
+var FilenameGenerator = require('../../../lib/filename-generator/index');
 var byTypeFilenameGenerator = require('../../../lib/filename-generator/by-type');
 var bySiteStructureFilenameGenerator = require('../../../lib/filename-generator/by-site-structure');
 var Resource = require('../../../lib/resource');
