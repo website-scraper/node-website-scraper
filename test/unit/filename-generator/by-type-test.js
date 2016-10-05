@@ -4,7 +4,7 @@ require('../../utils/assertions');
 var sinon = require('sinon');
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
-var byTypeFilenameGenerator = require('../../../lib/filename-generators/by-type');
+var byTypeFilenameGenerator = require('../../../lib/filename-generator/by-type');
 
 describe('byTypeFilenameGenerator', function() {
 

@@ -3,7 +3,7 @@ var should = require('should');
 require('../../utils/assertions');
 var sinon = require('sinon');
 var Resource = require('../../../lib/resource');
-var bySiteStructureFilenameGenerator = require('../../../lib/filename-generators/by-site-structure');
+var bySiteStructureFilenameGenerator = require('../../../lib/filename-generator/by-site-structure');
 
 var options = { defaultFilename: 'index.html' };
 
