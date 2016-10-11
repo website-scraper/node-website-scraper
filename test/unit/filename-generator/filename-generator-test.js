@@ -7,11 +7,20 @@ var Resource = require('../../../lib/resource');
 
 describe('FilenameGenerator', function () {
 	describe('constructor', function() {
-		it('should clone options', function() {
-			var options = { a: 1, b: 2 };
+		it('should pick supported options', function() {
+			var options = {
+				a: 1,
+				b: 2,
+				filenameGenerator: 'a',
+				subdirectories: null,
+				defaultFilename: 'test'
+			};
 			var filenameGenerator = new FilenameGenerator(options);
-			filenameGenerator.options.should.deepEqual(options);
-			filenameGenerator.options.should.not.be.equal(options);
+			filenameGenerator.options.should.eql({
+				filenameGenerator: 'a',
+				subdirectories: null,
+				defaultFilename: 'test'
+			});
 		});
 
 		it('should initialize empty occupiedFilenames list', function () {

@@ -4,11 +4,10 @@ var FSAdapter = require('../../lib/fs-adaper');
 
 describe('FSAdapter', function () {
 	describe('constructor', function() {
-		it('should clone options', function() {
-			var options = { a: 1, b: 2 };
+		it('should pick supported options', function() {
+			var options = { a: 1, b: 2, directory: 'test' };
 			var fsAdapter = new FSAdapter(options);
-			fsAdapter.options.should.deepEqual(options);
-			fsAdapter.options.should.not.be.equal(options);
+			fsAdapter.options.should.eql({directory: 'test'});
 		});
 
 		it('should create absolute path if directory is relative path', function () {
@@ -16,20 +15,20 @@ describe('FSAdapter', function () {
 
 			var fsAdapter = new FSAdapter(options);
 			var expected = path.join(process.cwd(), 'my/relative/path');
-			fsAdapter.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+			fsAdapter.absoluteDirectoryPath.should.equalFileSystemPath(expected);
 		});
 
 		it('should use directory if directory is absolute path', function () {
 			var options = { directory: '/my/absolute/path' };
 			var fsAdapter = new FSAdapter(options);
 			var expected = '/my/absolute/path';
-			fsAdapter.options.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+			fsAdapter.absoluteDirectoryPath.should.equalFileSystemPath(expected);
 		});
 
 		it('should not define absoluteDirectoryPath if no directory were passed', function () {
 			var options = {};
 			var fsAdapter = new FSAdapter(options);
-			should(fsAdapter.options.absoluteDirectoryPath).eql(undefined);
+			should(fsAdapter.absoluteDirectoryPath).eql(undefined);
 		});
 	});
 });
