@@ -15,7 +15,7 @@ describe('ResourceHandlerGetter', function() {
 		cssLoadStub = sinon.stub().resolves();
 		htmlLoadStub = sinon.stub().resolves();
 
-		getResourceHandler = proxyquire('../../../lib/file-handlers', {
+		getResourceHandler = proxyquire('../../../lib/resource-handler', {
 			'lodash': {
 				'noop': noopStub
 			},
