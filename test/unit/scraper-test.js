@@ -291,13 +291,17 @@ describe('Scraper', function () {
 		});
 
 		it('should call handleError on error', function() {
+			var dummyError = new Error('resource handler error');
+			var failedResourceHandlerStub = sinon.stub().rejects(dummyError);
+			var ResourceHandlerStub = sinon.stub();
+			ResourceHandlerStub.handleResource = sinon.stub().returns(failedResourceHandlerStub);
+			var Scraper = proxyquire('../../lib/scraper', {
+				'./resource-handler': ResourceHandlerStub
+			});
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
-			var dummyError = new Error('resource handler error');
-			var failedResourceHandlerStub = sinon.stub().rejects(dummyError);
-			sinon.stub(s, 'getResourceHandler').returns(failedResourceHandlerStub);
 
 			sinon.stub(s, 'handleError').resolves();
 
