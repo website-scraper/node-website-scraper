@@ -208,23 +208,23 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('getResourceHandler', function () {
-		it('should bind options to getResourceHandler', function() {
-			var getHandlerStub = sinon.stub();
+	describe('resourceHandler', function () {
+		it('should create resourceHandler with correct params', function() {
+			var ResourceHandlerStub = sinon.stub();
 			var Scraper = proxyquire('../../lib/scraper', {
-				'./file-handlers': getHandlerStub
+				'./resource-handler': ResourceHandlerStub
 			});
 
-			var s = new Scraper({
+			var options = {
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
 				maxDepth: 100
-			});
-			var r = new Resource('http://first-url.com');
+			};
 
-			s.getResourceHandler(r);
-			getHandlerStub.calledOnce.should.be.eql(true);
-			getHandlerStub.calledWith({maxDepth: 100}, r).should.be.eql(true);
+			var s = new Scraper(options);
+			ResourceHandlerStub.calledOnce.should.be.eql(true);
+			ResourceHandlerStub.args[0][0].should.be.eql(s.options);
+			ResourceHandlerStub.args[0][1].should.be.eql(s);
 		});
 	});
 

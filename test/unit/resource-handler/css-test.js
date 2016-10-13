@@ -4,7 +4,7 @@ var sinon = require('sinon');
 require('sinon-as-promised')(Promise);
 var Scraper = require('../../../lib/scraper');
 var Resource = require('../../../lib/resource');
-var loadCss = require('../../../lib/file-handlers/css');
+var loadCss = require('../../../lib/resource-handler/css');
 
 var defaultScraperOpts = {
 	urls: [ 'http://example.com' ],
