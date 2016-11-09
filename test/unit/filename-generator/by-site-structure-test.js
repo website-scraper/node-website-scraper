@@ -35,6 +35,14 @@ describe('byStructureFilenameGenerator', function() {
 		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('index.html');
 	});
 
+	it('should add the defaultFilename to the path, for html resources with wrong extension', function(){
+		var isHtmlMock = sinon.stub().returns(true);
+
+		var r1 = new Resource('http://example.com/some/path/test.com');
+		r1.isHtml = isHtmlMock;
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('some/path/test.com/index.html');
+	});
+
 	it('should normalize to safe relative paths, without ..', function(){
 		var r = new Resource('http://example.com/some/path/../../../../images/a.png');
 		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('images/a.png');
