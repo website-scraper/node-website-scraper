@@ -77,6 +77,10 @@ describe('Common utils', function () {
 		it('should return path including filename if url has pathname', function() {
 			utils.getFilepathFromUrl('http://example.com/some/path/file.js').should.equal('some/path/file.js');
 		});
+		it('should not contain trailing slash', function() {
+			utils.getFilepathFromUrl('http://example.com/some/path/').should.equal('some/path');
+			utils.getFilepathFromUrl('http://example.com/some/path/file.css/').should.equal('some/path/file.css');
+		});
 	});
 
 	describe('#getHashFromUrl', function () {
