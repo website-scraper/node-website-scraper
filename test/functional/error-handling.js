@@ -32,17 +32,17 @@ describe('Functional error handling', function() {
 		};
 
 		var scraper = new Scraper(options);
-		scraper.fsAdapter.loadedResources = [ 1, 2, 3];
+		scraper.fsAdapter.loadedResources = [1, 2];
 		var loadToFsStub = sinon.stub(scraper.fsAdapter, 'saveResource').resolves();
-		loadToFsStub.onCall(3).rejects(new Error('FS FAILED!'));
+		loadToFsStub.onCall(2).rejects(new Error('FS FAILED!'));
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/page1.html').reply(200, 'ok');
-		nock('http://example.com/').get('/page2.html').reply(200, 'ok');
-		nock('http://example.com/').get('/page3.html').reply(200, 'ok');
-		nock('http://example.com/').get('/page4.html').reply(200, 'ok');
-		nock('http://example.com/').get('/page5.html').reply(200, 'ok');
-		nock('http://example.com/').get('/page6.html').reply(200, 'ok');
+		nock('http://example.com/').get('/page1.html').delay(100).reply(200, 'ok');
+		nock('http://example.com/').get('/page2.html').delay(200).reply(200, 'ok');
+		nock('http://example.com/').get('/page3.html').delay(300).reply(200, 'ok');
+		nock('http://example.com/').get('/page4.html').delay(400).reply(200, 'ok');
+		nock('http://example.com/').get('/page5.html').delay(500).reply(200, 'ok');
+		nock('http://example.com/').get('/page6.html').delay(600).reply(200, 'ok');
 
 		return scraper.scrape(options).then(function() {
 			should(true).be.eql(false);
