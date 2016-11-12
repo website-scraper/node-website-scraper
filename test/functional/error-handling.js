@@ -27,7 +27,7 @@ describe('Functional error handling', function() {
 			directory: testDirname,
 			subdirectories: null,
 			recursive: true,
-			maxDepth: 1,
+			maxDepth: 2,
 			sources: []
 		};
 
@@ -49,6 +49,7 @@ describe('Functional error handling', function() {
 		}).catch(function (err) {
 			fs.existsSync(testDirname).should.be.eql(false);
 			should(err.message).be.eql('FS FAILED!');
+			should(loadToFsStub.callCount).be.eql(3);
 		});
 	});
 });
