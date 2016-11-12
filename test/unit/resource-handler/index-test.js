@@ -60,12 +60,30 @@ describe('ResourceHandler', function() {
 			var resHandler = new ResourceHandler(options);
 
 			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
+			return handleResource({}, r).then(function() {
 				noopStub.called.should.be.eql(true);
 				cssLoadStub.called.should.be.eql(false);
 				htmlLoadStub.called.should.be.eql(false);
 			});
 		});
+
+		it('should return suitable handler if resource has depth = max', function() {
+			var options = { maxDepth: 2 };
+
+			var r = new Resource('http://example.com/');
+			sinon.stub(r, 'getType').returns('css');
+			sinon.stub(r, 'getDepth').returns(2);
+
+			var resHandler = new ResourceHandler(options);
+
+			var handleResource = resHandler.getResourceHandler(r);
+			return handleResource({}, r).then(function() {
+				noopStub.called.should.be.eql(false);
+				cssLoadStub.called.should.be.eql(true);
+				htmlLoadStub.called.should.be.eql(false);
+			});
+		});
+
 
 		it('should return css loader if file has css type', function() {
 			var options = { maxDepth: 2 };
@@ -77,7 +95,7 @@ describe('ResourceHandler', function() {
 			var resHandler = new ResourceHandler(options);
 
 			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
+			return handleResource({}, r).then(function() {
 				noopStub.called.should.be.eql(false);
 				cssLoadStub.called.should.be.eql(true);
 				htmlLoadStub.called.should.be.eql(false);
@@ -94,7 +112,7 @@ describe('ResourceHandler', function() {
 			var resHandler = new ResourceHandler(options);
 
 			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
+			return handleResource({}, r).then(function() {
 				noopStub.called.should.be.eql(false);
 				cssLoadStub.called.should.be.eql(true);
 				htmlLoadStub.called.should.be.eql(true);
