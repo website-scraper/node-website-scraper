@@ -360,6 +360,7 @@ describe('Scraper', function () {
 				});
 
 				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(212);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
 					rr.getUrl().should.be.eql('http://example.com/a.png');
