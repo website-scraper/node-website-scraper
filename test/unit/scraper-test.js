@@ -246,24 +246,6 @@ describe('Scraper', function () {
 	});
 
 	describe('#loadResource', function() {
-		it('should save resource to FS', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-			s.getResourceHandler = sinon.stub().returns(_.noop);
-			sinon.spy(s, 'addLoadedResourcePromise');
-
-			var r = new Resource('http://example.com/a.png', 'a.png');
-			r.setText('some text');
-
-			return s.loadResource(r).then(function() {
-				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
-				text.should.be.eql(r.getText());
-				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-			});
-		});
-
 		it('should not save the same resource twice (should skip already loaded)', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
@@ -280,13 +262,31 @@ describe('Scraper', function () {
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 
-			return s.loadResource(r).then(function() {
-				s.getLoadedResourcePromise.calledOnce.should.be.eql(true);
-				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-				return s.loadResource(r).then(function() {
-					s.getLoadedResourcePromise.calledTwice.should.be.eql(true);
-					s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-				});
+			s.loadResource(r);
+			s.getLoadedResourcePromise.calledOnce.should.be.eql(true);
+			s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
+
+			s.loadResource(r);
+			s.getLoadedResourcePromise.calledTwice.should.be.eql(true);
+			s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
+		});
+	});
+
+	describe('#saveResource', function() {
+		it('should save resource to FS', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			s.getResourceHandler = sinon.stub().returns(_.noop);
+			sinon.spy(s, 'addLoadedResourcePromise');
+
+			var r = new Resource('http://example.com/a.png', 'a.png');
+			r.setText('some text');
+
+			return s.saveResource(r).then(function() {
+				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
+				text.should.be.eql(r.getText());
 			});
 		});
 
@@ -308,7 +308,7 @@ describe('Scraper', function () {
 			var r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
-			return s.loadResource(r).finally(function() {
+			return s.saveResource(r).finally(function() {
 				s.handleError.calledOnce.should.be.eql(true);
 				s.handleError.calledWith(dummyError).should.be.eql(true);
 			});
