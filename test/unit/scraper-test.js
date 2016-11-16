@@ -223,7 +223,7 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 			var a = new Resource('http://first-resource.com');
-			var loaded = s.getLoadedResourcePromise(a.getUrl());
+			var loaded = s.getLoadedResource(a.getUrl());
 			should(loaded).be.eql(undefined);
 		});
 
@@ -234,14 +234,14 @@ describe('Scraper', function () {
 			});
 
 			var a = new Resource('http://first-resource.com');
-			s.addLoadedResourcePromise(a.getUrl(), a);
+			s.addLoadedResource(a.getUrl(), a);
 
 			var b = new Resource('http://first-resource.com');
 			var c = new Resource('http://first-resource.com/');
 			var d = new Resource('http://first-resource.com?');
-			should(s.getLoadedResourcePromise(b.getUrl())).be.equal(a);
-			should(s.getLoadedResourcePromise(c.getUrl())).be.equal(a);
-			should(s.getLoadedResourcePromise(d.getUrl())).be.equal(a);
+			should(s.getLoadedResource(b.getUrl())).be.equal(a);
+			should(s.getLoadedResource(c.getUrl())).be.equal(a);
+			should(s.getLoadedResource(d.getUrl())).be.equal(a);
 		});
 	});
 
@@ -253,22 +253,22 @@ describe('Scraper', function () {
 			});
 			s.getResourceHandler = sinon.stub().returns(_.noop);
 
-			sinon.stub(s, 'getLoadedResourcePromise')
+			sinon.stub(s, 'getLoadedResource')
 				.withArgs('http://example.com/a.png')
 				.onFirstCall().returns()
 				.onSecondCall().returns(Promise.resolve());
 
-			sinon.spy(s, 'addLoadedResourcePromise');
+			sinon.spy(s, 'addLoadedResource');
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 
 			s.loadResource(r);
-			s.getLoadedResourcePromise.calledOnce.should.be.eql(true);
-			s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
+			s.getLoadedResource.calledOnce.should.be.eql(true);
+			s.addLoadedResource.calledOnce.should.be.eql(true);
 
 			s.loadResource(r);
-			s.getLoadedResourcePromise.calledTwice.should.be.eql(true);
-			s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
+			s.getLoadedResource.calledTwice.should.be.eql(true);
+			s.addLoadedResource.calledOnce.should.be.eql(true);
 		});
 	});
 
@@ -279,7 +279,7 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 			s.getResourceHandler = sinon.stub().returns(_.noop);
-			sinon.spy(s, 'addLoadedResourcePromise');
+			sinon.spy(s, 'addLoadedResource');
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
