@@ -350,6 +350,78 @@ describe('Scraper', function () {
 			});
 		});
 
+		describe('depth filtering', function() {
+			it('should request the resource if the maxDepth option is not set', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(212);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should request the resource if maxDepth is set and resource depth is less than maxDept', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(2);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(3);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should return null if maxDepth is set and resource depth is greater than maxDepth', function(){
+				var s = new Scraper({
+					urls: ['http://google.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://google.com/a.png');
+				r.getDepth = sinon.stub().returns(4);
+				return s.requestResource(r).then(function(rr) {
+					should.equal(rr, null);
+				});
+			});
+		});
+
 		it('should call handleError on error', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',

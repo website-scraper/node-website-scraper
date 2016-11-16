@@ -37,7 +37,6 @@ describe('ResourceHandler', function() {
 			var resHandler = new ResourceHandler(options);
 			resHandler.options.should.eql({
 				prettifyUrls: 'a',
-				maxDepth: 'b',
 				defaultFilename: 'test',
 				sources: 'dummy sources'
 			});
@@ -50,34 +49,16 @@ describe('ResourceHandler', function() {
 	});
 
 	describe('#getResourceHandler', function() {
-		it('should return noop if resource has depth > max', function() {
-			var options = { maxDepth: 2 };
-
-			var r = new Resource('http://example.com/');
-			sinon.stub(r, 'getType').returns('html');
-			sinon.stub(r, 'getDepth').returns(10);
-
-			var resHandler = new ResourceHandler(options);
-
-			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
-				noopStub.called.should.be.eql(true);
-				cssLoadStub.called.should.be.eql(false);
-				htmlLoadStub.called.should.be.eql(false);
-			});
-		});
-
 		it('should return css loader if file has css type', function() {
 			var options = { maxDepth: 2 };
 
 			var r = new Resource('http://example.com/');
 			sinon.stub(r, 'getType').returns('css');
-			sinon.stub(r, 'getDepth').returns(1);
 
 			var resHandler = new ResourceHandler(options);
 
 			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
+			return handleResource({}, r).then(function() {
 				noopStub.called.should.be.eql(false);
 				cssLoadStub.called.should.be.eql(true);
 				htmlLoadStub.called.should.be.eql(false);
@@ -89,15 +70,30 @@ describe('ResourceHandler', function() {
 
 			var r = new Resource('http://example.com/');
 			sinon.stub(r, 'getType').returns('html');
-			sinon.stub(r, 'getDepth').returns(1);
 
 			var resHandler = new ResourceHandler(options);
 
 			var handleResource = resHandler.getResourceHandler(r);
-			handleResource({}, r).then(function() {
+			return handleResource({}, r).then(function() {
 				noopStub.called.should.be.eql(false);
 				cssLoadStub.called.should.be.eql(true);
 				htmlLoadStub.called.should.be.eql(true);
+			});
+		});
+
+		it('should return noop if file has other type', function() {
+			var options = { maxDepth: 2 };
+
+			var r = new Resource('http://example.com/');
+			sinon.stub(r, 'getType').returns('other');
+
+			var resHandler = new ResourceHandler(options);
+
+			var handleResource = resHandler.getResourceHandler(r);
+			return handleResource({}, r).then(function() {
+				noopStub.called.should.be.eql(true);
+				cssLoadStub.called.should.be.eql(false);
+				htmlLoadStub.called.should.be.eql(false);
 			});
 		});
 	});

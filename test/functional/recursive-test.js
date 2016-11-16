@@ -51,34 +51,44 @@ describe('Functional recursive downloading', function() {
 		}).catch(done);
 	});
 
-	it('should follow anchors with depth < maxDepth if recursive flag and maxDepth are set', function(done) {
+	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', function(done) {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
 			sources: [],
 			recursive: true,
-			maxDepth: 1
+			maxDepth: 2
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 
-		// mock for anchors
+		// mock for anchors with depth = 1 - dependencies of index.html
 		nock('http://example.com/').get('/about.html').replyWithFile(200, mockDirname + '/about.html');
-		nock('http://example.com/').get('/link1.html').reply(200, 'content 1');
+
+		// mock for anchors with depth = 2 - dependencies of about.html
+		nock('http://example.com/').get('/link1.html').replyWithFile(200, mockDirname + '/link1.html');
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
+
+		// mock for anchors with depth = 3 - dependencies of about.html
+		nock('http://example.com/').get('/link1-1.html').reply(200, 'content 1-1');
+		nock('http://example.com/').get('/link1-2.html').reply(200, 'content 1-2');
 
 		scraper.scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
-			// index.html anchors loaded
+			// index.html anchors loaded (depth 1)
 			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
 
-			// about.html anchors loaded
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/link2.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/link3.html').should.be.eql(false);
+			// about.html anchors loaded (depth 2)
+			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
+
+			// link1.html anchors NOT loaded (depth 3)
+			fs.existsSync(testDirname + '/link1-1.html').should.be.eql(false);
+			fs.existsSync(testDirname + '/link1-2.html').should.be.eql(false);
 
 			done();
 		}).catch(done);
