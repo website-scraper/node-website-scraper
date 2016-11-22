@@ -223,7 +223,7 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 			var a = new Resource('http://first-resource.com');
-			var loaded = s.getLoadedResourcePromise(a.getUrl());
+			var loaded = s.getLoadedResource(a.getUrl());
 			should(loaded).be.eql(undefined);
 		});
 
@@ -234,36 +234,18 @@ describe('Scraper', function () {
 			});
 
 			var a = new Resource('http://first-resource.com');
-			s.addLoadedResourcePromise(a.getUrl(), a);
+			s.addLoadedResource(a.getUrl(), a);
 
 			var b = new Resource('http://first-resource.com');
 			var c = new Resource('http://first-resource.com/');
 			var d = new Resource('http://first-resource.com?');
-			should(s.getLoadedResourcePromise(b.getUrl())).be.equal(a);
-			should(s.getLoadedResourcePromise(c.getUrl())).be.equal(a);
-			should(s.getLoadedResourcePromise(d.getUrl())).be.equal(a);
+			should(s.getLoadedResource(b.getUrl())).be.equal(a);
+			should(s.getLoadedResource(c.getUrl())).be.equal(a);
+			should(s.getLoadedResource(d.getUrl())).be.equal(a);
 		});
 	});
 
 	describe('#loadResource', function() {
-		it('should save resource to FS', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-			s.getResourceHandler = sinon.stub().returns(_.noop);
-			sinon.spy(s, 'addLoadedResourcePromise');
-
-			var r = new Resource('http://example.com/a.png', 'a.png');
-			r.setText('some text');
-
-			return s.loadResource(r).then(function() {
-				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
-				text.should.be.eql(r.getText());
-				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-			});
-		});
-
 		it('should not save the same resource twice (should skip already loaded)', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
@@ -271,22 +253,40 @@ describe('Scraper', function () {
 			});
 			s.getResourceHandler = sinon.stub().returns(_.noop);
 
-			sinon.stub(s, 'getLoadedResourcePromise')
+			sinon.stub(s, 'getLoadedResource')
 				.withArgs('http://example.com/a.png')
 				.onFirstCall().returns()
 				.onSecondCall().returns(Promise.resolve());
 
-			sinon.spy(s, 'addLoadedResourcePromise');
+			sinon.spy(s, 'addLoadedResource');
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 
-			return s.loadResource(r).then(function() {
-				s.getLoadedResourcePromise.calledOnce.should.be.eql(true);
-				s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-				return s.loadResource(r).then(function() {
-					s.getLoadedResourcePromise.calledTwice.should.be.eql(true);
-					s.addLoadedResourcePromise.calledOnce.should.be.eql(true);
-				});
+			s.loadResource(r);
+			s.getLoadedResource.calledOnce.should.be.eql(true);
+			s.addLoadedResource.calledOnce.should.be.eql(true);
+
+			s.loadResource(r);
+			s.getLoadedResource.calledTwice.should.be.eql(true);
+			s.addLoadedResource.calledOnce.should.be.eql(true);
+		});
+	});
+
+	describe('#saveResource', function() {
+		it('should save resource to FS', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+			s.getResourceHandler = sinon.stub().returns(_.noop);
+			sinon.spy(s, 'addLoadedResource');
+
+			var r = new Resource('http://example.com/a.png', 'a.png');
+			r.setText('some text');
+
+			return s.saveResource(r).then(function() {
+				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
+				text.should.be.eql(r.getText());
 			});
 		});
 
@@ -308,7 +308,7 @@ describe('Scraper', function () {
 			var r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
-			return s.loadResource(r).finally(function() {
+			return s.saveResource(r).finally(function() {
 				s.handleError.calledOnce.should.be.eql(true);
 				s.handleError.calledWith(dummyError).should.be.eql(true);
 			});
@@ -344,6 +344,78 @@ describe('Scraper', function () {
 				});
 
 				var r = new Resource('http://google.com/a.png');
+				return s.requestResource(r).then(function(rr) {
+					should.equal(rr, null);
+				});
+			});
+		});
+
+		describe('depth filtering', function() {
+			it('should request the resource if the maxDepth option is not set', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(212);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should request the resource if maxDepth is set and resource depth is less than maxDept', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(2);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', function(){
+				nock('http://example.com').get('/a.png').reply(200, 'OK');
+
+				var s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(3);
+				return s.requestResource(r).then(function(rr) {
+					rr.should.be.eql(r);
+					rr.getUrl().should.be.eql('http://example.com/a.png');
+					rr.getFilename().should.be.not.empty();
+					rr.getText().should.be.eql('OK');
+				});
+			});
+
+			it('should return null if maxDepth is set and resource depth is greater than maxDepth', function(){
+				var s = new Scraper({
+					urls: ['http://google.com'],
+					directory: testDirname,
+					maxDepth: 3
+				});
+
+				var r = new Resource('http://google.com/a.png');
+				r.getDepth = sinon.stub().returns(4);
 				return s.requestResource(r).then(function(rr) {
 					should.equal(rr, null);
 				});
