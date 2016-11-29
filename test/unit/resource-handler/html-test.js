@@ -102,55 +102,6 @@ describe('Html handler', function () {
 			});
 		});
 
-		describe('hash in urls', function () {
-			it('should keep hash in url for html resources', function () {
-				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
-
-				sinon.stub(resourceStub, 'getType').returns('html');
-				sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
-
-				var html = '\
-				<html> \
-				<body> \
-					<a href="http://example.com/page1.html#hash">link</a> \
-				</body> \
-				</html>\
-			';
-
-				var po = new Resource('http://example.com', 'index.html');
-				po.setText(html);
-
-				return loadHtml(scraper, po).then(function(){
-					var text = po.getText();
-					text.should.containEql('local/page1.html#hash');
-				});
-			});
-
-			it('should remove hash from url for not-html resources', function () {
-				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
-
-				sinon.stub(resourceStub, 'getType').returns('other');
-				sinon.stub(scraper, 'requestResource').returns(Promise.resolve(resourceStub));
-
-				var html = '\
-				<html> \
-				<body> \
-					<a href="http://example.com/page1.html#hash">link</a> \
-				</body> \
-				</html>\
-			';
-
-				var po = new Resource('http://example.com', 'index.html');
-				po.setText(html);
-
-				return loadHtml(scraper, po).then(function(){
-					var text = po.getText();
-					text.should.not.containEql('local/page1.html#hash');
-					text.should.containEql('local/page1.html');
-				});
-			});
-		});
-
 		it('should not encode text to html entities', function () {
 			var html = '\
 				<html> \

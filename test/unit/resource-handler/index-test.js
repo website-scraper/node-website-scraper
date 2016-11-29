@@ -268,6 +268,42 @@ describe('ResourceHandler', function() {
 				updatedText.should.be.eql('UPDATED TEXT');
 			});
 		});
+
+		describe('hash in urls', function () {
+			it('should keep hash in url for html resources', function () {
+				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+				sinon.stub(resourceStub, 'getType').returns('html');
+				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+
+				PathContainerMock.prototype.getPaths.returns(['http://example.com/page1.html#hash']);
+
+				var resHandler = new ResourceHandler(options, scraperContext);
+
+				return resHandler.handleChildrenResources(PathContainerMock, parentResource, '').then(function(){
+					var updateTextStub = PathContainerMock.prototype.updateText;
+					updateTextStub.calledOnce.should.be.eql(true);
+					updateTextStub.args[0][0].length.should.be.eql(1);
+					updateTextStub.args[0][0].should.containEql({oldPath: 'http://example.com/page1.html#hash', newPath: 'local/page1.html#hash'});
+				});
+			});
+
+			it('should remove hash from url for not-html resources', function () {
+				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
+				sinon.stub(resourceStub, 'getType').returns('other');
+				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+
+				PathContainerMock.prototype.getPaths.returns(['http://example.com/page1.html#hash']);
+
+				var resHandler = new ResourceHandler(options, scraperContext);
+
+				return resHandler.handleChildrenResources(PathContainerMock, parentResource, '').then(function(){
+					var updateTextStub = PathContainerMock.prototype.updateText;
+					updateTextStub.calledOnce.should.be.eql(true);
+					updateTextStub.args[0][0].length.should.be.eql(1);
+					updateTextStub.args[0][0].should.containEql({oldPath: 'http://example.com/page1.html#hash', newPath: 'local/page1.html'});
+				});
+			});
+		});
 	});
 
 });
