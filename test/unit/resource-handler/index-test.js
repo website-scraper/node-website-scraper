@@ -147,7 +147,7 @@ describe('ResourceHandler', function() {
 			options = { defaultFilename: 'test' };
 		});
 
-		it('should not call requestResource if no sources in css', function() {
+		it('should not call requestResource if no paths in text', function() {
 			var options = { defaultFilename: 'test' };
 			var resHandler = new ResourceHandler(options, scraperContext);
 
@@ -199,7 +199,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should update all sources in text with local files returned by requestResource', function() {
+		it('should update paths in text with local files returned by requestResource', function() {
 			var resHandler = new ResourceHandler(options, scraperContext);
 
 			PathContainerMock.prototype.getPaths.returns([
@@ -225,7 +225,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should not replace the sources in text, for which requestResource returned null', function() {
+		it('should not update paths in text, for which requestResource returned null', function() {
 			var resHandler = new ResourceHandler(options, scraperContext);
 
 			PathContainerMock.prototype.getPaths.returns([
