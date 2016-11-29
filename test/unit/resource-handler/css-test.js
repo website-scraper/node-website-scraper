@@ -21,123 +21,7 @@ describe('Css handler', function () {
 
 	describe('#loadCss', function() {
 
-		it('should not call requestResource if no sources in css', function() {
-			var requestResourceStub = sinon.stub(scraper, 'requestResource');
-
-			var po = new Resource('http://example.com', '1.css');
-			po.setText('');
-
-			return loadCss(scraper, po).then(function() {
-				requestResourceStub.called.should.be.eql(false);
-			});
-		});
-
-		it('should call requestResource once with correct params', function() {
-			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
-
-			var po = new Resource('http://example.com', '1.css');
-			po.setText('div {background: url(test.png)}');
-
-			return loadCss(scraper, po).then(function() {
-				requestResourceStub.calledOnce.should.be.eql(true);
-				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/test.png');
-			});
-		});
-
-		it('should call requestResource for each found source with correct params', function() {
-			var requestResourceStub = sinon.stub(scraper, 'requestResource').resolves();
-			var css = '\
-				.a {background: url(a.jpg)} \
-				.b {background: url(\'b.jpg\')}\
-				.c {background: url("c.jpg")}\
-			';
-
-			var po = new Resource('http://example.com', '1.css');
-			po.setText(css);
-
-			return loadCss(scraper, po).then(function() {
-				requestResourceStub.calledThrice.should.be.eql(true);
-				requestResourceStub.args[0][0].url.should.be.eql('http://example.com/a.jpg');
-				requestResourceStub.args[1][0].url.should.be.eql('http://example.com/b.jpg');
-				requestResourceStub.args[2][0].url.should.be.eql('http://example.com/c.jpg');
-			});
-		});
-
-		it('should call loadResource with resource returned by requestResource', function() {
-			var css = '\
-				.a {background: url(a.jpg)} \
-			';
-
-			var parentResourceMock = new Resource('http://example.com', 'index.css');
-			parentResourceMock.setText(css);
-			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.png');
-			sinon.stub(scraper, 'requestResource').resolves(childResourceRespondedMock);
-
-			return loadCss(scraper, parentResourceMock).then(function() {
-				scraper.loadResource.calledOnce.should.be.eql(true);
-				scraper.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
-			});
-		});
-
-		it('should replace all sources in text with local files', function() {
-			var loadStub = sinon.stub(scraper, 'requestResource');
-			loadStub.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
-			loadStub.onSecondCall().resolves(new Resource('http://first.com/b.jpg', 'local/b.jpg'));
-			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
-
-			var css = '\
-				.a {background: url("http://first.com/img/a.jpg")} \
-				.b {background: url("http://first.com/b.jpg")}\
-				.c {background: url("img/c.jpg")}\
-			';
-
-			var parentResource = new Resource('http://example.com', '1.css');
-			parentResource.setText(css);
-			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
-
-			return loadCss(scraper, parentResource).then(function(){
-				var text = parentResource.getText();
-				text.should.not.containEql('http://first.com/img/a.jpg');
-				text.should.not.containEql('http://first.com/b.jpg');
-				text.should.not.containEql('img/c.jpg');
-				text.should.containEql('local/a.jpg');
-				text.should.containEql('local/b.jpg');
-				text.should.containEql('local/c.jpg');
-
-				updateChildSpy.calledThrice.should.be.eql(true);
-			});
-		});
-
-		it('should not replace the sources in text, for which requestResource returned null', function() {
-			var loadStub = sinon.stub(scraper, 'requestResource');
-			loadStub.onFirstCall().resolves(null);
-			loadStub.onSecondCall().resolves(null);
-			loadStub.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
-
-			var css = '\
-				.a {background: url("http://first.com/img/a.jpg")} \
-				.b {background: url("http://first.com/b.jpg")}\
-				.c {background: url("img/c.jpg")}\
-			';
-
-			var parentResource = new Resource('http://example.com', '1.css');
-			parentResource.setText(css);
-			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
-
-			return loadCss(scraper, parentResource).then(function(){
-				var text = parentResource.getText();
-				text.should.containEql('http://first.com/img/a.jpg');
-				text.should.containEql('http://first.com/b.jpg');
-				text.should.not.containEql('local/a.jpg');
-				text.should.not.containEql('local/b.jpg');
-
-				text.should.not.containEql('img/c.jpg');
-				text.should.containEql('local/c.jpg');
-
-				updateChildSpy.calledOnce.should.be.eql(true);
-			});
-		});
-
+		// TODO migrate test to css-test path-container
 		it('should replace all occurencies of the same sources in text with local files', function() {
 			sinon.stub(scraper, 'requestResource').resolves(new Resource('http://example.com/img.jpg', 'local/img.jpg'));
 
@@ -160,6 +44,7 @@ describe('Css handler', function () {
 			});
 		});
 
+		// TODO migrate test to css-test path-container
 		it('should replace resource only if it completely equals to path (should not change partially matched names)', function() {
 			// Next order of urls will be returned by css-url-parser
 			// 'style.css', 'mystyle.css', 'another-style.css', 'image.png', 'another-image.png', 'new-another-image.png'
@@ -202,26 +87,6 @@ describe('Css handler', function () {
 				text.should.containEql('.b {background: url(local/image.png)}');
 				text.should.containEql('.c {background: url("local/another-image.png")}');
 				text.should.containEql('.d {background: url(\'local/new-another-image.png\')}');
-			});
-		});
-
-		it('should wait for all children promises fulfilled and then return parent resource', function() {
-			var loadStub = sinon.stub(scraper, 'requestResource');
-			loadStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/resource1', 'resource1')));
-			loadStub.onSecondCall().returns(Promise.resolve(null));
-			loadStub.onThirdCall().returns(Promise.reject(new Error('some error')));
-
-			var css = '\
-				.a {background: url("resource1")} \
-				.b {background: url("resource2")}\
-				.c {background: url("resource3")}\
-			';
-
-			var parentResource = new Resource('http://example.com/index.css', 'index.css');
-			parentResource.setText(css);
-
-			return loadCss(scraper, parentResource).then(function(resource) {
-				resource.should.be.eql(parentResource);
 			});
 		});
 	});
