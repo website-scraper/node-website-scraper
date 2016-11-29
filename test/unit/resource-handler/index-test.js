@@ -143,7 +143,7 @@ describe('ResourceHandler', function() {
 				loadResource: sinon.stub().resolves()
 			};
 
-			resHandler = new ResourceHandler({defaultFilename: 'test'}, scraperContext);
+			resHandler = new ResourceHandler({defaultFilename: 'index.html'}, scraperContext);
 		});
 
 		it('should not call requestResource if no paths in text', function () {
@@ -272,7 +272,7 @@ describe('ResourceHandler', function() {
 
 				pathContainer.getPaths.returns(['http://example.com/page1.html#hash']);
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource, '').then(function () {
+				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -297,6 +297,44 @@ describe('ResourceHandler', function() {
 					updateTextStub.args[0][0].should.containEql({
 						oldPath: 'http://example.com/page1.html#hash',
 						newPath: 'local/page1.html'
+					});
+				});
+			});
+		});
+
+		describe('prettifyUrls', function () {
+			it('should not prettifyUrls by default', function() {
+				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
+				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+
+				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
+
+
+				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+					var updateTextStub = pathContainer.updateText;
+					updateTextStub.calledOnce.should.be.eql(true);
+					updateTextStub.args[0][0].length.should.be.eql(1);
+					updateTextStub.args[0][0].should.containEql({
+						oldPath: 'http://example.com/other-page/index.html',
+						newPath: 'other-page/index.html'
+					});
+				});
+			});
+
+			it('should prettifyUrls if specified', function() {
+				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
+				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+
+				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
+				resHandler.options.prettifyUrls = true;
+
+				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+					var updateTextStub = pathContainer.updateText;
+					updateTextStub.calledOnce.should.be.eql(true);
+					updateTextStub.args[0][0].length.should.be.eql(1);
+					updateTextStub.args[0][0].should.containEql({
+						oldPath: 'http://example.com/other-page/index.html',
+						newPath: 'other-page/'
 					});
 				});
 			});

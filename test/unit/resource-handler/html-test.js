@@ -157,53 +157,5 @@ describe('Html handler', function () {
 				text.should.containEql('srcset="local/image150.jpg 150w, local/image45.jpg 45w"');
 			});
 		});
-
-		describe('prettifyUrls', function () {
-			it('should not prettifyUrls by default', function() {
-				var requestResourceStub = sinon.stub(scraper, 'requestResource');
-				requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
-
-				var html = ' \
-				<html lang="en"> \
-				<head></head> \
-				<body><a href="other-page/index.html">Other page</a></body> \
-				</html>\
-			';
-				var po = new Resource('http://example.com', 'index.html');
-				po.setText(html);
-
-				return loadHtml(scraper, po).then(function () {
-					var text = po.getText();
-					text.should.containEql('a href="other-page/index.html"');
-				});
-			});
-
-			it('should prettifyUrls if specified', function() {
-				scraper = new Scraper(_.extend({
-					defaultFilename: 'index.html',
-					prettifyUrls: true
-				}, defaultScraperOpts));
-
-				var requestResourceStub = sinon.stub(scraper, 'requestResource');
-				sinon.stub(scraper, 'loadResource').resolves();
-
-				requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/other-page/index.html', 'other-page/index.html')));
-
-				var html = ' \
-				<html lang="en"> \
-				<head></head> \
-				<body><a href="other-page/index.html">Other page</a></body> \
-				</html>\
-			';
-
-				var po = new Resource('http://example.com', 'index.html');
-				po.setText(html);
-
-				return loadHtml(scraper, po).then(function () {
-					var text = po.getText();
-					text.should.containEql('a href="other-page/"');
-				});
-			});
-		});
 	});
 });
