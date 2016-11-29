@@ -101,29 +101,28 @@ describe('ResourceHandler', function() {
 	describe('#handleResource', function() {
 		it('should call getResourceHandler and create correct context', function() {
 			var options = { defaultFilename: 'test' };
-			var reqResStub = sinon.stub().resolves();
-			var loadResStub = sinon.stub().resolves();
 			var context = {
-				requestResource: reqResStub,
-				loadResource: loadResStub
+				requestResource: sinon.stub().resolves(),
+				loadResource: sinon.stub().resolves()
 			};
 			var resHandler = new ResourceHandler(options, context);
 			var getHandlerStub = sinon.stub().resolves();
 			resHandler.getResourceHandler = sinon.stub().returns(getHandlerStub);
+			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'handleChildrenResources').resolves();
 
 			var r = new Resource('http://example.com');
 			return resHandler.handleResource(r).then(function() {
+				// options
 				getHandlerStub.calledOnce.should.be.eql(true);
 				getHandlerStub.args[0][0].options.should.be.eql(options);
+
+				// handleChildrenResources callback
+				handleChildResStub.called.should.be.eql(false);
+				getHandlerStub.args[0][0].handleChildrenResources();
+				handleChildResStub.called.should.be.eql(true);
+
+				// resource
 				getHandlerStub.args[0][1].should.be.eql(r);
-
-				reqResStub.called.should.be.eql(false);
-				getHandlerStub.args[0][0].requestResource();
-				reqResStub.called.should.be.eql(true);
-
-				loadResStub.called.should.be.eql(false);
-				getHandlerStub.args[0][0].loadResource();
-				loadResStub.called.should.be.eql(true);
 			});
 		});
 	});
