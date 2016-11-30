@@ -2,6 +2,12 @@ var should = require('should');
 var CssText = require('../../../../lib/resource-handler/path-containers/css-text');
 
 describe('PathsContainer: CssText', function () {
+	describe('constructor', function() {
+		it('should set text to empty string if nothing passed', function() {
+			var cssText = new CssText();
+			should(cssText.text).be.eql('');
+		});
+	});
 
 	describe('#getPaths', function() {
 		it('should return paths from url()', function() {
