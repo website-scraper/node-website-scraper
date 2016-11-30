@@ -20,7 +20,7 @@ var defaultScraperOpts = {
 };
 var scraper;
 
-describe('Html handler', function () {
+describe('ResourceHandler: Html', function () {
 
 	beforeEach(function() {
 		scraper = new Scraper(defaultScraperOpts);
