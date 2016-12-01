@@ -171,4 +171,30 @@ describe('Common utils', function () {
 			});
 		});
 	});
+
+	describe('#isUriSchemaSupported', function() {
+		it('should return false for mailto:', function() {
+			should(utils.isUriSchemaSupported('mailto:test@test.com')).be.eql(false);
+		});
+
+		it('should return false for javascript:', function() {
+			should(utils.isUriSchemaSupported('javascript:alert("Hi!")')).be.eql(false);
+		});
+
+		it('should return false for skype:', function() {
+			should(utils.isUriSchemaSupported('skype:skype_name?action')).be.eql(false);
+		});
+
+		it('should return true for http:', function() {
+			should(utils.isUriSchemaSupported('http://example.com')).be.eql(true);
+		});
+
+		it('should return true for https:', function() {
+			should(utils.isUriSchemaSupported('https://example.com')).be.eql(true);
+		});
+
+		it('should return true for relative paths', function() {
+			should(utils.isUriSchemaSupported('index.html')).be.eql(true);
+		});
+	});
 });
