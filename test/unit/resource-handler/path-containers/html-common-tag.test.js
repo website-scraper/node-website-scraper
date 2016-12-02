@@ -17,6 +17,20 @@ describe('PathsContainer: HtmlCommonTag', function () {
 			var resultPaths = htmlCommonTag.getPaths();
 			should(resultPaths).containEql('image.jpg');
 		});
+
+		it('should not return path with same-page id', function() {
+			var text = '#top';
+			var htmlCommonTag = new HtmlCommonTag(text);
+			var resultPaths = htmlCommonTag.getPaths();
+			should(resultPaths).be.instanceOf(Array).and.have.length(0);
+		});
+
+		it('should return path with other-page id', function() {
+			var text = 'other.html#top';
+			var htmlCommonTag = new HtmlCommonTag(text);
+			var resultPaths = htmlCommonTag.getPaths();
+			should(resultPaths).containEql('other.html#top');
+		});
 	});
 
 	describe('#updateText', function () {

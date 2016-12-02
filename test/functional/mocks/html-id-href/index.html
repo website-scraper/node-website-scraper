@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .icon {
+            width: 100px;
+            height: 100px;
+        }
+
+        .icon-1 {
+            fill: black;
+        }
+
+        .icon-2 {
+            fill: red;
+        }
+
+        .codrops-1 {
+            fill: #4BC0A5;
+            color: #A4DFD1;
+        }
+        .codrops-2 {
+            fill: #0099CC;
+            color: #7FCBE5;
+        }
+        .codrops-3 {
+            fill: #5F5EC0;
+            color: #AEAFDD;
+        }
+    </style>
+
+    <title>SVG</title>
+    <meta charset="utf-8" />
+
+</head>
+<body>
+
+<a id="top">Circle</a>
+
+<svg id="svgelem" height="200" xmlns="http://www.w3.org/2000/svg">
+    <circle id="redcircle" cx="50" cy="50" r="50" fill="red" />
+</svg>
+
+<br>
+
+<p>use xlink:href, use href</p>
+
+<svg viewBox="0 0 32 32" class="icon icon-1">
+    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="sprite.svg#icon-undo"></use>
+</svg>
+
+<svg viewBox="0 0 32 32" class="icon icon-2">
+    <use xmlns:xlink="http://www.w3.org/1999/xlink" href="sprite.svg#icon-redo"></use>
+</svg>
+
+<br>
+
+<p>use local #id</p>
+
+<svg style="display: none;">
+    <symbol id="codrops" viewBox="0 0 23 30">
+        <path class="back" d="M22.63,18.261c-0.398-3.044-2.608-6.61-4.072-9.359c-1.74-3.271-3.492-5.994-5.089-8.62l0,0   c-1.599,2.623-3.75,6.117-5.487,9.385c0.391,0.718,0.495,1.011,0.889,1.816c0.143,0.294,0.535,1.111,0.696,1.43   c0.062-0.114,0.582-1.052,0.643-1.162c0.278-0.506,0.54-0.981,0.791-1.451c0.823-1.547,1.649-2.971,2.469-4.33   c0.817,1.359,1.646,2.783,2.468,4.33c0.249,0.47,0.513,0.946,0.791,1.453c1.203,2.187,2.698,4.906,2.96,6.895   c0.292,2.237-0.259,4.312-1.556,5.839c-1.171,1.376-2.824,2.179-4.663,2.263c-1.841-0.084-3.493-0.887-4.665-2.263   c-0.16-0.192-0.311-0.391-0.448-0.599c-0.543,0.221-1.127,0.346-1.735,0.365c-0.56-0.019-1.095-0.127-1.599-0.313   c1.448,3.406,4.667,5.66,8.447,5.78C19.086,29.537,23.469,24.645,22.63,18.261z"/>
+        <path class="front" fill="currentColor" d="M6.177,11.659c0.212,0.367,0.424,0.747,0.635,1.136c0.164,0.303,0.333,0.606,0.512,0.927   c0.683,1.225,1.618,2.898,1.755,3.937c0.144,1.073-0.111,2.056-0.716,2.769c-0.543,0.641-1.315,1.014-2.186,1.067   c-0.87-0.054-1.643-0.43-2.186-1.067c-0.604-0.713-0.858-1.695-0.715-2.771c0.137-1.036,1.072-2.712,1.755-3.936   c0.18-0.32,0.349-0.623,0.513-0.927C5.752,12.404,5.964,12.026,6.177,11.659 M6.177,5.966L6.177,5.966   c-1.02,1.649-2.138,3.363-3.247,5.419c-0.932,1.728-2.344,3.967-2.598,5.88c-0.535,4.014,2.261,7.09,5.846,7.203   c3.583-0.113,6.379-3.189,5.845-7.203c-0.255-1.912-1.666-4.152-2.598-5.88C8.314,9.329,7.196,7.617,6.177,5.966L6.177,5.966z"/>
+    </symbol>
+</svg>
+<svg height="90px" width="69px">
+    <use xlink:href="#codrops" class="codrops-1" />
+</svg>
+<svg height="90px" width="69px">
+    <use xlink:href="#codrops" class="codrops-2" />
+</svg>
+<svg height="90px" width="69px">
+    <use xlink:href="#codrops" class="codrops-3" />
+</svg>
+
+<br>
+
+<p>image xlink:href</p>
+
+<svg width="100" height="100" viewBox="0 0 100 100"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+    <image xlink:href="https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png" x="0" y="0"
+           height="100" width="100" />
+</svg>
+
+<a href="#top">Go to top (this page)</a>
+<a href="/some/other.html#top">Go to top (other page)</a>
+
+</body>
+</html>

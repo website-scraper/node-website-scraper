@@ -123,7 +123,7 @@ describe('ResourceHandler: Html', function () {
 				<img src="b.png">
 				<img src="c.png">
 			</body>
-			</html>\
+			</html>
 		`;
 
 		var resource = new Resource('http://example.com', 'index.html');
@@ -148,7 +148,7 @@ describe('ResourceHandler: Html', function () {
 			<html lang="en">
 			<head></head>
 			<body><img src=""></body>
-			</html>\
+			</html>
 		`;
 
 		var resource = new Resource('http://example.com', 'index.html');
@@ -177,7 +177,7 @@ describe('ResourceHandler: Html', function () {
 				<a href="skype:profile_name">
 				<a href="javascript:alert('Hello World!');">
 			</body>
-			</html>\
+			</html>
 		`;
 
 		var resource = new Resource('http://example.com', 'index.html');
@@ -206,7 +206,7 @@ describe('ResourceHandler: Html', function () {
 				<img src="a.png">
 				<img srcset="b.png">
 			</body>
-			</html>\
+			</html>
 		`;
 
 		var resource = new Resource('http://example.com', 'index.html');
