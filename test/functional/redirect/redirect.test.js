@@ -2,10 +2,10 @@ require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
 var sinon = require('sinon');
-var Scraper = require('../../lib/scraper');
+var Scraper = require('../../../lib/scraper');
 
-var testDirname = __dirname + '/.redirects';
-var mockDirname = __dirname + '/mocks/redirects';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional redirects', function() {
 

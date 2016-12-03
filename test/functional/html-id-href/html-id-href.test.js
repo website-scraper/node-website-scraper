@@ -1,10 +1,10 @@
 var should = require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var Scraper = require('../../lib/scraper');
+var Scraper = require('../../../lib/scraper');
 
-var testDirname = __dirname + '/.html-id-href';
-var mockDirname = __dirname + '/mocks/html-id-href';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional html id href', function() {
 

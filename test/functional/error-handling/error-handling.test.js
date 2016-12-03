@@ -4,10 +4,10 @@ var sinon = require('sinon');
 require('sinon-as-promised');
 var fs = require('fs-extra');
 var Promise = require('bluebird');
-var Scraper = require('../../lib/scraper');
+var Scraper = require('../../../lib/scraper');
 
-var testDirname = __dirname + '/.error-handling';
-var mockDirname = __dirname + '/mocks/error-handling';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 var scraper;
 
 describe('Functional error handling', function() {
