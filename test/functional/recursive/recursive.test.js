@@ -1,10 +1,10 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../index');
+var scraper = require('../../../index');
 
-var testDirname = __dirname + '/.recursive';
-var mockDirname = __dirname + '/mocks/recursive';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional recursive downloading', function() {
 
@@ -19,7 +19,7 @@ describe('Functional recursive downloading', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should follow anchors if recursive flag is set', function(done) {
+	it('should follow anchors if recursive flag is set', function () {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -36,7 +36,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		scraper.scrape(options).then(function() {
+		return scraper.scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded
@@ -46,12 +46,10 @@ describe('Functional recursive downloading', function() {
 			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
-
-			done();
-		}).catch(done);
+		});
 	});
 
-	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', function(done) {
+	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', function () {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -75,7 +73,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link1-1.html').reply(200, 'content 1-1');
 		nock('http://example.com/').get('/link1-2.html').reply(200, 'content 1-2');
 
-		scraper.scrape(options).then(function() {
+		return scraper.scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded (depth 1)
@@ -89,12 +87,10 @@ describe('Functional recursive downloading', function() {
 			// link1.html anchors NOT loaded (depth 3)
 			fs.existsSync(testDirname + '/link1-1.html').should.be.eql(false);
 			fs.existsSync(testDirname + '/link1-2.html').should.be.eql(false);
-
-			done();
-		}).catch(done);
+		});
 	});
 
-	it('should not follow anchors if recursive flag is not set', function(done) {
+	it('should not follow anchors if recursive flag is not set', function () {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -110,7 +106,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		scraper.scrape(options).then(function() {
+		return scraper.scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded
@@ -120,8 +116,6 @@ describe('Functional recursive downloading', function() {
 			fs.existsSync(testDirname + '/link1.html').should.be.eql(false);
 			fs.existsSync(testDirname + '/link2.html').should.be.eql(false);
 			fs.existsSync(testDirname + '/link3.html').should.be.eql(false);
-
-			done();
-		}).catch(done);
+		});
 	});
 });

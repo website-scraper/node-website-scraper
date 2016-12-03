@@ -1,10 +1,10 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../index');
+var scraper = require('../../../index');
 
-var testDirname = __dirname + '/.circular-dependencies';
-var mockDirname = __dirname + '/mocks/circular-dependencies';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional circular dependencies', function() {
 

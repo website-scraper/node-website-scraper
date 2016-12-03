@@ -1,10 +1,10 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../index');
+var scraper = require('../../../index');
 
-var testDirname = __dirname + '/.resources-without-ext';
-var mockDirname = __dirname + '/mocks/resources-without-ext';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional resources without extensions', function() {
 
@@ -19,7 +19,7 @@ describe('Functional resources without extensions', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should load resources without extensions with correct type and wrap with extensions', function(done) {
+	it('should load resources without extensions with correct type and wrap with extensions', function () {
 		var options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -47,7 +47,7 @@ describe('Functional resources without extensions', function() {
 		nock('http://google.com').get('/').replyWithFile(200, mockDirname + '/google.html');
 		nock('http://google.com').get('/google.png').reply(200, 'OK');
 
-		scraper.scrape(options).then(function() {
+		return scraper.scrape(options).then(function() {
 			// should load css file and fonts from css file
 			fs.existsSync(testDirname + '/css.css').should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
 			fs.existsSync(testDirname + '/UyBMtLsHKBKXelqf4x7VRQ.woff2').should.be.eql(true);
@@ -60,8 +60,6 @@ describe('Functional resources without extensions', function() {
 			// should load html file and its sources from iframe
 			fs.existsSync(testDirname + '/iframe.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/cat.png').should.be.eql(true);
-
-			done();
-		}).catch(done);
+		});
 	});
 });

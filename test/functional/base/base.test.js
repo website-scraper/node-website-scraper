@@ -2,11 +2,11 @@ require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
 var cheerio = require('cheerio');
-var scraper = require('../../index');
-var Resource = require('../../lib/resource');
+var scraper = require('../../../index');
+var Resource = require('../../../lib/resource');
 
-var testDirname = __dirname + '/.base';
-var mockDirname = __dirname + '/mocks/base';
+var testDirname = __dirname + '/.tmp';
+var mockDirname = __dirname + '/mocks';
 
 describe('Functional base', function() {
 
@@ -21,7 +21,7 @@ describe('Functional base', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should load multiple urls to single directory with all specified sources', function(done) {
+	it('should load multiple urls to single directory with all specified sources', function () {
 		var options = {
 			urls: [
 				'http://example.com/',   // Will be saved with default filename 'index.html'
@@ -64,7 +64,7 @@ describe('Functional base', function() {
 		// mocks for blog.html
 		nock('http://blog.example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
 
-		scraper.scrape(options).then(function(result) {
+		return scraper.scrape(options).then(function(result) {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
 
@@ -133,8 +133,6 @@ describe('Functional base', function() {
 			// should not replace not loaded files
 			$ = cheerio.load(fs.readFileSync(testDirname + '/blog.html').toString());
 			$('img').attr('src').should.be.eql('files/fail-1.png');
-
-			done();
-		}).catch(done);
+		});
 	});
 });
