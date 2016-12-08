@@ -31,6 +31,20 @@ describe('PathsContainer: HtmlCommonTag', function () {
 			var resultPaths = htmlCommonTag.getPaths();
 			should(resultPaths).containEql('other.html#top');
 		});
+
+		it('should not return path is uri schema is not supported (mailto: skype: etc)', function() {
+			var text1 = 'mailto:sophie@example.com';
+			var resultPaths1 = new HtmlCommonTag(text1).getPaths();
+			should(resultPaths1).be.instanceOf(Array).and.have.length(0);
+
+			var text2 = 'skype:profile_name';
+			var resultPaths2 = new HtmlCommonTag(text2).getPaths();
+			should(resultPaths2).be.instanceOf(Array).and.have.length(0);
+
+			var text3 = 'javascript:alert("Hello World!");';
+			var resultPaths3 = new HtmlCommonTag(text3).getPaths();
+			should(resultPaths3).be.instanceOf(Array).and.have.length(0);
+		});
 	});
 
 	describe('#updateText', function () {
