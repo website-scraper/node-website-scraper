@@ -159,35 +159,6 @@ describe('ResourceHandler: Html', function () {
 		});
 	});
 
-	it('should not call handleChildrenResources if source is url with not supported schema (like mailto: or javascript:)', function () {
-		var context = {
-			options: {
-				sources: [
-					{ selector: 'a', attr: 'href' }
-				]
-			},
-			handleChildrenResources: sinon.stub().resolves()
-		};
-
-		var html = `
-			<html lang="en">
-			<head></head>
-			<body>
-				<a href="mailto:sophie@example.com">
-				<a href="skype:profile_name">
-				<a href="javascript:alert('Hello World!');">
-			</body>
-			</html>
-		`;
-
-		var resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
-
-		return loadHtml(context, resource).then(function() {
-			context.handleChildrenResources.called.should.be.eql(false);
-		});
-	});
-
 	it('should use correct path containers based on tag', function() {
 		var context = {
 			options: {
