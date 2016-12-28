@@ -38,7 +38,8 @@ describe('Functional base', function() {
 			sources: [
 				{ selector: 'img', attr: 'src' },
 				{ selector: 'link[rel="stylesheet"]', attr: 'href' },
-				{ selector: 'script', attr: 'src' }
+				{ selector: 'script', attr: 'src' },
+				{ selector: 'style' }
 			]
 		};
 

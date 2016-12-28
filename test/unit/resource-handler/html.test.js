@@ -3,19 +3,21 @@ var Promise = require('bluebird');
 var sinon = require('sinon');
 require('sinon-as-promised')(Promise);
 var Resource = require('../../../lib/resource');
-var loadHtml = require('../../../lib/resource-handler/html');
+var HtmlHandler = require('../../../lib/resource-handler/html');
+
 var HtmlImgSrcsetTag = require('../../../lib/resource-handler/path-containers/html-img-srcset-tag');
 var HtmlCommonTag = require('../../../lib/resource-handler/path-containers/html-common-tag');
+var CssText = require('../../../lib/resource-handler/path-containers/css-text');
 
 describe('ResourceHandler: Html', function () {
+	var htmlHandler;
+
+	beforeEach(function() {
+		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().resolves());
+	});
+
 	describe('<base> tag', function () {
 		it('should remove base tag from text and update resource url for absolute href', function () {
-			var context = {
-				options: {
-					sources: []
-				},
-				handleChildrenResources: sinon.stub().resolves()
-			};
 			var html = `
 				<html lang="en">
 				<head>
@@ -27,19 +29,13 @@ describe('ResourceHandler: Html', function () {
 			var resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return loadHtml(context, resource).then(function() {
+			return htmlHandler.handle(resource).then(function() {
 				resource.getUrl().should.be.eql('http://some-other-domain.com/src');
 				resource.getText().should.not.containEql('<base');
 			});
 		});
 
 		it('should remove base tag from text and update resource url for relative href', function () {
-			var context = {
-				options: {
-					sources: []
-				},
-				handleChildrenResources: sinon.stub().resolves()
-			};
 			var html = `
 				<html lang="en">
 				<head>
@@ -51,19 +47,13 @@ describe('ResourceHandler: Html', function () {
 			var resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return loadHtml(context, resource).then(function() {
+			return htmlHandler.handle(resource).then(function() {
 				resource.getUrl().should.be.eql('http://example.com/src');
 				resource.getText().should.not.containEql('<base');
 			});
 		});
 
 		it('should not remove base tag if it doesn\'t have href attribute', function () {
-			var context = {
-				options: {
-					sources: []
-				},
-				handleChildrenResources: sinon.stub().resolves()
-			};
 			var html = `
 				<html lang="en">
 				<head>
@@ -75,7 +65,7 @@ describe('ResourceHandler: Html', function () {
 			var resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return loadHtml(context, resource).then(function() {
+			return htmlHandler.handle(resource).then(function() {
 				resource.getUrl().should.be.eql('http://example.com');
 				resource.getText().should.containEql('<base target="_blank">');
 			});
@@ -83,12 +73,6 @@ describe('ResourceHandler: Html', function () {
 	});
 
 	it('should not encode text to html entities', function () {
-		var context = {
-			options: {
-				sources: []
-			},
-			handleChildrenResources: sinon.stub().resolves()
-		};
 		var html = `
 			<html>
 			<body>
@@ -100,20 +84,13 @@ describe('ResourceHandler: Html', function () {
 		var resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return loadHtml(context, resource).then(function () {
+		return htmlHandler.handle(resource).then(function () {
 			resource.getText().should.containEql('Этот текст не должен быть преобразован в html entities');
 		});
 	});
 
 	it('should call handleChildrenResources for each source', function () {
-		var context = {
-			options: {
-				sources: [
-					{ selector: 'img', attr: 'src' }
-				]
-			},
-			handleChildrenResources: sinon.stub().resolves()
-		};
+		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
 		var html = `
 			<html lang="en">
@@ -129,20 +106,13 @@ describe('ResourceHandler: Html', function () {
 		var resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return loadHtml(context, resource).then(function() {
-			context.handleChildrenResources.calledThrice.should.be.eql(true);
+		return htmlHandler.handle(resource).then(function() {
+			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
 		});
 	});
 
 	it('should not call handleChildrenResources if source attr is empty', function () {
-		var context = {
-			options: {
-				sources: [
-					{ selector: 'img', attr: 'src' },
-				]
-			},
-			handleChildrenResources: sinon.stub().resolves()
-		};
+		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
 		var html = `
 			<html lang="en">
@@ -154,21 +124,15 @@ describe('ResourceHandler: Html', function () {
 		var resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return loadHtml(context, resource).then(function() {
-			context.handleChildrenResources.called.should.be.eql(false);
+		return htmlHandler.handle(resource).then(function() {
+			htmlHandler.handleChildrenPaths.called.should.be.eql(false);
 		});
 	});
 
 	it('should use correct path containers based on tag', function() {
-		var context = {
-			options: {
-				sources: [
-					{ selector: 'img', attr: 'src' },
-					{ selector: 'img', attr: 'srcset' }
-				]
-			},
-			handleChildrenResources: sinon.stub().resolves()
-		};
+		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
+		htmlHandler.options.sources.push({ selector: 'img', attr: 'srcset' });
+		htmlHandler.options.sources.push({ selector: '.styled', attr: 'style' });
 
 		var html = `
 			<html lang="en">
@@ -176,6 +140,7 @@ describe('ResourceHandler: Html', function () {
 			<body>
 				<img src="a.png">
 				<img srcset="b.png">
+				<div class="styled" style="background-image: url(\'c.png\')"></div>
 			</body>
 			</html>
 		`;
@@ -183,10 +148,11 @@ describe('ResourceHandler: Html', function () {
 		var resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return loadHtml(context, resource).then(function() {
-			context.handleChildrenResources.calledTwice.should.be.eql(true);
-			context.handleChildrenResources.args[0][0].should.be.instanceOf(HtmlCommonTag);
-			context.handleChildrenResources.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
+		return htmlHandler.handle(resource).then(function() {
+			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
+			htmlHandler.handleChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
+			htmlHandler.handleChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
+			htmlHandler.handleChildrenPaths.args[2][0].should.be.instanceOf(CssText);
 		});
 	});
 });
