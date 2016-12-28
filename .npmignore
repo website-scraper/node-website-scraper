@@ -4,5 +4,6 @@
 .travis.yml
 appveyor.yml
 .eslintrc*
+.codeclimate.yml
 coverage
 test
