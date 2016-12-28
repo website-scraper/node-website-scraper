@@ -1,0 +1,6 @@
+@import 'style-import-1.css';
+@import url("style-import-2.css");
+
+.bg {
+    background-image: url('external-style.png');
+}
