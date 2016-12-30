@@ -21,7 +21,7 @@ describe('Request', function () {
 	describe('#makeRequest', function () {
 
 		it('should call request with correct params', function(done) {
-			var responseMock = { request: {href: ''}, body: '' };
+			var responseMock = { request: {href: ''}, body: '', headers: {} };
 			var requestStub = sinon.stub().yields(null, responseMock);
 
 			var customRequest = proxyquire('../../lib/request', {
