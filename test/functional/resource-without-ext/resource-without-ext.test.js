@@ -35,12 +35,16 @@ describe('Functional resources without extensions', function() {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 
 		// mock for css fonts
-		nock('http://fonts.googleapis.com/').get('/css?family=Lato').replyWithFile(200, mockDirname + '/fonts.css');
+		nock('http://fonts.googleapis.com/').get('/css?family=Lato').replyWithFile(200, mockDirname + '/fonts.css', {
+			'content-type': 'text/css'
+		});
 		nock('http://fonts.gstatic.com/').get('/s/lato/v11/UyBMtLsHKBKXelqf4x7VRQ.woff2').reply(200, 'OK');
 		nock('http://fonts.gstatic.com/').get('/s/lato/v11/1YwB1sO8YE1Lyjf12WNiUA.woff2').reply(200, 'OK');
 
 		// mock for iframe
-		nock('http://example.com/').get('/iframe').replyWithFile(200, mockDirname + '/iframe.html');
+		nock('http://example.com/').get('/iframe').replyWithFile(200, mockDirname + '/iframe.html', {
+			'Content-Type': 'text/html'
+		});
 		nock('http://example.com/').get('/cat.png').reply(200, 'OK');
 
 		// mock for anchor
