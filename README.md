@@ -56,7 +56,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `request`: object, custom options for [request](https://github.com/request/request#requestoptions-callback) *(optional, see example below)*
  - `recursive`: boolean, if `true` scraper will follow anchors in html files. Don't forget to set `maxDepth` to avoid infinite downloading *(optional, see example below)*
  - `maxDepth`: positive number, maximum allowed depth for dependencies *(optional, see example below)*
- - `ignoreErrors`: boolean, if `true` scraper will continue downloading resources after error occured, if `false` - scraper will finish process and return error *(optional, default: false)*
+ - `ignoreErrors`: boolean, if `true` scraper will continue downloading resources after error occured, if `false` - scraper will finish process and return error *(optional, default: true)*
  
 Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
 
