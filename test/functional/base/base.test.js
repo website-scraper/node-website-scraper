@@ -70,19 +70,19 @@ describe('Functional base', function() {
 			result.should.be.instanceOf(Array).and.have.length(3);
 
 			result[0].should.have.properties({ url: 'http://example.com/', filename: 'index.html' });
-			result[0].should.have.properties('assets');
-			result[0].assets.should.be.instanceOf(Array).and.have.length(4);
-			result[0].assets[0].should.be.instanceOf(Resource);
+			result[0].should.have.properties('children');
+			result[0].children.should.be.instanceOf(Array).and.have.length(4);
+			result[0].children[0].should.be.instanceOf(Resource);
 
 			result[1].should.have.properties({ url: 'http://example.com/about', filename: 'about.html' });
-			result[1].should.have.properties('assets');
-			result[1].assets.should.be.instanceOf(Array).and.have.length(4);
-			result[1].assets[0].should.be.instanceOf(Resource);
+			result[1].should.have.properties('children');
+			result[1].children.should.be.instanceOf(Array).and.have.length(4);
+			result[1].children[0].should.be.instanceOf(Resource);
 
 			result[2].should.have.properties({ url: 'http://blog.example.com/', filename: 'blog.html' }); // url after redirect
-			result[2].should.have.properties('assets');
-			result[2].assets.should.be.instanceOf(Array).and.have.length(1);
-			result[2].assets[0].should.be.instanceOf(Resource);
+			result[2].should.have.properties('children');
+			result[2].children.should.be.instanceOf(Array).and.have.length(1);
+			result[2].children[0].should.be.instanceOf(Resource);
 
 			// should create directory and subdirectories
 			fs.existsSync(testDirname).should.be.eql(true);
