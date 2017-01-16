@@ -37,7 +37,7 @@
     "cheerio": "0.22.0",
     "css-url-parser": "^1.0.0",
     "debug": "^2.4.5",
-    "fs-extra": "^1.0.0",
+    "fs-extra": "^2.0.0",
     "he": "^1.1.0",
     "lodash": "^4.11.1",
     "normalize-url": "^1.5.3",
