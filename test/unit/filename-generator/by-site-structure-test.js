@@ -7,7 +7,7 @@ var bySiteStructureFilenameGenerator = require('../../../lib/filename-generator/
 
 var options = { defaultFilename: 'index.html' };
 
-describe('byStructureFilenameGenerator', function() {
+describe('FilenameGenerator: bySiteStructure', function() {
 	it('should return the normalized relative path of the resource url', function(){
 		var r1 = new Resource('http://example.com/some/path/a.png');
 		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('some/path/a.png');
