@@ -3,7 +3,7 @@ var _ = require('lodash');
 var utils = require('../../lib/utils');
 var Promise = require('bluebird');
 
-describe('Common utils', function () {
+describe('Utils', function () {
 	describe('#isUrl(url)', function () {
 		it('should return true if url starts with "http[s]://"', function () {
 			utils.isUrl('http://google.com').should.be.true();
@@ -195,6 +195,19 @@ describe('Common utils', function () {
 
 		it('should return true for relative paths', function() {
 			should(utils.isUriSchemaSupported('index.html')).be.eql(true);
+		});
+	});
+
+	describe('#decodeHtmlEntities', function() {
+		it('should return empty string if not string passed', function() {
+			should(utils.decodeHtmlEntities(null)).be.eql('');
+			should(utils.decodeHtmlEntities({})).be.eql('');
+			should(utils.decodeHtmlEntities([])).be.eql('');
+			should(utils.decodeHtmlEntities()).be.eql('');
+		});
+
+		it('should return decoded text if string passed', function() {
+			should(utils.decodeHtmlEntities('?a=1&amp;v=2')).be.eql('?a=1&v=2');
 		});
 	});
 });

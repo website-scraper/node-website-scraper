@@ -5,7 +5,7 @@ var sinon = require('sinon');
 var Resource = require('../../../lib/resource');
 var byTypeFilenameGenerator = require('../../../lib/filename-generator/by-type');
 
-describe('byTypeFilenameGenerator', function() {
+describe('FilenameGenerator: byType', function() {
 	it('should return resource filename', function() {
 		var r = new Resource('http://example.com/a.png', 'b.png');
 		var filename = byTypeFilenameGenerator(r, {}, []);
