@@ -1,7 +1,7 @@
 var should = require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var Scraper = require('../../../lib/scraper');
+var scrape = require('../../../index');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
@@ -47,9 +47,8 @@ describe('Functional: html entities in url', function() {
 			],
 			ignoreErrors: false
 		};
-		var scraper = new Scraper(options);
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			var indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 

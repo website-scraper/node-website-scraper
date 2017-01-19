@@ -1,7 +1,7 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../../index');
+var scrape = require('../../../index');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
@@ -51,7 +51,7 @@ describe('Functional resources without extensions', function() {
 		nock('http://google.com').get('/').replyWithFile(200, mockDirname + '/google.html');
 		nock('http://google.com').get('/google.png').reply(200, 'OK');
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			// should load css file and fonts from css file
 			fs.existsSync(testDirname + '/css.css').should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
 			fs.existsSync(testDirname + '/UyBMtLsHKBKXelqf4x7VRQ.woff2').should.be.eql(true);

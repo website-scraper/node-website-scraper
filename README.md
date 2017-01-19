@@ -22,19 +22,19 @@ npm install website-scraper
 
 ## Usage
 ```javascript
-var scraper = require('website-scraper');
+var scrape = require('website-scraper');
 var options = {
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save/',
 };
 
 // with callback
-scraper.scrape(options, function (error, result) {
+scrape(options, function (error, result) {
 	/* some code here */
 });
 
 // or with promise
-scraper.scrape(options).then(function (result) {
+scrape(options).then(function (result) {
 	/* some code here */
 });
 ```
@@ -98,8 +98,8 @@ and separate files into directories:
   - `css` for .css (full path `/path/to/save/css`)
 
 ```javascript
-var scraper = require('website-scraper');
-scraper.scrape({
+var scrape = require('website-scraper');
+scrape({
   urls: [
     'http://nodejs.org/',	// Will be saved with default filename 'index.html'
     {url: 'http://nodejs.org/about', filename: 'about.html'},
@@ -132,8 +132,8 @@ scraper.scrape({
 ```javascript
 // Links from example.com will be followed
 // Links from links will be ignored because theirs depth = 2 is greater than maxDepth
-var scraper = require('website-scraper');
-scraper.scrape({
+var scrape = require('website-scraper');
+scrape({
   urls: ['http://example.com/'],
   directory: '/path/to/save',
   recursive: true,
@@ -144,8 +144,8 @@ scraper.scrape({
 #### Example 3. Filtering out external resources
 ```javascript
 // Links to other websites are filtered out by the urlFilter
-var scraper = require('website-scraper');
-scraper.scrape({
+var scrape = require('website-scraper');
+scrape({
   urls: ['http://example.com/'],
   urlFilter: function(url){
     return url.indexOf('http://example.com') === 0;
@@ -159,8 +159,8 @@ scraper.scrape({
 // Downloads all the crawlable files of example.com.
 // The files are saved in the same structure as the structure of the website, by using the `bySiteStructure` filenameGenerator.
 // Links to other websites are filtered out by the urlFilter
-var scraper = require('website-scraper');
-scraper.scrape({
+var scrape = require('website-scraper');
+scrape({
   urls: ['http://example.com/'],
   urlFilter: function(url){
       return url.indexOf('http://example.com') === 0;

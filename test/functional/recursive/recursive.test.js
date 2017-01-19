@@ -1,7 +1,7 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../../index');
+var scrape = require('../../../index');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
@@ -36,7 +36,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded
@@ -73,7 +73,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link1-1.html').reply(200, 'content 1-1');
 		nock('http://example.com/').get('/link1-2.html').reply(200, 'content 1-2');
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded (depth 1)
@@ -106,7 +106,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 
 			// index.html anchors loaded
