@@ -15,6 +15,9 @@ Download website to a local directory (including all css, images, js, etc.)
 
 You can try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://github.com/s0ph1e/web-scraper))
 
+**Note:** dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files.
+
+
 ## Installation
 ```
 npm install website-scraper
