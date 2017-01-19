@@ -1,7 +1,7 @@
 var should = require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var Scraper = require('../../../lib/scraper');
+var scrape = require('../../../index');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
@@ -39,9 +39,8 @@ describe('Functional html id href', function() {
 				{ directory: 'local', extensions: ['.png', '.svg'] }
 			]
 		};
-		var scraper = new Scraper(options);
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/other.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/local/sprite.svg').should.be.eql(true);

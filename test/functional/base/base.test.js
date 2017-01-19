@@ -2,7 +2,7 @@ require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
 var cheerio = require('cheerio');
-var scraper = require('../../../index');
+var scrape = require('../../../index');
 var Resource = require('../../../lib/resource');
 
 var testDirname = __dirname + '/.tmp';
@@ -65,7 +65,7 @@ describe('Functional base', function() {
 		// mocks for blog.html
 		nock('http://blog.example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
 
-		return scraper.scrape(options).then(function(result) {
+		return scrape(options).then(function(result) {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
 

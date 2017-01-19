@@ -1,5 +1,5 @@
 var should = require('should');
-var scraper = require('../../index');
+var scrape = require('../../index');
 var URL = require('url');
 var fs = require('fs-extra');
 var _ = require('lodash');
@@ -26,7 +26,7 @@ describe('E2E', function() {
 				scraperOptions.directory = resultDirname + '/' + hostname + '-byType';
 				scraperOptions.urls = [ { url: url, filename: 'index.html' } ];
 				scraperOptions.filenameGenerator = 'byType';
-				return scraper.scrape(scraperOptions).then(function(result) {
+				return scrape(scraperOptions).then(function(result) {
 					result.should.be.ok();
 				});
 			});
@@ -37,7 +37,7 @@ describe('E2E', function() {
 				scraperOptions.directory = resultDirname + '/' + hostname + '-bySiteStructure';
 				scraperOptions.urls = [ { url: url } ];
 				scraperOptions.filenameGenerator = 'bySiteStructure';
-				return scraper.scrape(scraperOptions).then(function(result) {
+				return scrape(scraperOptions).then(function(result) {
 					result.should.be.ok();
 				});
 			});

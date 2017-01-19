@@ -1,7 +1,7 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scraper = require('../../../index');
+var scrape = require('../../../index');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
@@ -38,7 +38,7 @@ describe('Functional circular dependencies', function() {
 		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css');
 		nock('http://example.com/').get('/style2.css').replyWithFile(200, mockDirname + '/style2.css');
 
-		return scraper.scrape(options).then(function() {
+		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/style.css').should.be.eql(true);
