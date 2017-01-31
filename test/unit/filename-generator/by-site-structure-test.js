@@ -70,4 +70,14 @@ describe('FilenameGenerator: bySiteStructure', function() {
 		var filename = _.last(filepath.split('/'));
 		should(filename.length).be.lessThan(255);
 	});
+
+	it('should return decoded filepath', function() {
+		var r = new Resource('https://developer.mozilla.org/ru/docs/JavaScript_%D1%88%D0%B5%D0%BB%D0%BB%D1%8B');
+		var filename = bySiteStructureFilenameGenerator(r, options);
+		filename.should.equalFileSystemPath('ru/docs/JavaScript_шеллы');
+
+		var r2 = new Resource('https://developer.mozilla.org/Hello%20G%C3%BCnter.png');
+		var filename2 = bySiteStructureFilenameGenerator(r2, options);
+		filename2.should.equalFileSystemPath('Hello Günter.png');
+	});
 });

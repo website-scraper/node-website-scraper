@@ -60,6 +60,9 @@ describe('Utils', function () {
 		it('should return unconverted filename if there are no ?,#', function () {
 			utils.getFilenameFromUrl('index.html').should.equalFileSystemPath('index.html');
 		});
+		it('should decode escaped chars', function () {
+			utils.getFilenameFromUrl('https://example.co/logo-mobile%20(1).svg?q=650').should.equalFileSystemPath('logo-mobile (1).svg');
+		});
 	});
 
 	describe('#getFilepathFromUrl', function () {
@@ -80,6 +83,13 @@ describe('Utils', function () {
 		it('should not contain trailing slash', function() {
 			utils.getFilepathFromUrl('http://example.com/some/path/').should.equal('some/path');
 			utils.getFilepathFromUrl('http://example.com/some/path/file.css/').should.equal('some/path/file.css');
+		});
+		it('should normalize slashes', function() {
+			utils.getFilepathFromUrl('http://example.com///some//path').should.equal('some/path');
+			utils.getFilepathFromUrl('http://example.com//////////file.css/').should.equal('file.css');
+		});
+		it('should decode escaped chars', function () {
+			utils.getFilepathFromUrl('https://example.co/logo/logo-mobile%20(1).svg?q=650').should.equalFileSystemPath('logo/logo-mobile (1).svg');
 		});
 	});
 
