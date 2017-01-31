@@ -120,7 +120,7 @@ describe('Scraper', function () {
 			});
 		});
 
-		it('should call loadResource for each url', function(done) {
+		it('should call loadResource for each url', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(200, 'OK');
 
@@ -133,13 +133,35 @@ describe('Scraper', function () {
 			});
 
 			var loadResourceSpy = sinon.spy(s, 'loadResource');
-			s.load().then(function() {
+			return s.load().then(function() {
 				loadResourceSpy.calledTwice.should.be.eql(true);
-				done();
-			}).catch(done);
+			});
 		});
 
-		it('should return array of objects with url, filename and children', function(done) {
+		it('should not call loadResource if no resource was returned', function() {
+			nock('http://first-url.com').get('/').reply(200, 'OK');
+			nock('http://second-url.com').get('/').reply(200, 'OK');
+
+			var s = new Scraper({
+				urls: [
+					'http://first-url.com',
+					'http://second-url.com'
+				],
+				directory: testDirname
+			});
+
+			var loadResourceSpy = sinon.spy(s, 'loadResource');
+			var requestStub = sinon.stub(s, 'requestResource');
+			requestStub.onCall(0).resolves(null);
+			requestStub.onCall(1).resolves(new Resource('http://second-url.com'));
+
+			return s.load().then(function() {
+				loadResourceSpy.calledOnce.should.be.eql(true);
+				loadResourceSpy.args[0][0].url.should.be.eql('http://second-url.com');
+			});
+		});
+
+		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
 
@@ -151,13 +173,12 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			s.load().then(function(res) {
+			return s.load().then(function(res) {
 				res.should.be.instanceOf(Array);
 				res.should.have.length(2);
 				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
 				res[1].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
-				done();
-			}).catch(done);
+			});
 		});
 	});
 
