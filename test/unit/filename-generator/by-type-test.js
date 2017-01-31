@@ -111,4 +111,14 @@ describe('FilenameGenerator: byType', function() {
 
 		should(f2).not.be.eql(f1);
 	});
+
+	it('should return decoded url-based filename', function() {
+		var r = new Resource('https://developer.mozilla.org/ru/docs/JavaScript_%D1%88%D0%B5%D0%BB%D0%BB%D1%8B');
+		var filename = byTypeFilenameGenerator(r, {}, []);
+		filename.should.equalFileSystemPath('JavaScript_шеллы');
+
+		var r2 = new Resource('https://developer.mozilla.org/Hello%20G%C3%BCnter.png');
+		var filename2 = byTypeFilenameGenerator(r2, {}, []);
+		filename2.should.equalFileSystemPath('Hello Günter.png');
+	});
 });
