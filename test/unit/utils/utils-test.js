@@ -1,6 +1,6 @@
 var should = require('should');
 var _ = require('lodash');
-var utils = require('../../lib/utils');
+var utils = require('../../../lib/utils');
 var Promise = require('bluebird');
 
 describe('Utils', function () {
