@@ -120,47 +120,6 @@ describe('Scraper', function () {
 			});
 		});
 
-		it('should call loadResource for each url', function() {
-			nock('http://first-url.com').get('/').reply(200, 'OK');
-			nock('http://second-url.com').get('/').reply(200, 'OK');
-
-			var s = new Scraper({
-				urls: [
-					'http://first-url.com',
-					'http://second-url.com'
-				],
-				directory: testDirname
-			});
-
-			var loadResourceSpy = sinon.spy(s, 'loadResource');
-			return s.load().then(function() {
-				loadResourceSpy.calledTwice.should.be.eql(true);
-			});
-		});
-
-		it('should not call loadResource if no resource was returned', function() {
-			nock('http://first-url.com').get('/').reply(200, 'OK');
-			nock('http://second-url.com').get('/').reply(200, 'OK');
-
-			var s = new Scraper({
-				urls: [
-					'http://first-url.com',
-					'http://second-url.com'
-				],
-				directory: testDirname
-			});
-
-			var loadResourceSpy = sinon.spy(s, 'loadResource');
-			var requestStub = sinon.stub(s, 'requestResource');
-			requestStub.onCall(0).resolves(null);
-			requestStub.onCall(1).resolves(new Resource('http://second-url.com'));
-
-			return s.load().then(function() {
-				loadResourceSpy.calledOnce.should.be.eql(true);
-				loadResourceSpy.args[0][0].url.should.be.eql('http://second-url.com');
-			});
-		});
-
 		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
@@ -237,59 +196,34 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('#getLoadedResource', function() {
-		it('should find nothing if no resource with same url was loaded',function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-			var a = new Resource('http://first-resource.com');
-			var loaded = s.getLoadedResource(a.getUrl());
-			should(loaded).be.eql(undefined);
-		});
-
-		it('should find loaded resource with same url', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			var a = new Resource('http://first-resource.com');
-			s.addLoadedResource(a.getUrl(), a);
-
-			var b = new Resource('http://first-resource.com');
-			var c = new Resource('http://first-resource.com/');
-			var d = new Resource('http://first-resource.com?');
-			should(s.getLoadedResource(b.getUrl())).be.equal(a);
-			should(s.getLoadedResource(c.getUrl())).be.equal(a);
-			should(s.getLoadedResource(d.getUrl())).be.equal(a);
-		});
-	});
-
 	describe('#loadResource', function() {
-		it('should not save the same resource twice (should skip already loaded)', function() {
+		it('should add different resource to the map', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
-			s.getResourceHandler = sinon.stub().returns(_.noop);
 
-			sinon.stub(s, 'getLoadedResource')
-				.withArgs('http://example.com/a.png')
-				.onFirstCall().returns()
-				.onSecondCall().returns(Promise.resolve());
+			var r1 = new Resource('http://example.com/a1.png', 'a1.png');
+			var r2 = new Resource('http://example.com/a2.png', 'a2.png');
+			var r3 = new Resource('http://example.com/a3.png', 'a3.png');
 
-			sinon.spy(s, 'addLoadedResource');
+			s.loadResource(r1);
+			s.loadResource(r2);
+			s.loadResource(r3);
+			s.loadedResources.size.should.be.eql(3);
+		});
+
+		it('should not add the same resource twice', function() {
+			var s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 
 			s.loadResource(r);
-			s.getLoadedResource.calledOnce.should.be.eql(true);
-			s.addLoadedResource.calledOnce.should.be.eql(true);
-
 			s.loadResource(r);
-			s.getLoadedResource.calledTwice.should.be.eql(true);
-			s.addLoadedResource.calledOnce.should.be.eql(true);
+			s.loadedResources.size.should.be.eql(1);
 		});
 	});
 
@@ -299,11 +233,11 @@ describe('Scraper', function () {
 				urls: 'http://example.com',
 				directory: testDirname
 			});
-			s.getResourceHandler = sinon.stub().returns(_.noop);
-			sinon.spy(s, 'addLoadedResource');
 
 			var r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
+
+			s.resourceHandler.handleResource = sinon.stub().resolves(r);
 
 			return s.saveResource(r).then(function() {
 				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();

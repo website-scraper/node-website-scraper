@@ -177,18 +177,6 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should call loadResource with resource returned by requestResource', function () {
-			pathContainer.getPaths.returns(['http://example.com/child']);
-
-			var childResourceRespondedMock = new Resource('http://example.com/child', 'child.png');
-			scraperContext.requestResource.resolves(childResourceRespondedMock);
-
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
-				scraperContext.loadResource.calledOnce.should.be.eql(true);
-				scraperContext.loadResource.args[0][0].should.be.eql(childResourceRespondedMock);
-			});
-		});
-
 		it('should update paths in text with local files returned by requestResource', function () {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
