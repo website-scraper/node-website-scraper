@@ -141,6 +141,28 @@ describe('Scraper', function () {
 		});
 	});
 
+	it('should invoke resource callback', function() {
+		nock('http://first-url.com').get('/').reply(200, 'OK');
+
+		var invoked = false;
+
+		var s = new Scraper({
+			urls: [
+				'http://first-url.com'
+			],
+			directory: testDirname,
+			resourceCallback: function(resource, response) {
+				invoked = true;
+				resource.should.exist;
+				response.should.exist;
+			}
+		});
+
+		return s.load().then(function() {
+			invoked.should.be.true;
+		});
+	});
+
 	describe('#errorCleanup', function() {
 		it('should throw error', function() {
 			var s = new Scraper({
