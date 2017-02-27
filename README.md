@@ -60,6 +60,7 @@ Makes requests to `urls` and saves all files found with `sources` to `directory`
  - `ignoreErrors`: boolean, if `true` scraper will continue downloading resources after error occured, if `false` - scraper will finish process and return error *(optional, default: true)*
  - `urlFilter`: function which is called for each url to check whether it should be scraped. *(optional, see example below)*
  - `filenameGenerator`: name of one of the bundled filenameGenerators, or a custom filenameGenerator function *(optional, default: 'byType')*
+ - `httpResponseHandler`: function which is called on each response, allows to customize resource or reject its downloading *(optional, see example below)*
  
 Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
 
@@ -85,6 +86,14 @@ When the `bySiteStructure` filenameGenerator is used the downloaded files are sa
 - `/about` => `DIRECTORY/about/index.html`
 - `/resources/javascript/libraries/jquery.min.js` => `DIRECTORY/resources/javascript/libraries/jquery.min.js`
 
+### Http Response Handlers
+HttpResponseHandler is used to reject resource downloading or customize resource text based on response data (for example, status code, content type, etc.)
+Function takes `response` argument - response object of [request](https://github.com/request/request) module and should return resolved `Promise` if resource should be downloaded or rejected with Error `Promise` if it should be skipped.
+Promise should be resolved with:
+* `string` which contains response body
+* or object with properies `body` (response body, string) and `metadata` - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
+
+See [example of using httpResponseHandler](#example-5-rejecting-resources-with-404-status-and-adding-metadata).
 
 ## Examples
 #### Example 1
@@ -173,6 +182,29 @@ scrape({
   prettifyUrls: true,
   filenameGenerator: 'bySiteStructure',
   directory: '/path/to/save'
+}).then(console.log).catch(console.log);
+```
+
+#### Example 5. Rejecting resources with 404 status and adding metadata
+```javascript
+var scrape = require('website-scraper');
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  httpResponseHandler: (response) => {
+  	if (response.statusCode === 404) {
+		return Promise.reject(new Error('status is 404'));
+	} else {
+		// if you don't need metadata - you can just return Promise.resolve(response.body)
+		return Promise.resolve({
+			body: response.body,
+			metadata: {
+				headers: response.headers,
+				someOtherData: [ 1, 2, 3 ]
+			}
+		});
+	}
+  }
 }).then(console.log).catch(console.log);
 ```
 
