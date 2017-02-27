@@ -1,93 +1,205 @@
-var should = require('should');
-var nock = require('nock');
-var sinon = require('sinon');
+'use strict';
+
+const should = require('should');
+const nock = require('nock');
+const sinon = require('sinon');
 require('sinon-as-promised');
-var proxyquire = require('proxyquire');
+const proxyquire = require('proxyquire');
+const Request = require('../../lib/request');
 
-describe('Request', function () {
-	var makeRequest, makeStubbedRequest, requestStub;
+describe('Request', () => {
 
-	beforeEach(function() {
-		nock.cleanAll();
-		nock.enableNetConnect();
+	describe('constructor', () => {
+		it('should set passed responseHandler', () => {
+			let handler = sinon.stub();
+			let r = new Request({
+				httpResponseHandler: handler
+			});
+			should(r.handleResponse).be.eql(handler);
+		});
 
-		makeRequest = require('../../lib/request');
+		it('should set correct default handler and options if nothing passed', () => {
+			let r1 = new Request({});
+			should(r1.handleResponse).be.ok();
+			should(r1.handleResponse).be.instanceOf(Function);
+			should(r1.options).be.eql({});
 
-		requestStub = sinon.stub().yields(null, { request: {href: ''}, body: '', headers: {} });
-		makeStubbedRequest = proxyquire('../../lib/request', {
-			'request': {
-				'get': requestStub
-			}
+			let r2 = new Request();
+			should(r2.handleResponse).be.ok();
+			should(r2.handleResponse).be.instanceOf(Function);
+			should(r2.options).be.eql({});
+		});
+
+		it('should set passed request options', () => {
+			let options = { a: 1 };
+			let r = new Request({
+				request: options
+			});
+			should(r.options).be.eql(options);
 		});
 	});
 
-	afterEach(function() {
-		nock.cleanAll();
-		nock.enableNetConnect();
-	});
+	describe('get', () => {
 
-	it('should call request with correct params', function () {
-		var options = {
-			headers: {
-				'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
-			}
-		};
-		var url = 'http://www.google.com';
+		describe('using stubbed request', () => {
+			let requestStub, Request, responseMock;
 
-		return makeStubbedRequest(options, url).then(function () {
-			var expectedOptions = {
-				headers: {
-					'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
-				},
-				url: url
-			};
+			beforeEach(() => {
+				responseMock = { request: {href: ''}, body: '', headers: {} };
+				requestStub = sinon.stub().yields(null, responseMock);
+				Request = proxyquire('../../lib/request', {
+					'request': {
+						'get': requestStub
+					}
+				});
+			});
 
-			requestStub.calledOnce.should.be.eql(true);
-			requestStub.calledWith(expectedOptions).should.be.eql(true);
+			it('should call request with correct params', () => {
+				let r = new Request({});
+				r.options = {
+					headers: {
+						'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
+					}
+				};
+				let url = 'http://www.google.com';
+
+				return r.get(url).then(() => {
+					let expectedOptions = {
+						headers: {
+							'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
+						},
+						url: url
+					};
+
+					requestStub.calledOnce.should.be.eql(true);
+					requestStub.calledWith(expectedOptions).should.be.eql(true);
+				});
+			});
+
+			it('should add referer header if referer param was passed', () => {
+				let r = new Request({});
+
+				let url = 'http://www.google.com';
+				let referer = 'http://referer.com';
+
+				return r.get(url, referer).then(() => {
+					let expectedOptions = {
+						headers: {
+							referer: referer
+						},
+						url: url
+					};
+
+					requestStub.calledOnce.should.be.eql(true);
+					requestStub.calledWith(expectedOptions).should.be.eql(true);
+				});
+			});
+
+			it('should call handleResponse with correct params', () => {
+				let handlerStub = sinon.stub().resolves('');
+				let r = new Request({
+					httpResponseHandler: handlerStub
+				});
+
+				return r.get('http://example.com').then(() => {
+					should(r.handleResponse.calledOnce).be.eql(true);
+					should(r.handleResponse.calledWith(responseMock)).be.eql(true);
+				});
+			});
+
+			describe('transformResult from handleResponse', () => {
+				it('should return object with body and metadata properties', () => {
+					let handlerStub = sinon.stub().resolves({
+						body: 'a',
+						metadata: 'b'
+					});
+					let r = new Request({
+						httpResponseHandler: handlerStub
+					});
+
+					return r.get('http://example.com').then((data) => {
+						should(data.body).be.eql('a');
+						should(data.metadata).be.eql('b');
+					});
+				});
+
+				it('should return with metadata == null if metadata is not defined', () => {
+					let handlerStub = sinon.stub().resolves({
+						body: 'a'
+					});
+					let r = new Request({
+						httpResponseHandler: handlerStub
+					});
+
+					return r.get('http://example.com').then((data) => {
+						should(data.body).be.eql('a');
+						should(data.metadata).be.eql(null);
+					});
+				});
+
+				it('should transform string result', () => {
+					let handlerStub = sinon.stub().resolves('test body');
+					let r = new Request({
+						httpResponseHandler: handlerStub
+					});
+
+					return r.get('http://example.com').then((data) => {
+						should(data.body).be.eql('test body');
+						should(data.metadata).be.eql(null);
+					});
+				});
+
+				it('should be rejected if wrong result (no string nor object) returned', () => {
+					let handlerStub = sinon.stub().resolves(['1', '2']);
+					let r = new Request({
+						httpResponseHandler: handlerStub
+					});
+
+					return r.get('http://example.com').then(() => {
+						should(true).be.eql(false);
+					}).catch((e) => {
+						should(e).be.instanceOf(Error);
+					});
+				});
+			});
 		});
-	});
 
-	it('should add referer header if referer param was passed', function() {
-		var options = {};
-		var url = 'http://www.google.com';
-		var referer = 'http://referer.com';
+		describe('using nock', () => {
+			beforeEach(() => {
+				nock.cleanAll();
+				nock.enableNetConnect();
+			});
 
-		return makeStubbedRequest(options, url, referer).then(function () {
-			var expectedOptions = {
-				headers: {
-					referer: referer
-				},
-				url: url
-			};
+			afterEach(() => {
+				nock.cleanAll();
+				nock.enableNetConnect();
+			});
 
-			requestStub.calledOnce.should.be.eql(true);
-			requestStub.calledWith(expectedOptions).should.be.eql(true);
-		});
-	});
+			it('should return object with url, body, mimeType properties', () => {
+				let url = 'http://www.google.com';
+				nock(url).get('/').reply(200, 'Hello from Google!', {
+					'content-type': 'text/html; charset=utf-8'
+				});
 
-	it('should return object with url, body and mimeType properties', function () {
-		var url = 'http://www.google.com';
-		nock(url).get('/').reply(200, 'Hello from Google!', {
-			'content-type': 'text/html; charset=utf-8'
-		});
+				return new Request().get(url).then((data) => {
+					data.should.have.properties(['url', 'body', 'mimeType']);
+					data.url.should.be.eql('http://www.google.com/');
+					data.body.should.be.eql('Hello from Google!');
+					data.mimeType.should.be.eql('text/html');
+				});
+			});
 
-		return makeRequest({}, url).then(function (data) {
-			data.should.have.properties(['url', 'body', 'mimeType']);
-			data.url.should.be.eql('http://www.google.com/');
-			data.body.should.be.eql('Hello from Google!');
-			data.mimeType.should.be.eql('text/html');
-		});
-	});
+			it('should return mimeType = null if content-type header was not found in response', () => {
+				let url = 'http://www.google.com';
+				nock(url).get('/').reply(200, 'Hello from Google!', {});
 
-	it('should return mimeType = null if content-type header was not found in response', function () {
-		var url = 'http://www.google.com';
-		nock(url).get('/').reply(200, 'Hello from Google!', {});
-
-		return makeRequest({}, url).then(function (data) {
-			data.should.have.properties(['url', 'body', 'mimeType']);
-			data.url.should.be.eql('http://www.google.com/');
-			data.body.should.be.eql('Hello from Google!');
-			should(data.mimeType).be.eql(null);
+				return new Request().get(url).then((data) => {
+					data.should.have.properties(['url', 'body', 'mimeType']);
+					data.url.should.be.eql('http://www.google.com/');
+					data.body.should.be.eql('Hello from Google!');
+					should(data.mimeType).be.eql(null);
+				});
+			});
 		});
 	});
 });
