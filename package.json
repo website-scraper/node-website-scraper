@@ -26,7 +26,7 @@
     "image",
     "js"
   ],
-  "author": "s0ph1e",
+  "author": "Sophia Antipenko <sophia@antipenko.pp.ua>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/s0ph1e/node-website-scraper/issues"
