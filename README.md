@@ -187,7 +187,7 @@ Promise should be resolved with:
 * `string` which contains response body
 * or object with properies `body` (response body, string) and `metadata` - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
 ```javascript
-// Example: rejecting resources with 404 status and adding metadata
+// Rejecting resources with 404 status and adding metadata to other resources
 scrape({
   urls: ['http://example.com/'],
   directory: '/path/to/save',
