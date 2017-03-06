@@ -1,6 +1,6 @@
 {
   "name": "website-scraper",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
   "main": "index.js",
@@ -26,7 +26,7 @@
     "image",
     "js"
   ],
-  "author": "s0ph1e",
+  "author": "Sophia Antipenko <sophia@antipenko.pp.ua>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/s0ph1e/node-website-scraper/issues"
