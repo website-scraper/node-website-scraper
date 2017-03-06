@@ -179,35 +179,6 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('makeRequest', function () {
-		it('should bind request object to makeRequest method', function() {
-			var requestStub = sinon.stub().resolves();
-			var Scraper = proxyquire('../../lib/scraper', {
-				'./request': requestStub,
-				'./config/defaults': {
-					request: {}
-				}
-			});
-
-			var reqOpts = {
-				headers: {
-					'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
-				}
-			};
-
-			var s = new Scraper({
-				urls: { url: 'http://first-url.com' },
-				directory: testDirname,
-				request: reqOpts
-			});
-
-			return s.makeRequest('http://example.com').then(function() {
-				requestStub.calledOnce.should.be.eql(true);
-				requestStub.calledWith(reqOpts).should.be.eql(true);
-			});
-		});
-	});
-
 	describe('resourceHandler', function () {
 		it('should create resourceHandler with correct params', function() {
 			var ResourceHandlerStub = sinon.stub();
