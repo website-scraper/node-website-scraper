@@ -58,6 +58,8 @@ scrape(options, (error, result) => {
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [httpResponseHandler](#httpresponsehandler) - customize http response handling
+* [onResourceSaved](#onresourcesaved) - callback called when resource is saved
+* [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
  
 Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
 
@@ -208,6 +210,30 @@ scrape({
 }).then(console.log).catch(console.log);
 ```
 Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
+
+#### onResourceSaved
+Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.
+```javascript
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  onResourceSaved: (resource) => {
+  	console.log(`Resource ${resource} was saved to fs`);
+  }
+})
+```
+
+#### onResourceError
+Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with - [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object and `Error` object. Defaults to `null` - no callback will be called.
+```javascript
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  onResourceError: (resource, err) => {
+  	console.log(`Resource ${resource} was not saved because of ${err}`);
+  }
+})
+```
 
 ## callback 
 Callback function, optional, includes following parameters:
