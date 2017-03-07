@@ -55,9 +55,9 @@ scrape(options, (error, result) => {
 * [defaultFilename](#defaultfilename) - filename for index page
 * [prettifyUrls](#prettifyurls) - prettify urls
 * [ignoreErrors](#ignoreerrors) - whether to ignore errors on resource downloading
-* [urlFilter](#urlfilter)
-* [filenameGenerator](#filenamegenerator)
-* [httpResponseHandler](#httpresponsehandler)
+* [urlFilter](#urlfilter) - skip some urls
+* [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
+* [httpResponseHandler](#httpresponsehandler) - customize http response handling
  
 Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
 
