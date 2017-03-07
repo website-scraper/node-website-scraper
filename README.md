@@ -212,7 +212,7 @@ scrape({
 Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
 
 #### onResourceSaved
-Function called each time when resource is saved to file system. Callback is called with 1 argument which represents [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js). Defaults to `null` - no callback will be called.
+Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.
 ```javascript
 scrape({
   urls: ['http://example.com/'],
@@ -224,7 +224,7 @@ scrape({
 ```
 
 #### onResourceError
-Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with 2 arguments - [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object and `Error`. Defaults to `null` - no callback will be called.
+Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with - [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object and `Error` object. Defaults to `null` - no callback will be called.
 ```javascript
 scrape({
   urls: ['http://example.com/'],
