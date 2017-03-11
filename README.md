@@ -61,7 +61,7 @@ scrape(options, (error, result) => {
 * [onResourceSaved](#onresourcesaved) - callback called when resource is saved
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
  
-Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js).
+Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
 #### urls
 Array of objects which contain urls to download and filenames for them. **_Required_**.
