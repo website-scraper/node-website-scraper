@@ -4,7 +4,7 @@ var should = require('should');
 var sinon = require('sinon');
 require('sinon-as-promised');
 var nock = require('nock');
-var proxyquire = require('proxyquire');
+var proxyquire = require('proxyquire').noCallThru();
 var fs = require('fs-extra');
 var path = require('path');
 var Scraper = require('../../lib/scraper');
@@ -478,6 +478,16 @@ describe('Scraper', function () {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('Awful error');
 			});
+		});
+	});
+
+	describe('defaults', function() {
+		it('should export defaults', function() {
+			var defaultsMock = { subdirectories: null, recursive: true, sources: [] };
+			Scraper = proxyquire('../../lib/scraper', {
+				'./config/defaults': defaultsMock
+			});
+			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
 		});
 	});
 });
