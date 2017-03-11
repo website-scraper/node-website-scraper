@@ -103,6 +103,19 @@ describe('Scraper initialization', function () {
 			s.options.subdirectories.should.eql(defaultsMock.subdirectories);
 		});
 
+		it('should convert extensions to lower case', function () {
+
+			var s = new Scraper({
+				urls: urls,
+				directory: testDirname,
+				subdirectories: [
+					{ directory: 'dir', extensions: ['.TXT'] }
+				]
+			});
+
+			s.options.subdirectories[0].extensions.should.eql(['.txt']);
+		});
+
 		it('should use passed subdirectories if subdirectories were passed', function () {
 			var s = new Scraper({
 				urls: urls,

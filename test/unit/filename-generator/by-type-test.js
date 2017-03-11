@@ -60,17 +60,13 @@ describe('FilenameGenerator: byType', function() {
     it('should return filename with correct subdirectory when string cases are different', function() {
         var options = {
             subdirectories: [
-                { directory: 'img', extensions: ['.JPG', '.png'] }
+                { directory: 'img', extensions: ['.png'] }
             ]
         };
 
-        var r1 = new Resource('http://example.com/a.jpg');
-        var f1 = byTypeFilenameGenerator(r1, options, []);
-        f1.should.equalFileSystemPath('img/a.jpg');
-
-        var r2 = new Resource('http://example.com/b.PNG');
-        var f2 = byTypeFilenameGenerator(r2, options, []);
-        f2.should.equalFileSystemPath('img/b.PNG');
+        var r = new Resource('http://example.com/a.PNG');
+        var f = byTypeFilenameGenerator(r, options, []);
+        f.should.equalFileSystemPath('img/a.PNG');
     });
 
 	it('should return different filename if desired filename is occupied', function() {
