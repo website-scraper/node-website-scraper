@@ -57,6 +57,22 @@ describe('FilenameGenerator: byType', function() {
 		filename.should.equalFileSystemPath('img/a.png');
 	});
 
+    it('should return filename with correct subdirectory when string cases are different', function() {
+        var options = {
+            subdirectories: [
+                { directory: 'img', extensions: ['.JPG', '.png'] }
+            ]
+        };
+
+        var r1 = new Resource('http://example.com/a.jpg');
+        var f1 = byTypeFilenameGenerator(r1, options, []);
+        f1.should.equalFileSystemPath('img/a.jpg');
+
+        var r2 = new Resource('http://example.com/b.PNG');
+        var f2 = byTypeFilenameGenerator(r2, options, []);
+        f2.should.equalFileSystemPath('img/b.PNG');
+    });
+
 	it('should return different filename if desired filename is occupied', function() {
 		var r = new Resource('http://second-example.com/a.png');
 		var filename = byTypeFilenameGenerator(r, {}, [ 'a.png' ]);
