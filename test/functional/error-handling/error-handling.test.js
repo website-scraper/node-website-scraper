@@ -1,7 +1,6 @@
 var should = require('should');
 var nock = require('nock');
 var sinon = require('sinon');
-require('sinon-as-promised');
 var fs = require('fs-extra');
 var Promise = require('bluebird');
 var Scraper = require('../../../lib/scraper');

@@ -1,7 +1,6 @@
 var should = require('should');
 var Promise = require('bluebird');
 var sinon = require('sinon');
-require('sinon-as-promised')(Promise);
 var Resource = require('../../../lib/resource');
 var CssResourceHandler = require('../../../lib/resource-handler/css');
 

@@ -1,7 +1,6 @@
 var should = require('should');
 var sinon = require('sinon');
-var Bluebird = require('bluebird');
-require('sinon-as-promised')(Bluebird);
+var Promise = require('bluebird');
 var proxyquire = require('proxyquire');
 var Resource = require('../../../lib/resource');
 var ResourceHandler = require('../../../lib/resource-handler');
@@ -39,7 +38,7 @@ describe('ResourceHandler', function() {
 				'./css': cssHandlerStub
 			});
 
-			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'handleChildrenResources').resolves();
+			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'handleChildrenResources').returns(Promise.resolve());
 			var options = { defaultFilename: 'test' };
 			var context = { dummy: 'context' };
 
@@ -140,8 +139,8 @@ describe('ResourceHandler', function() {
 			parentResource = new Resource('http://example.com', 'test.txt');
 
 			scraperContext = {
-				requestResource: sinon.stub().resolves(),
-				loadResource: sinon.stub().resolves()
+				requestResource: sinon.stub().returns(Promise.resolve()),
+				loadResource: sinon.stub().returns(Promise.resolve())
 			};
 
 			resHandler = new ResourceHandler({defaultFilename: 'index.html'}, scraperContext);
@@ -184,9 +183,9 @@ describe('ResourceHandler', function() {
 				'http://second.com/img/c.jpg'
 			]);
 
-			scraperContext.requestResource.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
-			scraperContext.requestResource.onSecondCall().resolves(new Resource('http://first.com/b.jpg', 'local/b.jpg'));
-			scraperContext.requestResource.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
+			scraperContext.requestResource.onFirstCall().returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
+			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
+			scraperContext.requestResource.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
@@ -217,9 +216,9 @@ describe('ResourceHandler', function() {
 				'http://second.com/img/c.jpg'
 			]);
 
-			scraperContext.requestResource.onFirstCall().resolves(null);
-			scraperContext.requestResource.onSecondCall().resolves(null);
-			scraperContext.requestResource.onThirdCall().resolves(new Resource('http://second.com/img/c.jpg', 'local/c.jpg'));
+			scraperContext.requestResource.onFirstCall().returns(Promise.resolve(null));
+			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(null));
+			scraperContext.requestResource.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
@@ -244,9 +243,9 @@ describe('ResourceHandler', function() {
 
 			pathContainer.updateText.returns('UPDATED TEXT');
 
-			scraperContext.requestResource.onFirstCall().resolves(new Resource('http://first.com/img/a.jpg', 'local/a.jpg'));
-			scraperContext.requestResource.onSecondCall().resolves(null);
-			scraperContext.requestResource.onThirdCall().rejects(new Error('some error'));
+			scraperContext.requestResource.onFirstCall().returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
+			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(null));
+			scraperContext.requestResource.onThirdCall().returns(Promise.reject(new Error('some error')));
 
 			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function (updatedText) {
 				updatedText.should.be.eql('UPDATED TEXT');
@@ -257,7 +256,7 @@ describe('ResourceHandler', function() {
 			it('should keep hash in urls', function () {
 				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 				sinon.stub(resourceStub, 'getType').returns('html');
-				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(resourceStub));
 
 				pathContainer.getPaths.returns(['http://example.com/page1.html#hash']);
 
@@ -276,7 +275,7 @@ describe('ResourceHandler', function() {
 		describe('prettifyUrls', function () {
 			it('should not prettifyUrls by default', function() {
 				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
-				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(resourceStub));
 
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 
@@ -294,7 +293,7 @@ describe('ResourceHandler', function() {
 
 			it('should prettifyUrls if specified', function() {
 				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
-				scraperContext.requestResource.onFirstCall().resolves(resourceStub);
+				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(resourceStub));
 
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 				resHandler.options.prettifyUrls = true;
