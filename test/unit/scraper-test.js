@@ -2,7 +2,6 @@
 
 var should = require('should');
 var sinon = require('sinon');
-require('sinon-as-promised');
 var nock = require('nock');
 var proxyquire = require('proxyquire').noCallThru();
 var fs = require('fs-extra');

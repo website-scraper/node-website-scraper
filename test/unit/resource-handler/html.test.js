@@ -1,7 +1,6 @@
 require('should');
 var Promise = require('bluebird');
 var sinon = require('sinon');
-require('sinon-as-promised')(Promise);
 var Resource = require('../../../lib/resource');
 var HtmlHandler = require('../../../lib/resource-handler/html');
 
@@ -13,7 +12,7 @@ describe('ResourceHandler: Html', function () {
 	var htmlHandler;
 
 	beforeEach(function() {
-		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().resolves());
+		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().returns(Promise.resolve()));
 	});
 
 	describe('<base> tag', function () {
