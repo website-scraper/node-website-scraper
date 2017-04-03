@@ -3,7 +3,6 @@
 const should = require('should');
 const nock = require('nock');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const proxyquire = require('proxyquire');
 const Request = require('../../lib/request');
 
