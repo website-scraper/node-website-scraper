@@ -4,65 +4,65 @@ const should = require('should');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const path = require('path');
-const FSAdapter = require('../../lib/fs-adaper');
+const ResourceStorage = require('../../lib/resource-storage');
 
-describe('FSAdapter', function () {
+describe('ResourceStorage', function () {
 	describe('constructor', function() {
 		it('should pick supported options', function() {
 			const options = { a: 1, b: 2, directory: 'myDirectory' };
-			const fsAdapter = new FSAdapter(options);
-			fsAdapter.options.should.eql({directory: 'myDirectory'});
+			const resourceStorage = new ResourceStorage(options);
+			resourceStorage.options.should.eql({directory: 'myDirectory'});
 		});
 
 		describe('absoluteDirectoryPath', () => {
 			it('should create absolute path if directory is relative path', function () {
 				const options = { directory: 'my/relative/path' };
-				const fsAdapter = new FSAdapter(options);
+				const resourceStorage = new ResourceStorage(options);
 				const expected = path.join(process.cwd(), 'my/relative/path');
-				fsAdapter.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+				resourceStorage.absoluteDirectoryPath.should.equalFileSystemPath(expected);
 			});
 
 			it('should use directory if directory is absolute path', function () {
 				const options = { directory: '/my/absolute/path' };
-				const fsAdapter = new FSAdapter(options);
+				const resourceStorage = new ResourceStorage(options);
 				const expected = '/my/absolute/path';
-				fsAdapter.absoluteDirectoryPath.should.equalFileSystemPath(expected);
+				resourceStorage.absoluteDirectoryPath.should.equalFileSystemPath(expected);
 			});
 		});
 
 		describe('incorrect directory', () => {
 			it('should throw error if no directory were passed', function () {
 				const options = {};
-				function createFsAdapter () {
-					new FSAdapter(options);
+				function createResourceStorage () {
+					new ResourceStorage(options);
 				}
-				should(createFsAdapter).throw(/Incorrect directory/);
+				should(createResourceStorage).throw(/Incorrect directory/);
 			});
 
 			it('should throw error if empty directory were passed', function () {
 				const options = {
 					directory: ''
 				};
-				function createFsAdapter () {
-					new FSAdapter(options);
+				function createResourceStorage () {
+					new ResourceStorage(options);
 				}
-				should(createFsAdapter).throw(/Incorrect directory/);
+				should(createResourceStorage).throw(/Incorrect directory/);
 			});
 
 			it('should throw error if incorrect directory passed', function () {
 				const options = {
 					directory: {}
 				};
-				function createFsAdapter () {
-					new FSAdapter(options);
+				function createResourceStorage () {
+					new ResourceStorage(options);
 				}
-				should(createFsAdapter).throw(/Incorrect directory/);
+				should(createResourceStorage).throw(/Incorrect directory/);
 			});
 		});
 
 		describe('existing directory', () => {
 			it('should throw error if directory exists', () => {
-				const FSAdapter = proxyquire('../../lib/fs-adaper', {
+				const ResourceStorage = proxyquire('../../lib/resource-storage', {
 					'fs-extra': {
 						statSync: sinon.stub().returns('fake-stat')
 					}
@@ -71,10 +71,10 @@ describe('FSAdapter', function () {
 				const options = {
 					directory: 'fake-directory'
 				};
-				function createFsAdapter () {
-					new FSAdapter(options);
+				function createResourceStorage () {
+					new ResourceStorage(options);
 				}
-				should(createFsAdapter).throw(/Directory (.*?) exists/);
+				should(createResourceStorage).throw(/Directory (.*?) exists/);
 			});
 		});
 
