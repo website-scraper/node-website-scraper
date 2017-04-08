@@ -1,13 +1,15 @@
-var should = require('should');
-var nock = require('nock');
-var sinon = require('sinon');
-var fs = require('fs-extra');
-var Promise = require('bluebird');
-var Scraper = require('../../../lib/scraper');
+'use strict';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
-var scraper;
+const should = require('should');
+const nock = require('nock');
+const sinon = require('sinon');
+const fs = require('fs-extra');
+const Promise = require('bluebird');
+const Scraper = require('../../../lib/scraper');
+
+const testDirname = __dirname + '/.tmp';
+const mockDirname = __dirname + '/mocks';
+let scraper;
 
 describe('Functional error handling', function() {
 
