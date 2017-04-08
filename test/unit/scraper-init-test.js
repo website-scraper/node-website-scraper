@@ -1,12 +1,14 @@
-var should = require('should');
-var proxyquire = require('proxyquire').noCallThru();
-var sinon = require('sinon');
-var path = require('path');
-var Scraper = require('../../lib/scraper');
-var Resource = require('../../lib/resource');
+'use strict';
 
-var testDirname = __dirname + '/.scraper-init-test';
-var urls = [ 'http://example.com' ];
+const should = require('should');
+const proxyquire = require('proxyquire').noCallThru();
+const sinon = require('sinon');
+const path = require('path');
+const Scraper = require('../../lib/scraper');
+const Resource = require('../../lib/resource');
+
+const testDirname = __dirname + '/.scraper-init-test';
+const urls = [ 'http://example.com' ];
 
 describe('Scraper initialization', function () {
 	describe('defaultFilename', function() {
@@ -259,6 +261,45 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 			s.resources[0].getFilename().should.equalFileSystemPath('default.html');
+		});
+	});
+
+	describe('resourceStorage', () => {
+		it('should create default resourceStorage with correct params', () => {
+			const ResourceStorageStub = sinon.stub();
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./resource-storage': ResourceStorageStub
+			});
+
+			const options = {
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100
+			};
+
+			const s = new Scraper(options);
+			ResourceStorageStub.calledOnce.should.be.eql(true);
+			ResourceStorageStub.args[0][0].should.be.eql(s.options);
+		});
+
+		it('should create custom resourceStorage with correct params', () => {
+			const DefaultResourceStorageStub = sinon.stub();
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./resource-storage': DefaultResourceStorageStub
+			});
+			const CustomResourceStorageStub = sinon.stub();
+
+			const options = {
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100,
+				resourceStorage: CustomResourceStorageStub
+			};
+
+			const s = new Scraper(options);
+			CustomResourceStorageStub.calledOnce.should.be.eql(true);
+			CustomResourceStorageStub.args[0][0].should.be.eql(s.options);
+			DefaultResourceStorageStub.called.should.be.eql(false);
 		});
 	});
 });
