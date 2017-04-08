@@ -81,7 +81,7 @@ describe('Functional error handling', function() {
 		beforeEach(function() {
 			var originalHandleResource = scraper.resourceHandler.handleResource;
 			var callCount = 0;
-			handleResourceStub = sinon.stub(scraper.resourceHandler, 'handleResource', function() {
+			handleResourceStub = sinon.stub(scraper.resourceHandler, 'handleResource').callsFake(function() {
 				if (callCount++ === 3) {
 					return Promise.reject(new Error('RESOURCE HANDLER FAILED!'));
 				}

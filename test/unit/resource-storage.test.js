@@ -76,6 +76,22 @@ describe('ResourceStorage', function () {
 				}
 				should(createResourceStorage).throw(/Directory (.*?) exists/);
 			});
+
+			it('should throw other errors as is', () => {
+				const ResourceStorage = proxyquire('../../lib/resource-storage', {
+					'fs-extra': {
+						statSync: sinon.stub().throws(new Error('other fs error'))
+					}
+				});
+
+				const options = {
+					directory: 'fake-directory'
+				};
+				function createResourceStorage () {
+					new ResourceStorage(options);
+				}
+				should(createResourceStorage).throw('other fs error');
+			});
 		});
 
 	});
