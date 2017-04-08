@@ -41,12 +41,13 @@ describe('Functional error handling', function() {
 	});
 
 	describe('FS Error', function () {
-		var loadToFsStub;
+		let loadToFsStub, handleErrorSpy;
 
 		beforeEach(function() {
 			scraper.fsAdapter.loadedResources = [1, 2];
 			loadToFsStub = sinon.stub(scraper.fsAdapter, 'saveResource').resolves();
 			loadToFsStub.onCall(2).rejects(new Error('FS FAILED!'));
+			handleErrorSpy = sinon.spy(scraper.fsAdapter, 'handleError');
 		});
 
 		it('should remove directory and immediately reject on fs error if ignoreErrors is false', function () {
@@ -55,9 +56,10 @@ describe('Functional error handling', function() {
 			return scraper.scrape().then(function() {
 				should(true).be.eql(false);
 			}).catch(function (err) {
-				fs.existsSync(testDirname).should.be.eql(false);
 				should(err.message).be.eql('FS FAILED!');
 				should(loadToFsStub.callCount).be.eql(3);
+				should(handleErrorSpy.callCount).be.eql(1);
+				fs.existsSync(testDirname).should.be.eql(false);
 			});
 		});
 
@@ -66,7 +68,7 @@ describe('Functional error handling', function() {
 
 			return scraper.scrape().then(function() {
 				should(loadToFsStub.callCount).be.eql(7);
-				fs.existsSync(testDirname).should.be.eql(true);
+				should(handleErrorSpy.callCount).be.eql(0);
 			});
 		});
 	});
