@@ -224,7 +224,7 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('originalResources', function () {
+	describe('resources', function () {
 		it('should create Resource object for each url', function() {
 			var s = new Scraper({
 				urls: [
@@ -235,13 +235,13 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.originalResources.should.be.an.instanceOf(Array).and.have.length(3);
-			s.originalResources[0].should.be.an.instanceOf(Resource);
-			s.originalResources[0].url.should.be.eql('http://first-url.com');
-			s.originalResources[1].should.be.an.instanceOf(Resource);
-			s.originalResources[1].url.should.be.eql('http://second-url.com');
-			s.originalResources[2].should.be.an.instanceOf(Resource);
-			s.originalResources[2].url.should.be.eql('http://third-url.com');
+			s.resources.should.be.an.instanceOf(Array).and.have.length(3);
+			s.resources[0].should.be.an.instanceOf(Resource);
+			s.resources[0].url.should.be.eql('http://first-url.com');
+			s.resources[1].should.be.an.instanceOf(Resource);
+			s.resources[1].url.should.be.eql('http://second-url.com');
+			s.resources[2].should.be.an.instanceOf(Resource);
+			s.resources[2].url.should.be.eql('http://third-url.com');
 		});
 
 		it('should use urls filename', function() {
@@ -249,7 +249,7 @@ describe('Scraper initialization', function () {
 				urls: { url: 'http://first-url.com', filename: 'first.html' },
 				directory: testDirname
 			});
-			s.originalResources[0].getFilename().should.equalFileSystemPath('first.html');
+			s.resources[0].getFilename().should.equalFileSystemPath('first.html');
 		});
 
 		it('should use default filename if no url filename was provided', function() {
@@ -258,7 +258,7 @@ describe('Scraper initialization', function () {
 				defaultFilename: 'default.html',
 				directory: testDirname
 			});
-			s.originalResources[0].getFilename().should.equalFileSystemPath('default.html');
+			s.resources[0].getFilename().should.equalFileSystemPath('default.html');
 		});
 	});
 });

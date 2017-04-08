@@ -47,7 +47,7 @@ describe('Functional error handling', function() {
 			scraper.fsAdapter.loadedResources = [1, 2];
 			loadToFsStub = sinon.stub(scraper.fsAdapter, 'saveResource').resolves();
 			loadToFsStub.onCall(2).rejects(new Error('FS FAILED!'));
-			handleErrorSpy = sinon.spy(scraper.fsAdapter, 'handleError');
+			handleErrorSpy = sinon.spy(scraper.fsAdapter, 'removeSavedResources');
 		});
 
 		it('should remove directory and immediately reject on fs error if ignoreErrors is false', function () {
