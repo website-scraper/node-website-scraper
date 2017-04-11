@@ -1,12 +1,14 @@
-var should = require('should');
-var proxyquire = require('proxyquire').noCallThru();
-var sinon = require('sinon');
-var path = require('path');
-var Scraper = require('../../lib/scraper');
-var Resource = require('../../lib/resource');
+'use strict';
 
-var testDirname = __dirname + '/.scraper-init-test';
-var urls = [ 'http://example.com' ];
+const should = require('should');
+const proxyquire = require('proxyquire').noCallThru();
+const sinon = require('sinon');
+const path = require('path');
+const Scraper = require('../../lib/scraper');
+const Resource = require('../../lib/resource');
+
+const testDirname = __dirname + '/.scraper-init-test';
+const urls = [ 'http://example.com' ];
 
 describe('Scraper initialization', function () {
 	describe('defaultFilename', function() {
@@ -224,7 +226,7 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('originalResources', function () {
+	describe('resources', function () {
 		it('should create Resource object for each url', function() {
 			var s = new Scraper({
 				urls: [
@@ -235,13 +237,13 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.originalResources.should.be.an.instanceOf(Array).and.have.length(3);
-			s.originalResources[0].should.be.an.instanceOf(Resource);
-			s.originalResources[0].url.should.be.eql('http://first-url.com');
-			s.originalResources[1].should.be.an.instanceOf(Resource);
-			s.originalResources[1].url.should.be.eql('http://second-url.com');
-			s.originalResources[2].should.be.an.instanceOf(Resource);
-			s.originalResources[2].url.should.be.eql('http://third-url.com');
+			s.resources.should.be.an.instanceOf(Array).and.have.length(3);
+			s.resources[0].should.be.an.instanceOf(Resource);
+			s.resources[0].url.should.be.eql('http://first-url.com');
+			s.resources[1].should.be.an.instanceOf(Resource);
+			s.resources[1].url.should.be.eql('http://second-url.com');
+			s.resources[2].should.be.an.instanceOf(Resource);
+			s.resources[2].url.should.be.eql('http://third-url.com');
 		});
 
 		it('should use urls filename', function() {
@@ -249,7 +251,7 @@ describe('Scraper initialization', function () {
 				urls: { url: 'http://first-url.com', filename: 'first.html' },
 				directory: testDirname
 			});
-			s.originalResources[0].getFilename().should.equalFileSystemPath('first.html');
+			s.resources[0].getFilename().should.equalFileSystemPath('first.html');
 		});
 
 		it('should use default filename if no url filename was provided', function() {
@@ -258,7 +260,46 @@ describe('Scraper initialization', function () {
 				defaultFilename: 'default.html',
 				directory: testDirname
 			});
-			s.originalResources[0].getFilename().should.equalFileSystemPath('default.html');
+			s.resources[0].getFilename().should.equalFileSystemPath('default.html');
+		});
+	});
+
+	describe('resourceSaver', () => {
+		it('should create default resourceSaver with correct params', () => {
+			const ResourceSaverStub = sinon.stub();
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./resource-saver': ResourceSaverStub
+			});
+
+			const options = {
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100
+			};
+
+			const s = new Scraper(options);
+			ResourceSaverStub.calledOnce.should.be.eql(true);
+			ResourceSaverStub.args[0][0].should.be.eql(s.options);
+		});
+
+		it('should create custom resourceSaver with correct params', () => {
+			const DefaultResourceSaverStub = sinon.stub();
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./resource-saver': DefaultResourceSaverStub
+			});
+			const CustomResourceSaverStub = sinon.stub();
+
+			const options = {
+				urls: { url: 'http://first-url.com' },
+				directory: testDirname,
+				maxDepth: 100,
+				resourceSaver: CustomResourceSaverStub
+			};
+
+			const s = new Scraper(options);
+			CustomResourceSaverStub.calledOnce.should.be.eql(true);
+			CustomResourceSaverStub.args[0][0].should.be.eql(s.options);
+			DefaultResourceSaverStub.called.should.be.eql(false);
 		});
 	});
 });

@@ -1,13 +1,15 @@
-var should = require('should');
-var nock = require('nock');
-var sinon = require('sinon');
-var fs = require('fs-extra');
-var Promise = require('bluebird');
-var Scraper = require('../../../lib/scraper');
+'use strict';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
-var scraper;
+const should = require('should');
+const nock = require('nock');
+const sinon = require('sinon');
+const fs = require('fs-extra');
+const Promise = require('bluebird');
+const Scraper = require('../../../lib/scraper');
+
+const testDirname = __dirname + '/.tmp';
+const mockDirname = __dirname + '/mocks';
+let scraper;
 
 describe('Functional error handling', function() {
 
@@ -41,12 +43,13 @@ describe('Functional error handling', function() {
 	});
 
 	describe('FS Error', function () {
-		var loadToFsStub;
+		let loadToFsStub, handleErrorSpy;
 
 		beforeEach(function() {
-			scraper.fsAdapter.loadedResources = [1, 2];
-			loadToFsStub = sinon.stub(scraper.fsAdapter, 'saveResource').resolves();
+			scraper.resourceSaver.loadedResources = [1, 2];
+			loadToFsStub = sinon.stub(scraper.resourceSaver, 'saveResource').resolves();
 			loadToFsStub.onCall(2).rejects(new Error('FS FAILED!'));
+			handleErrorSpy = sinon.spy(scraper.resourceSaver, 'errorCleanup');
 		});
 
 		it('should remove directory and immediately reject on fs error if ignoreErrors is false', function () {
@@ -55,9 +58,10 @@ describe('Functional error handling', function() {
 			return scraper.scrape().then(function() {
 				should(true).be.eql(false);
 			}).catch(function (err) {
-				fs.existsSync(testDirname).should.be.eql(false);
 				should(err.message).be.eql('FS FAILED!');
 				should(loadToFsStub.callCount).be.eql(3);
+				should(handleErrorSpy.callCount).be.eql(1);
+				fs.existsSync(testDirname).should.be.eql(false);
 			});
 		});
 
@@ -66,7 +70,7 @@ describe('Functional error handling', function() {
 
 			return scraper.scrape().then(function() {
 				should(loadToFsStub.callCount).be.eql(7);
-				fs.existsSync(testDirname).should.be.eql(true);
+				should(handleErrorSpy.callCount).be.eql(0);
 			});
 		});
 	});
@@ -77,7 +81,7 @@ describe('Functional error handling', function() {
 		beforeEach(function() {
 			var originalHandleResource = scraper.resourceHandler.handleResource;
 			var callCount = 0;
-			handleResourceStub = sinon.stub(scraper.resourceHandler, 'handleResource', function() {
+			handleResourceStub = sinon.stub(scraper.resourceHandler, 'handleResource').callsFake(function() {
 				if (callCount++ === 3) {
 					return Promise.reject(new Error('RESOURCE HANDLER FAILED!'));
 				}

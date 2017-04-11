@@ -25,86 +25,6 @@ describe('Scraper', function () {
 		fs.removeSync(testDirname);
 	});
 
-	describe('#validate', function () {
-		it('should return resolved promise if everything is ok', function () {
-			var s = new Scraper({
-				urls: urls,
-				directory: 'good/directory'
-			});
-
-			return s.validate().then(function() {
-				should(true).eql(true);
-			});
-		});
-
-		it('should return rejected promise if no directory was provided', function () {
-			var s = new Scraper({
-				urls: urls
-			});
-
-			return s.validate().then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.an.instanceOf(Error);
-				err.message.should.match(/^Incorrect directory/);
-			});
-		});
-
-		it('should return rejected promise if directory is not correct', function () {
-			var s1 = new Scraper({
-				urls: urls,
-				directory: ''
-			});
-
-			return s1.validate().then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.an.instanceOf(Error);
-				err.message.should.match(/^Incorrect directory/);
-			});
-
-			var s2 = new Scraper({
-				urls: urls,
-				directory: { name: '/incorrect/directory' }
-			});
-
-			return s2.validate().then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.an.instanceOf(Error);
-				err.message.should.match(/^Incorrect directory/);
-			});
-
-			var s3 = new Scraper({
-				urls: urls,
-				directory: 42
-			});
-
-			return s3.validate().then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.an.instanceOf(Error);
-				err.message.should.match(/^Incorrect directory/);
-			});
-		});
-
-		it('should return rejected promise if directory exists', function() {
-			fs.mkdirpSync(testDirname);
-
-			var s = new Scraper({
-				urls: urls,
-				directory: testDirname
-			});
-
-			return s.validate().then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.an.instanceOf(Error);
-				err.message.should.match(/^Directory (.*?) exists/);
-			});
-		});
-	});
-
 	describe('#load', function() {
 		it('should create directory', function() {
 			nock('http://example.com').get('/').reply(200, 'OK');
@@ -440,7 +360,7 @@ describe('Scraper', function () {
 	});
 
 	describe('#scrape', function() {
-		it('should call methods in sequence', function() {
+		it('should call load', function() {
 			nock('http://example.com').get('/').reply(200, 'OK');
 
 			var s = new Scraper({
@@ -448,13 +368,10 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			var validateSpy = sinon.spy(s, 'validate');
 			var loadSpy = sinon.spy(s, 'load');
 
 			return s.scrape().then(function() {
-				validateSpy.calledOnce.should.be.eql(true);
 				loadSpy.calledOnce.should.be.eql(true);
-				loadSpy.calledAfter(validateSpy).should.be.eql(true);
 			});
 		});
 

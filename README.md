@@ -58,6 +58,7 @@ scrape(options, (error, result) => {
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [httpResponseHandler](#httpresponsehandler) - customize http response handling
+* [resourceSaver](#resourcesaver) - customize resources saving
 * [onResourceSaved](#onresourcesaved) - callback called when resource is saved
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
  
@@ -210,6 +211,19 @@ scrape({
 }).then(console.log).catch(console.log);
 ```
 Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
+
+#### resourceSaver
+Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/index.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+```javascript
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  resourceSaver: class MyResourceSaver {
+  	saveResource (resource) {/* code to save file where you need */}
+  	errorCleanup (err) {/* code to remove all previously saved files in case of error */}
+  }
+}).then(console.log).catch(console.log);
+```
 
 #### onResourceSaved
 Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.

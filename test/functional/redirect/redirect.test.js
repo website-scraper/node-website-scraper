@@ -41,7 +41,7 @@ describe('Functional redirects', function() {
 			sources: []
 		};
 		var scraper = new Scraper(options);
-		var loadToFsSpy = sinon.spy(scraper.fsAdapter, 'saveResource');
+		var loadToFsSpy = sinon.spy(scraper.resourceSaver, 'saveResource');
 
 		return scraper.scrape().then(function() {
 			loadToFsSpy.callCount.should.be.eql(2);
