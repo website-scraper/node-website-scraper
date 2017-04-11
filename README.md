@@ -213,7 +213,7 @@ scrape({
 Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
 
 #### resourceSaver
-Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/index.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-saver/index.js)).
 ```javascript
 scrape({
   urls: ['http://example.com/'],
