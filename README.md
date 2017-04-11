@@ -220,7 +220,7 @@ scrape({
   directory: '/path/to/save',
   resourceSaver: class MyResourceSaver {
   	saveResource (resource) {/* code to save file where you need */}
-  	errorCleanup() {/* code to remove all previously saved files in case of error */}
+  	errorCleanup (err) {/* code to remove all previously saved files in case of error */}
   }
 }).then(console.log).catch(console.log);
 ```
