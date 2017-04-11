@@ -8,7 +8,7 @@ const scrape = require('../../../index');
 
 const testDirname = __dirname + '/.tmp';
 
-describe('Functional resourceStorage', () => {
+describe('Functional resourceSaver', () => {
 
 	beforeEach(() => {
 		nock.cleanAll();
@@ -21,20 +21,20 @@ describe('Functional resourceStorage', () => {
 		fs.removeSync(testDirname);
 	});
 
-	it('should use passed resourceStorage when saving resource', function() {
+	it('should use passed resourceSaver when saving resource', function() {
 		nock('http://example.com/').get('/').reply(200, 'OK');
 
-		class MyResourceStorage {
+		class MyResourceSaver {
 			saveResource() {}
-			removeSavedResources() {}
+			errorCleanup() {}
 		}
 
-		const saveResourceStub = sinon.stub(MyResourceStorage.prototype, 'saveResource').resolves();
+		const saveResourceStub = sinon.stub(MyResourceSaver.prototype, 'saveResource').resolves();
 
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
-			resourceStorage: MyResourceStorage
+			resourceSaver: MyResourceSaver
 		};
 
 		return scrape(options).catch(function() {
@@ -43,25 +43,26 @@ describe('Functional resourceStorage', () => {
 		});
 	});
 
-	it('should use passed resourceStorage on error', function() {
-		nock('http://example.com/').get('/').replyWithError('ERROR');
+	it('should use passed resourceSaver on error', function() {
+		nock('http://example.com/').get('/').replyWithError('SCRAPER AWFUL ERROR');
 
-		class MyResourceStorage {
+		class MyResourceSaver {
 			saveResource() {}
-			removeSavedResources() {}
+			errorCleanup() {}
 		}
 
-		const removeResourcesStub = sinon.stub(MyResourceStorage.prototype, 'removeSavedResources').resolves();
+		const removeResourcesStub = sinon.stub(MyResourceSaver.prototype, 'errorCleanup').resolves();
 
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
-			resourceStorage: MyResourceStorage,
+			resourceSaver: MyResourceSaver,
 			ignoreErrors: false
 		};
 
 		return scrape(options).catch(function() {
 			should(removeResourcesStub.calledOnce).be.eql(true);
+			should(removeResourcesStub.args[0][0].message).be.eql('SCRAPER AWFUL ERROR');
 		});
 	});
 

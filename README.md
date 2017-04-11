@@ -58,7 +58,7 @@ scrape(options, (error, result) => {
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [httpResponseHandler](#httpresponsehandler) - customize http response handling
-* [resourceStorage](#resourcestorage) - customize resources saving
+* [resourceSaver](#resourcesaver) - customize resources saving
 * [onResourceSaved](#onresourcesaved) - callback called when resource is saved
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
  
@@ -212,15 +212,15 @@ scrape({
 ```
 Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
 
-#### resourceStorage
-Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `removeSavedResources` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-storage.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-storage.js)).
+#### resourceSaver
+Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-saver/index.js)).
 ```javascript
 scrape({
   urls: ['http://example.com/'],
   directory: '/path/to/save',
-  resourceStorage: class MyResourceStorage {
+  resourceSaver: class MyResourceSaver {
   	saveResource (resource) {/* code to save file where you need */}
-  	removeSavedResources() {/* code to remove all previously saved files in case of error */}
+  	errorCleanup() {/* code to remove all previously saved files in case of error */}
   }
 }).then(console.log).catch(console.log);
 ```

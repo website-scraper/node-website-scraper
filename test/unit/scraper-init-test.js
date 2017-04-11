@@ -264,11 +264,11 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('resourceStorage', () => {
-		it('should create default resourceStorage with correct params', () => {
-			const ResourceStorageStub = sinon.stub();
+	describe('resourceSaver', () => {
+		it('should create default resourceSaver with correct params', () => {
+			const ResourceSaverStub = sinon.stub();
 			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-storage': ResourceStorageStub
+				'./resource-saver': ResourceSaverStub
 			});
 
 			const options = {
@@ -278,28 +278,28 @@ describe('Scraper initialization', function () {
 			};
 
 			const s = new Scraper(options);
-			ResourceStorageStub.calledOnce.should.be.eql(true);
-			ResourceStorageStub.args[0][0].should.be.eql(s.options);
+			ResourceSaverStub.calledOnce.should.be.eql(true);
+			ResourceSaverStub.args[0][0].should.be.eql(s.options);
 		});
 
-		it('should create custom resourceStorage with correct params', () => {
-			const DefaultResourceStorageStub = sinon.stub();
+		it('should create custom resourceSaver with correct params', () => {
+			const DefaultResourceSaverStub = sinon.stub();
 			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-storage': DefaultResourceStorageStub
+				'./resource-saver': DefaultResourceSaverStub
 			});
-			const CustomResourceStorageStub = sinon.stub();
+			const CustomResourceSaverStub = sinon.stub();
 
 			const options = {
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
 				maxDepth: 100,
-				resourceStorage: CustomResourceStorageStub
+				resourceSaver: CustomResourceSaverStub
 			};
 
 			const s = new Scraper(options);
-			CustomResourceStorageStub.calledOnce.should.be.eql(true);
-			CustomResourceStorageStub.args[0][0].should.be.eql(s.options);
-			DefaultResourceStorageStub.called.should.be.eql(false);
+			CustomResourceSaverStub.calledOnce.should.be.eql(true);
+			CustomResourceSaverStub.args[0][0].should.be.eql(s.options);
+			DefaultResourceSaverStub.called.should.be.eql(false);
 		});
 	});
 });

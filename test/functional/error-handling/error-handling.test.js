@@ -46,10 +46,10 @@ describe('Functional error handling', function() {
 		let loadToFsStub, handleErrorSpy;
 
 		beforeEach(function() {
-			scraper.resourceStorage.loadedResources = [1, 2];
-			loadToFsStub = sinon.stub(scraper.resourceStorage, 'saveResource').resolves();
+			scraper.resourceSaver.loadedResources = [1, 2];
+			loadToFsStub = sinon.stub(scraper.resourceSaver, 'saveResource').resolves();
 			loadToFsStub.onCall(2).rejects(new Error('FS FAILED!'));
-			handleErrorSpy = sinon.spy(scraper.resourceStorage, 'removeSavedResources');
+			handleErrorSpy = sinon.spy(scraper.resourceSaver, 'errorCleanup');
 		});
 
 		it('should remove directory and immediately reject on fs error if ignoreErrors is false', function () {
