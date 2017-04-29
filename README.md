@@ -48,8 +48,9 @@ scrape(options, (error, result) => {
 * [urls](#urls) - urls to download, *required*
 * [directory](#directory) - path to save files, *required*
 * [sources](#sources) - selects which resources should be downloaded
-* [recursive](#recursive) - follow anchors in html files
-* [maxDepth](#maxdepth) - maximum depth for dependencies
+* [recursive](#recursive) - follow hyperlinks in html files
+* [maxRecursiveDepth](#maxrecursivedepth) - maximum depth for hyperlinks
+* [maxDepth](#maxdepth) - maximum depth for all dependencies
 * [request](#request) - custom options for for [request](https://github.com/request/request)
 * [subdirectories](#subdirectories) - subdirectories for file extensions
 * [defaultFilename](#defaultfilename) - filename for index page
@@ -96,10 +97,13 @@ scrape({
 ```
 
 #### recursive
-Boolean, if `true` scraper will follow anchors in html files. Don't forget to set `maxDepth` to avoid infinite downloading. Defaults to `false`.
+Boolean, if `true` scraper will follow hyperlinks in html files. Don't forget to set `maxRecursiveDepth` to avoid infinite downloading. Defaults to `false`.
+
+#### maxRecursiveDepth
+Positive number, maximum allowed depth for hyperlinks. Other dependencies will be saved regardless of their depth. Defaults to `null` - no maximum recursive depth set. 
 
 #### maxDepth
-Positive number, maximum allowed depth for dependencies. Defaults to `null` - no maximum depth set.
+Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
 
 #### request
 Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, etc.
