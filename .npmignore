@@ -1,9 +1,0 @@
-.idea
-.DS_Store
-.gitignore
-.travis.yml
-appveyor.yml
-.eslintrc*
-.codeclimate.yml
-coverage
-test

@@ -54,5 +54,9 @@
     "proxyquire": "^1.7.3",
     "should": "^11.1.0",
     "sinon": "^2.1.0"
-  }
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ]
 }
