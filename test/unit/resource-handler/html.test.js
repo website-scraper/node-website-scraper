@@ -179,7 +179,6 @@ describe('ResourceHandler: Html', () => {
 		resource.getText().should.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 
 		return htmlHandler.handle(resource).then(() => {
-			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
 			// after handle should contain integrity check for styles
 			// but not contain integrity check for script because it was loaded
 			resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
