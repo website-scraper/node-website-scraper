@@ -1,23 +1,25 @@
+'use strict';
+
 require('should');
-var Promise = require('bluebird');
-var sinon = require('sinon');
-var Resource = require('../../../lib/resource');
-var HtmlHandler = require('../../../lib/resource-handler/html');
+const Promise = require('bluebird');
+const sinon = require('sinon');
+const Resource = require('../../../lib/resource');
+const HtmlHandler = require('../../../lib/resource-handler/html');
 
-var HtmlImgSrcsetTag = require('../../../lib/resource-handler/path-containers/html-img-srcset-tag');
-var HtmlCommonTag = require('../../../lib/resource-handler/path-containers/html-common-tag');
-var CssText = require('../../../lib/resource-handler/path-containers/css-text');
+const HtmlImgSrcsetTag = require('../../../lib/resource-handler/path-containers/html-img-srcset-tag');
+const HtmlCommonTag = require('../../../lib/resource-handler/path-containers/html-common-tag');
+const CssText = require('../../../lib/resource-handler/path-containers/css-text');
 
-describe('ResourceHandler: Html', function () {
-	var htmlHandler;
+describe('ResourceHandler: Html', () => {
+	let htmlHandler;
 
-	beforeEach(function() {
+	beforeEach(() => {
 		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().returns(Promise.resolve()));
 	});
 
-	describe('<base> tag', function () {
-		it('should remove base tag from text and update resource url for absolute href', function () {
-			var html = `
+	describe('<base> tag', () => {
+		it('should remove base tag from text and update resource url for absolute href', () => {
+			const html = `
 				<html lang="en">
 				<head>
 					<base href="http://some-other-domain.com/src">
@@ -25,17 +27,17 @@ describe('ResourceHandler: Html', function () {
 				<body></body> 
 				</html>
 			`;
-			var resource = new Resource('http://example.com', 'index.html');
+			const resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return htmlHandler.handle(resource).then(function() {
+			return htmlHandler.handle(resource).then(() =>{
 				resource.getUrl().should.be.eql('http://some-other-domain.com/src');
 				resource.getText().should.not.containEql('<base');
 			});
 		});
 
-		it('should remove base tag from text and update resource url for relative href', function () {
-			var html = `
+		it('should remove base tag from text and update resource url for relative href', () => {
+			const html = `
 				<html lang="en">
 				<head>
 					<base href="/src">
@@ -43,17 +45,17 @@ describe('ResourceHandler: Html', function () {
 				<body></body> 
 				</html>
 			`;
-			var resource = new Resource('http://example.com', 'index.html');
+			const resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return htmlHandler.handle(resource).then(function() {
+			return htmlHandler.handle(resource).then(() => {
 				resource.getUrl().should.be.eql('http://example.com/src');
 				resource.getText().should.not.containEql('<base');
 			});
 		});
 
-		it('should not remove base tag if it doesn\'t have href attribute', function () {
-			var html = `
+		it('should not remove base tag if it doesn\'t have href attribute', () => {
+			const html = `
 				<html lang="en">
 				<head>
 					<base target="_blank">
@@ -61,18 +63,18 @@ describe('ResourceHandler: Html', function () {
 				<body></body> 
 				</html>
 			`;
-			var resource = new Resource('http://example.com', 'index.html');
+			const resource = new Resource('http://example.com', 'index.html');
 			resource.setText(html);
 
-			return htmlHandler.handle(resource).then(function() {
+			return htmlHandler.handle(resource).then(() => {
 				resource.getUrl().should.be.eql('http://example.com');
 				resource.getText().should.containEql('<base target="_blank">');
 			});
 		});
 	});
 
-	it('should not encode text to html entities', function () {
-		var html = `
+	it('should not encode text to html entities', () => {
+		const html = `
 			<html>
 			<body>
 				<p>Этот текст не должен быть преобразован в html entities</p>
@@ -80,18 +82,18 @@ describe('ResourceHandler: Html', function () {
 			</html>
 		`;
 
-		var resource = new Resource('http://example.com', 'index.html');
+		const resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return htmlHandler.handle(resource).then(function () {
+		return htmlHandler.handle(resource).then(() => {
 			resource.getText().should.containEql('Этот текст не должен быть преобразован в html entities');
 		});
 	});
 
-	it('should call handleChildrenResources for each source', function () {
+	it('should call handleChildrenResources for each source', () => {
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
-		var html = `
+		const html = `
 			<html lang="en">
 			<head></head>
 			<body>
@@ -102,38 +104,38 @@ describe('ResourceHandler: Html', function () {
 			</html>
 		`;
 
-		var resource = new Resource('http://example.com', 'index.html');
+		const resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return htmlHandler.handle(resource).then(function() {
+		return htmlHandler.handle(resource).then(() =>{
 			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
 		});
 	});
 
-	it('should not call handleChildrenResources if source attr is empty', function () {
+	it('should not call handleChildrenResources if source attr is empty', () =>{
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
-		var html = `
+		const html = `
 			<html lang="en">
 			<head></head>
 			<body><img src=""></body>
 			</html>
 		`;
 
-		var resource = new Resource('http://example.com', 'index.html');
+		const resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return htmlHandler.handle(resource).then(function() {
+		return htmlHandler.handle(resource).then(() =>{
 			htmlHandler.handleChildrenPaths.called.should.be.eql(false);
 		});
 	});
 
-	it('should use correct path containers based on tag', function() {
+	it('should use correct path containers based on tag', () =>{
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'srcset' });
 		htmlHandler.options.sources.push({ selector: '.styled', attr: 'style' });
 
-		var html = `
+		const html = `
 			<html lang="en">
 			<head></head>
 			<body>
@@ -144,14 +146,43 @@ describe('ResourceHandler: Html', function () {
 			</html>
 		`;
 
-		var resource = new Resource('http://example.com', 'index.html');
+		const resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return htmlHandler.handle(resource).then(function() {
+		return htmlHandler.handle(resource).then(() =>{
 			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
 			htmlHandler.handleChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
 			htmlHandler.handleChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
 			htmlHandler.handleChildrenPaths.args[2][0].should.be.instanceOf(CssText);
+		});
+	});
+
+	it('should remove SRI check for loaded resources', () => {
+		htmlHandler.options.sources.push({ selector: 'script', attr: 'src' });
+
+		const html = `
+			<html>
+			<head>
+				<link href="http://examlpe.com/style.css" integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU=" rel="stylesheet">
+			</head>
+			<body>
+				<script integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk=" src="http://example.com/script.js"></script>
+			</body>
+			</html>
+		`;
+
+		const resource = new Resource('http://example.com', 'index.html');
+		resource.setText(html);
+
+		// before handle should contain both integrity checks
+		resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+		resource.getText().should.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
+
+		return htmlHandler.handle(resource).then(() => {
+			// after handle should contain integrity check for styles
+			// but not contain integrity check for script because it was loaded
+			resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+			resource.getText().should.not.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 		});
 	});
 });
