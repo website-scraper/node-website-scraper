@@ -90,7 +90,7 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
-	it('should call handleChildrenResources for each source', () => {
+	it('should call downloadChildrenResources for each source', () => {
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
 		const html = `
@@ -108,11 +108,11 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
+			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
 		});
 	});
 
-	it('should not call handleChildrenResources if source attr is empty', () =>{
+	it('should not call downloadChildrenResources if source attr is empty', () =>{
 		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
 
 		const html = `
@@ -126,7 +126,7 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.called.should.be.eql(false);
+			htmlHandler.downloadChildrenPaths.called.should.be.eql(false);
 		});
 	});
 
@@ -150,10 +150,10 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
-			htmlHandler.handleChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
-			htmlHandler.handleChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
-			htmlHandler.handleChildrenPaths.args[2][0].should.be.instanceOf(CssText);
+			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
+			htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
+			htmlHandler.downloadChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
+			htmlHandler.downloadChildrenPaths.args[2][0].should.be.instanceOf(CssText);
 		});
 	});
 

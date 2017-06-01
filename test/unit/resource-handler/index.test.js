@@ -38,7 +38,7 @@ describe('ResourceHandler', function() {
 				'./css': cssHandlerStub
 			});
 
-			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'handleChildrenResources').returns(Promise.resolve());
+			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'downloadChildrenResources').returns(Promise.resolve());
 			var options = { defaultFilename: 'test' };
 			var context = { dummy: 'context' };
 
@@ -128,7 +128,7 @@ describe('ResourceHandler', function() {
 		});
 	});
 
-	describe('#handleChildrenResources', function () {
+	describe('#downloadChildrenResources', function () {
 		var pathContainer, parentResource, scraperContext, resHandler;
 
 		beforeEach(function () {
@@ -149,7 +149,7 @@ describe('ResourceHandler', function() {
 		it('should not call requestResource if no paths in text', function () {
 			pathContainer.getPaths = sinon.stub().returns([]);
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.called.should.be.eql(false);
 			});
 		});
@@ -158,7 +158,7 @@ describe('ResourceHandler', function() {
 			pathContainer.getPaths.returns(['test.png']);
 			parentResource.getUrl = sinon.stub().returns('http://test.com');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.calledOnce.should.be.eql(true);
 				scraperContext.requestResource.args[0][0].url.should.be.eql('http://test.com/test.png');
 			});
@@ -168,7 +168,7 @@ describe('ResourceHandler', function() {
 			pathContainer.getPaths.returns(['a.jpg', 'b.jpg', 'c.jpg']);
 			parentResource.getUrl = sinon.stub().returns('http://test.com');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.calledThrice.should.be.eql(true);
 				scraperContext.requestResource.args[0][0].url.should.be.eql('http://test.com/a.jpg');
 				scraperContext.requestResource.args[1][0].url.should.be.eql('http://test.com/b.jpg');
@@ -189,7 +189,7 @@ describe('ResourceHandler', function() {
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(3);
@@ -222,7 +222,7 @@ describe('ResourceHandler', function() {
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(1);
@@ -247,7 +247,7 @@ describe('ResourceHandler', function() {
 			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(null));
 			scraperContext.requestResource.onThirdCall().returns(Promise.reject(new Error('some error')));
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function (updatedText) {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function (updatedText) {
 				updatedText.should.be.eql('UPDATED TEXT');
 			});
 		});
@@ -260,7 +260,7 @@ describe('ResourceHandler', function() {
 
 				pathContainer.getPaths.returns(['http://example.com/page1.html#hash']);
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -280,7 +280,7 @@ describe('ResourceHandler', function() {
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -298,7 +298,7 @@ describe('ResourceHandler', function() {
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 				resHandler.options.prettifyUrls = true;
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);

@@ -5,7 +5,7 @@ var Resource = require('../../../lib/resource');
 var CssResourceHandler = require('../../../lib/resource-handler/css');
 
 describe('ResourceHandler: Css', function () {
-	it('should call handleChildrenResources and set returned text to resource', function() {
+	it('should call downloadChildrenResources and set returned text to resource', function() {
 		var handleChildrenResources = sinon.stub().resolves('updated text');
 
 		var originalResource = new Resource('http://example.com');
