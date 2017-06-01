@@ -19,6 +19,11 @@ describe('FilenameGenerator: bySiteStructure', function() {
 		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('example.com/some/images/a.png');
 	});
 
+	it('should replace the colon, for url with port number', function(){
+		var r1 = new Resource('http://example.com:8080/some/path/a.png');
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com_8080/some/path/a.png');
+	});
+
 	it('should add the defaultFilename to the path, for html resources without extension', function(){
 		var isHtmlMock = sinon.stub().returns(true);
 
