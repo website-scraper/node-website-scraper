@@ -15,10 +15,64 @@ describe('ResourceHandler: Html', () => {
 
 	beforeEach(() => {
 		downloadChildrenPaths = sinon.stub().usingPromise(Promise).resolves();
-		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
+	});
+
+	describe('constructor', () => {
+		describe('sources', () => {
+			it('should initialize sources if updateMissingSources was not passed', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql([]);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources = false', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources: false}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql([]);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources = true', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources: true}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(sources);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources is array of sources', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				const updateMissingSources = [{ selector: 'a', attr: 'href'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(updateMissingSources);
+				htmlHandler.allSources.should.eql([{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}]);
+			});
+
+			it('should initialize sources without duplicates if updateMissingSources is array of sources', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				const updateMissingSources = [{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(updateMissingSources);
+				htmlHandler.allSources.should.eql([{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}]);
+			});
+		});
 	});
 
 	describe('<base> tag', () => {
+		beforeEach(() => {
+			htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
+		});
+
 		it('should remove base tag from text and update resource url for absolute href', () => {
 			const html = `
 				<html lang="en">
@@ -75,6 +129,7 @@ describe('ResourceHandler: Html', () => {
 	});
 
 	it('should not encode text to html entities', () => {
+		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		const html = `
 			<html>
 			<body>
