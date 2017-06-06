@@ -1,9 +1,9 @@
-var should = require('should');
-var sinon = require('sinon');
-var Promise = require('bluebird');
-var proxyquire = require('proxyquire');
-var Resource = require('../../../lib/resource');
-var ResourceHandler = require('../../../lib/resource-handler');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const proxyquire = require('proxyquire');
+const Resource = require('../../../lib/resource');
+const ResourceHandler = require('../../../lib/resource-handler');
 
 describe('ResourceHandler', function() {
 	describe('constructor', function() {
@@ -38,7 +38,7 @@ describe('ResourceHandler', function() {
 				'./css': cssHandlerStub
 			});
 
-			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'downloadChildrenResources').returns(Promise.resolve());
+			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'downloadChildrenResources').usingPromise(Promise).resolves();
 			var options = { defaultFilename: 'test' };
 			var context = { dummy: 'context' };
 
@@ -50,12 +50,12 @@ describe('ResourceHandler', function() {
 
 			htmlHandlerStub.calledOnce.should.be.eql(true);
 			htmlHandlerStub.args[0][0].should.be.eql(options);
-			htmlHandlerStub.args[0][1]();
+			htmlHandlerStub.args[0][1].downloadChildrenPaths();
 			handleChildResStub.calledOnce.should.be.eql(true);
 
 			cssHandlerStub.calledOnce.should.be.eql(true);
 			cssHandlerStub.args[0][0].should.be.eql(options);
-			cssHandlerStub.args[0][1]();
+			cssHandlerStub.args[0][1].downloadChildrenPaths();
 			handleChildResStub.calledTwice.should.be.eql(true);
 
 			handleChildResStub.restore();
@@ -311,4 +311,7 @@ describe('ResourceHandler', function() {
 		});
 	});
 
+	describe('#updateChildrenResources', () => {
+
+	});
 });

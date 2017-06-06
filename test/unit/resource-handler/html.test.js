@@ -11,10 +11,11 @@ const HtmlCommonTag = require('../../../lib/resource-handler/path-containers/htm
 const CssText = require('../../../lib/resource-handler/path-containers/css-text');
 
 describe('ResourceHandler: Html', () => {
-	let htmlHandler;
+	let downloadChildrenPaths, htmlHandler;
 
 	beforeEach(() => {
-		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().returns(Promise.resolve()));
+		downloadChildrenPaths = sinon.stub().usingPromise(Promise).resolves();
+		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 	});
 
 	describe('<base> tag', () => {
@@ -91,7 +92,8 @@ describe('ResourceHandler: Html', () => {
 	});
 
 	it('should call downloadChildrenResources for each source', () => {
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
+		const sources = [{ selector: 'img', attr: 'src' }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -113,7 +115,8 @@ describe('ResourceHandler: Html', () => {
 	});
 
 	it('should not call downloadChildrenResources if source attr is empty', () =>{
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
+		const sources = [{ selector: 'img', attr: 'src' }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -130,10 +133,13 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
-	it('should use correct path containers based on tag', () =>{
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'srcset' });
-		htmlHandler.options.sources.push({ selector: '.styled', attr: 'style' });
+	it('should use correct path containers based on tag', () => {
+		const sources = [
+			{ selector: 'img', attr: 'src' },
+			{ selector: 'img', attr: 'srcset' },
+			{ selector: '.styled', attr: 'style' }
+		];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -158,7 +164,10 @@ describe('ResourceHandler: Html', () => {
 	});
 
 	it('should remove SRI check for loaded resources', () => {
-		htmlHandler.options.sources.push({ selector: 'script', attr: 'src' });
+		const sources = [
+			{ selector: 'script', attr: 'src'}
+		];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html>
