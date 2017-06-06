@@ -169,9 +169,9 @@ When the `byType` filenameGenerator is used the downloaded files are saved by ty
 
 ###### bySiteStructure
 When the `bySiteStructure` filenameGenerator is used the downloaded files are saved in `directory` using same structure as on the website:
-- `/` => `DIRECTORY/index.html`
-- `/about` => `DIRECTORY/about/index.html`
-- `/resources/javascript/libraries/jquery.min.js` => `DIRECTORY/resources/javascript/libraries/jquery.min.js`
+- `/` => `DIRECTORY/example.com/index.html`
+- `/about` => `DIRECTORY/example.com/about/index.html`
+- `//cdn.example.com/resources/jquery.min.js` => `DIRECTORY/cdn.example.com/resources/jquery.min.js`
 
 ```javascript
 // Downloads all the crawlable files. The files are saved in the same structure as the structure of the website
