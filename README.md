@@ -62,6 +62,7 @@ scrape(options, (error, result) => {
 * [resourceSaver](#resourcesaver) - customize resources saving
 * [onResourceSaved](#onresourcesaved) - callback called when resource is saved
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
+* [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
  
 Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
@@ -145,7 +146,7 @@ String, filename for index page. Defaults to `index.html`.
 Boolean, whether urls should be 'prettified', by having the `defaultFilename` removed. Defaults to `false`.
 
 #### ignoreErrors
-Boolean, if `true` scraper will continue downloading resources after error occured, if `false` - scraper will finish process and return error. Defaults to `true`.
+Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `true`.
 
 #### urlFilter
 Function which is called for each url to check whether it should be scraped. Defaults to `null` - no url filter will be applied.
@@ -252,6 +253,30 @@ scrape({
   }
 })
 ```
+
+#### updateMissingSources
+Boolean, if `true` scraper will set absolute urls for all failing `sources`, if `false` - it will leave them as is (which may cause incorrectly displayed page).
+Also can contain array of `sources` to update (structure is similar to [sources](#sources)).
+Defaults to `false`.
+```javascript
+// update all failing img srcs with absolute url
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  sources: [{selector: 'img', attr: 'src'}],
+  updateMissingSources: true
+});
+
+// download nothing, just update all img srcs with absolute urls
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  sources: [],
+  updateMissingSources: [{selector: 'img', attr: 'src'}] 
+});
+
+```
+
 
 ## callback 
 Callback function, optional, includes following parameters:
