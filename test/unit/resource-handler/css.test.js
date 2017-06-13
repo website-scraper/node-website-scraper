@@ -1,17 +1,18 @@
-var should = require('should');
-var Promise = require('bluebird');
-var sinon = require('sinon');
-var Resource = require('../../../lib/resource');
-var CssResourceHandler = require('../../../lib/resource-handler/css');
+'use strict';
 
-describe('ResourceHandler: Css', function () {
-	it('should call handleChildrenResources and set returned text to resource', function() {
-		var handleChildrenResources = sinon.stub().resolves('updated text');
+const should = require('should');
+const sinon = require('sinon');
+const Resource = require('../../../lib/resource');
+const CssResourceHandler = require('../../../lib/resource-handler/css');
 
-		var originalResource = new Resource('http://example.com');
-		var cssHandler = new CssResourceHandler({}, handleChildrenResources);
+describe('ResourceHandler: Css', () => {
+	it('should call downloadChildrenResources and set returned text to resource', () => {
+		const downloadChildrenPaths = sinon.stub().resolves('updated text');
 
-		return cssHandler.handle(originalResource).then(function (updatedResource) {
+		const originalResource = new Resource('http://example.com');
+		const cssHandler = new CssResourceHandler({}, {downloadChildrenPaths});
+
+		return cssHandler.handle(originalResource).then((updatedResource) => {
 			should(updatedResource).be.equal(originalResource);
 			should(updatedResource.getText()).be.eql('updated text');
 		});

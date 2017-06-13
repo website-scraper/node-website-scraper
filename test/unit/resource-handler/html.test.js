@@ -11,13 +11,68 @@ const HtmlCommonTag = require('../../../lib/resource-handler/path-containers/htm
 const CssText = require('../../../lib/resource-handler/path-containers/css-text');
 
 describe('ResourceHandler: Html', () => {
-	let htmlHandler;
+	let downloadChildrenPaths, htmlHandler;
 
 	beforeEach(() => {
-		htmlHandler = new HtmlHandler({ sources: [] }, sinon.stub().returns(Promise.resolve()));
+		downloadChildrenPaths = sinon.stub().usingPromise(Promise).resolves();
+	});
+
+	describe('constructor', () => {
+		describe('sources', () => {
+			it('should initialize sources if updateMissingSources was not passed', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql([]);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources = false', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources: false}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql([]);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources = true', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources: true}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(sources);
+				htmlHandler.allSources.should.eql(sources);
+			});
+
+			it('should initialize sources if updateMissingSources is array of sources', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				const updateMissingSources = [{ selector: 'a', attr: 'href'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(updateMissingSources);
+				htmlHandler.allSources.should.eql([{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}]);
+			});
+
+			it('should initialize sources without duplicates if updateMissingSources is array of sources', () => {
+				const sources = [{ selector: 'img', attr: 'src'}];
+				const updateMissingSources = [{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}];
+				htmlHandler = new HtmlHandler({sources, updateMissingSources}, {downloadChildrenPaths});
+
+				htmlHandler.downloadSources.should.eql(sources);
+				htmlHandler.updateSources.should.eql(updateMissingSources);
+				htmlHandler.allSources.should.eql([{ selector: 'img', attr: 'src'}, { selector: 'a', attr: 'href'}]);
+			});
+		});
 	});
 
 	describe('<base> tag', () => {
+		beforeEach(() => {
+			htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
+		});
+
 		it('should remove base tag from text and update resource url for absolute href', () => {
 			const html = `
 				<html lang="en">
@@ -74,6 +129,7 @@ describe('ResourceHandler: Html', () => {
 	});
 
 	it('should not encode text to html entities', () => {
+		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		const html = `
 			<html>
 			<body>
@@ -90,8 +146,9 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
-	it('should call handleChildrenResources for each source', () => {
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
+	it('should call downloadChildrenResources for each source', () => {
+		const sources = [{ selector: 'img', attr: 'src' }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -108,12 +165,13 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
+			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
 		});
 	});
 
-	it('should not call handleChildrenResources if source attr is empty', () =>{
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
+	it('should not call downloadChildrenResources if source attr is empty', () =>{
+		const sources = [{ selector: 'img', attr: 'src' }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -126,14 +184,17 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.called.should.be.eql(false);
+			htmlHandler.downloadChildrenPaths.called.should.be.eql(false);
 		});
 	});
 
-	it('should use correct path containers based on tag', () =>{
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'src' });
-		htmlHandler.options.sources.push({ selector: 'img', attr: 'srcset' });
-		htmlHandler.options.sources.push({ selector: '.styled', attr: 'style' });
+	it('should use correct path containers based on tag', () => {
+		const sources = [
+			{ selector: 'img', attr: 'src' },
+			{ selector: 'img', attr: 'srcset' },
+			{ selector: '.styled', attr: 'style' }
+		];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html lang="en">
@@ -150,15 +211,18 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.handleChildrenPaths.calledThrice.should.be.eql(true);
-			htmlHandler.handleChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
-			htmlHandler.handleChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
-			htmlHandler.handleChildrenPaths.args[2][0].should.be.instanceOf(CssText);
+			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
+			htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
+			htmlHandler.downloadChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
+			htmlHandler.downloadChildrenPaths.args[2][0].should.be.instanceOf(CssText);
 		});
 	});
 
 	it('should remove SRI check for loaded resources', () => {
-		htmlHandler.options.sources.push({ selector: 'script', attr: 'src' });
+		const sources = [
+			{ selector: 'script', attr: 'src'}
+		];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
 		const html = `
 			<html>

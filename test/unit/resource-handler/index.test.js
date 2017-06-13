@@ -1,9 +1,11 @@
-var should = require('should');
-var sinon = require('sinon');
-var Promise = require('bluebird');
-var proxyquire = require('proxyquire');
-var Resource = require('../../../lib/resource');
-var ResourceHandler = require('../../../lib/resource-handler');
+'use strict';
+
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const proxyquire = require('proxyquire');
+const Resource = require('../../../lib/resource');
+const ResourceHandler = require('../../../lib/resource-handler');
 
 describe('ResourceHandler', function() {
 	describe('constructor', function() {
@@ -38,7 +40,7 @@ describe('ResourceHandler', function() {
 				'./css': cssHandlerStub
 			});
 
-			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'handleChildrenResources').returns(Promise.resolve());
+			var handleChildResStub = sinon.stub(ResourceHandler.prototype, 'downloadChildrenResources').usingPromise(Promise).resolves();
 			var options = { defaultFilename: 'test' };
 			var context = { dummy: 'context' };
 
@@ -50,19 +52,19 @@ describe('ResourceHandler', function() {
 
 			htmlHandlerStub.calledOnce.should.be.eql(true);
 			htmlHandlerStub.args[0][0].should.be.eql(options);
-			htmlHandlerStub.args[0][1]();
+			htmlHandlerStub.args[0][1].downloadChildrenPaths();
 			handleChildResStub.calledOnce.should.be.eql(true);
 
 			cssHandlerStub.calledOnce.should.be.eql(true);
 			cssHandlerStub.args[0][0].should.be.eql(options);
-			cssHandlerStub.args[0][1]();
+			cssHandlerStub.args[0][1].downloadChildrenPaths();
 			handleChildResStub.calledTwice.should.be.eql(true);
 
 			handleChildResStub.restore();
 		});
 	});
 
-	describe('#getResourceHandler', function() {
+	describe('#getResourceHandler', () => {
 		var resourceHandler;
 
 		beforeEach(function() {
@@ -94,7 +96,7 @@ describe('ResourceHandler', function() {
 		});
 	});
 
-	describe('#handleResource', function() {
+	describe('#handleResource', () => {
 		var resHandler;
 
 		beforeEach(function() {
@@ -128,10 +130,10 @@ describe('ResourceHandler', function() {
 		});
 	});
 
-	describe('#handleChildrenResources', function () {
-		var pathContainer, parentResource, scraperContext, resHandler;
+	describe('#downloadChildrenResources', () => {
+		let pathContainer, parentResource, scraperContext, resHandler;
 
-		beforeEach(function () {
+		beforeEach(() => {
 			pathContainer = {};
 			pathContainer.getPaths = sinon.stub();
 			pathContainer.updateText = sinon.stub();
@@ -146,29 +148,29 @@ describe('ResourceHandler', function() {
 			resHandler = new ResourceHandler({defaultFilename: 'index.html'}, scraperContext);
 		});
 
-		it('should not call requestResource if no paths in text', function () {
+		it('should not call requestResource if no paths in text', () => {
 			pathContainer.getPaths = sinon.stub().returns([]);
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.called.should.be.eql(false);
 			});
 		});
 
-		it('should call requestResource once with correct params', function () {
+		it('should call requestResource once with correct params', () => {
 			pathContainer.getPaths.returns(['test.png']);
 			parentResource.getUrl = sinon.stub().returns('http://test.com');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.calledOnce.should.be.eql(true);
 				scraperContext.requestResource.args[0][0].url.should.be.eql('http://test.com/test.png');
 			});
 		});
 
-		it('should call requestResource for each found source with correct params', function () {
+		it('should call requestResource for each found source with correct params', () => {
 			pathContainer.getPaths.returns(['a.jpg', 'b.jpg', 'c.jpg']);
 			parentResource.getUrl = sinon.stub().returns('http://test.com');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				scraperContext.requestResource.calledThrice.should.be.eql(true);
 				scraperContext.requestResource.args[0][0].url.should.be.eql('http://test.com/a.jpg');
 				scraperContext.requestResource.args[1][0].url.should.be.eql('http://test.com/b.jpg');
@@ -176,7 +178,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should update paths in text with local files returned by requestResource', function () {
+		it('should update paths in text with local files returned by requestResource', () => {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
 				'http://first.com/b.jpg',
@@ -189,7 +191,7 @@ describe('ResourceHandler', function() {
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(3);
@@ -209,7 +211,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should not update paths in text, for which requestResource returned null', function () {
+		it('should not update paths in text, for which requestResource returned null', () => {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
 				'http://first.com/b.jpg',
@@ -222,7 +224,7 @@ describe('ResourceHandler', function() {
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(1);
@@ -234,7 +236,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		it('should wait for all children promises fulfilled and then return updated text', function () {
+		it('should wait for all children promises fulfilled and then return updated text', () => {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
 				'http://first.com/b.jpg',
@@ -247,12 +249,12 @@ describe('ResourceHandler', function() {
 			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(null));
 			scraperContext.requestResource.onThirdCall().returns(Promise.reject(new Error('some error')));
 
-			return resHandler.handleChildrenResources(pathContainer, parentResource).then(function (updatedText) {
+			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function (updatedText) {
 				updatedText.should.be.eql('UPDATED TEXT');
 			});
 		});
 
-		describe('hash in urls', function () {
+		describe('hash in urls', () => {
 			it('should keep hash in urls', function () {
 				var resourceStub = new Resource('http://example.com/page1.html', 'local/page1.html');
 				sinon.stub(resourceStub, 'getType').returns('html');
@@ -260,7 +262,7 @@ describe('ResourceHandler', function() {
 
 				pathContainer.getPaths.returns(['http://example.com/page1.html#hash']);
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -272,7 +274,7 @@ describe('ResourceHandler', function() {
 			});
 		});
 
-		describe('prettifyUrls', function () {
+		describe('prettifyUrls', () => {
 			it('should not prettifyUrls by default', function() {
 				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
 				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(resourceStub));
@@ -280,7 +282,7 @@ describe('ResourceHandler', function() {
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -291,14 +293,14 @@ describe('ResourceHandler', function() {
 				});
 			});
 
-			it('should prettifyUrls if specified', function() {
+			it('should prettifyUrls if specified', () => {
 				var resourceStub = new Resource('http://example.com/other-page/index.html', 'other-page/index.html');
 				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(resourceStub));
 
 				pathContainer.getPaths.returns(['http://example.com/other-page/index.html']);
 				resHandler.options.prettifyUrls = true;
 
-				return resHandler.handleChildrenResources(pathContainer, parentResource).then(function () {
+				return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 					var updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
@@ -309,6 +311,90 @@ describe('ResourceHandler', function() {
 				});
 			});
 		});
+
+		describe('updateMissingSources', () => {
+			beforeEach(() => {
+				pathContainer.getPaths.returns([
+					'/success.png',
+					'/failed.png'
+				]);
+				scraperContext.requestResource.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/success.png', 'local/success.png')));
+				scraperContext.requestResource.onSecondCall().returns(Promise.resolve(null));
+			});
+
+			it('should update missing path with absolute url if updateIfFailed = true', () => {
+				const updateIfFailed = true;
+
+				return resHandler.downloadChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
+					pathContainer.updateText.calledOnce.should.be.eql(true);
+					pathContainer.updateText.args[0][0].length.should.be.eql(2);
+					pathContainer.updateText.args[0][0].should.containEql({
+						oldPath: '/success.png',
+						newPath: 'local/success.png'
+					});
+					pathContainer.updateText.args[0][0].should.containEql({
+						oldPath: '/failed.png',
+						newPath: 'http://example.com/failed.png'
+					});
+				});
+			});
+
+			it('should not update missing path with absolute url if updateIfFailed = false', () => {
+				const updateIfFailed = false;
+
+				return resHandler.downloadChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
+					pathContainer.updateText.calledOnce.should.be.eql(true);
+					pathContainer.updateText.args[0][0].length.should.be.eql(1);
+					pathContainer.updateText.args[0][0].should.containEql({
+						oldPath: '/success.png',
+						newPath: 'local/success.png'
+					});
+				});
+			})
+		});
 	});
 
+	describe('#updateChildrenResources', () => {
+		describe('updateMissingSources', () => {
+			let pathContainer, parentResource, resHandler;
+
+			beforeEach(() => {
+				pathContainer = {};
+				pathContainer.getPaths = sinon.stub().returns([
+					'/failed1.png',
+					'/failed2.png'
+				]);
+				pathContainer.updateText = sinon.stub();
+				parentResource = new Resource('http://example.com', 'index.html');
+				resHandler = new ResourceHandler({});
+			});
+
+			it('should update all paths with absolute urls if updateIfFailed = true', () => {
+				const updateIfFailed = true;
+
+				return resHandler.updateChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
+					pathContainer.updateText.calledOnce.should.be.eql(true);
+					pathContainer.updateText.args[0][0].length.should.be.eql(2);
+					pathContainer.updateText.args[0][0].should.containEql({
+						oldPath: '/failed1.png',
+						newPath: 'http://example.com/failed1.png'
+					});
+					pathContainer.updateText.args[0][0].should.containEql({
+						oldPath: '/failed2.png',
+						newPath: 'http://example.com/failed2.png'
+					});
+				});
+			});
+
+			it('should not update paths if updateIfFailed = false', () => {
+				const updateIfFailed = false;
+
+				return resHandler.updateChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
+					pathContainer.updateText.calledOnce.should.be.eql(true);
+					pathContainer.updateText.args[0][0].length.should.be.eql(0);
+				});
+			})
+		});
+
+	});
 });
