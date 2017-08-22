@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/s0ph1e/node-website-scraper.git"
+    "url": "git://github.com/website-scraper/node-website-scraper.git"
   },
   "keywords": [
     "scrape",
@@ -29,9 +29,9 @@
   "author": "Sophia Antipenko <sophia@antipenko.pp.ua>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/s0ph1e/node-website-scraper/issues"
+    "url": "https://github.com/website-scraper/node-website-scraper/issues"
   },
-  "homepage": "https://github.com/s0ph1e/node-website-scraper",
+  "homepage": "https://github.com/website-scraper/node-website-scraper",
   "dependencies": {
     "bluebird": "^3.0.1",
     "cheerio": "0.22.0",
