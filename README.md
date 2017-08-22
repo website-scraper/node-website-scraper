@@ -1,21 +1,21 @@
 ## Introduction
 Download website to a local directory (including all css, images, js, etc.)
 
-[![Build Status](https://img.shields.io/travis/s0ph1e/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/s0ph1e/node-website-scraper)
+[![Build Status](https://img.shields.io/travis/website-scraper/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/website-scraper/node-website-scraper)
 [![Build status](https://ci.appveyor.com/api/projects/status/s7jxui1ngxlbgiav/branch/master?svg=true)](https://ci.appveyor.com/project/s0ph1e/node-website-scraper/branch/master)
-[![Test Coverage](https://codeclimate.com/github/s0ph1e/node-website-scraper/badges/coverage.svg)](https://codeclimate.com/github/s0ph1e/node-website-scraper/coverage)
-[![Code Climate](https://codeclimate.com/github/s0ph1e/node-website-scraper/badges/gpa.svg)](https://codeclimate.com/github/s0ph1e/node-website-scraper)
-[![Dependency Status](https://david-dm.org/s0ph1e/node-website-scraper.svg?style=flat)](https://david-dm.org/s0ph1e/node-website-scraper)
+[![Test Coverage](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/coverage.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper/coverage)
+[![Code Climate](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/gpa.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper)
+[![Dependency Status](https://david-dm.org/website-scraper/node-website-scraper.svg?style=flat)](https://david-dm.org/website-scraper/node-website-scraper)
 
 [![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
-[![Gitter](https://badges.gitter.im/s0ph1e/node-website-scraper.svg)](https://gitter.im/s0ph1e/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/website-scraper/node-website-scraper.svg)](https://gitter.im/website-scraper/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 [![NPM Stats](https://nodei.co/npm/website-scraper.png?downloadRank=true&stars=true)](https://www.npmjs.org/package/website-scraper)
 
-You can try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://github.com/s0ph1e/web-scraper))
+You can try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://github.com/website-scraper/web-scraper))
 
-**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-phantom](https://github.com/s0ph1e/node-website-scraper-phantom).
+**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom).
 
 
 ## Installation
@@ -64,7 +64,7 @@ scrape(options, (error, result) => {
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
 * [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
  
-Default options you can find in [lib/config/defaults.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
+Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
 #### urls
 Array of objects which contain urls to download and filenames for them. **_Required_**.
@@ -215,10 +215,10 @@ scrape({
   }
 }).then(console.log).catch(console.log);
 ```
-Scrape function resolves with array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`. 
+Scrape function resolves with array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`.
 
 #### resourceSaver
-Class which saves [Resources](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/index.js](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+Class which saves [Resources](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/index.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
 ```javascript
 scrape({
   urls: ['http://example.com/'],
@@ -231,7 +231,7 @@ scrape({
 ```
 
 #### onResourceSaved
-Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.
+Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.
 ```javascript
 scrape({
   urls: ['http://example.com/'],
@@ -243,7 +243,7 @@ scrape({
 ```
 
 #### onResourceError
-Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with - [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) object and `Error` object. Defaults to `null` - no callback will be called.
+Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object and `Error` object. Defaults to `null` - no callback will be called.
 ```javascript
 scrape({
   urls: ['http://example.com/'],
@@ -281,7 +281,7 @@ scrape({
 ## callback 
 Callback function, optional, includes following parameters:
   - `error`: if error - `Error` object, if success - `null`
-  - `result`: if error - `null`, if success - array of [Resource](https://github.com/s0ph1e/node-website-scraper/blob/master/lib/resource.js) objects containing:
+  - `result`: if error - `null`, if success - array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects containing:
     - `url`: url of loaded page
     - `filename`: filename where page was saved (relative to `directory`)
     - `children`: array of children Resources
