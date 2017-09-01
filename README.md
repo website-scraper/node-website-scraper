@@ -1,6 +1,4 @@
 ## Introduction
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/website-scraper/node-website-scraper.svg)](https://greenkeeper.io/)
 Download website to a local directory (including all css, images, js, etc.)
 
 [![Build Status](https://img.shields.io/travis/website-scraper/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/website-scraper/node-website-scraper)
