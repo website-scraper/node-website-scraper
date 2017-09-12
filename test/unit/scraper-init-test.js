@@ -3,26 +3,29 @@
 const should = require('should');
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
-const path = require('path');
 const Scraper = require('../../lib/scraper');
 const Resource = require('../../lib/resource');
 
 const testDirname = __dirname + '/.scraper-init-test';
 const urls = [ 'http://example.com' ];
 
+function createConfigMock (params) {
+	return Object.assign({requestConcurrency: Infinity}, params);
+}
+
 describe('Scraper initialization', function () {
 	describe('defaultFilename', function() {
-		var Scraper;
+		let Scraper;
 
 		before(function() {
-			var defaultsMock = { defaultFilename: 'dummyFilename.txt' };
+			const defaultsMock = createConfigMock({ defaultFilename: 'dummyFilename.txt' });
 			Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 		});
 
 		it('should use default defaultFilename if no defaultFilename were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
 			});
@@ -31,7 +34,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use defaultFilename sources if defaultFilename were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				defaultFilename: 'myNewFileName.txt'
@@ -42,17 +45,17 @@ describe('Scraper initialization', function () {
 	});
 
 	describe('sources', function() {
-		var Scraper;
+		let Scraper;
 
 		before(function() {
-			var defaultsMock = { sources: ['1', '2', '3'] };
+			const defaultsMock = createConfigMock({ sources: ['1', '2', '3'] });
 			Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 		});
 
 		it('should use default sources if no sources were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
 			});
@@ -61,7 +64,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use passed sources if sources were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				sources: [ { selector: 'img', attr: 'src' } ]
@@ -71,7 +74,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should extend sources if recursive flag is set', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
 				sources: [
@@ -87,17 +90,17 @@ describe('Scraper initialization', function () {
 	});
 
 	describe('subdirectories', function () {
-		var Scraper;
+		let Scraper;
 
 		before(function() {
-			var defaultsMock = { subdirectories: [{ directory: 'dir', extensions: ['.txt'] }] };
+			const defaultsMock = createConfigMock({ subdirectories: [{ directory: 'dir', extensions: ['.txt'] }] });
 			Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 		});
 
 		it('should use default subdirectories if no subdirectories were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
 			});
@@ -107,7 +110,7 @@ describe('Scraper initialization', function () {
 
 		it('should convert extensions to lower case', function () {
 
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				subdirectories: [
@@ -119,7 +122,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use passed subdirectories if subdirectories were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				subdirectories: [ { directory: 'js', extensions: ['.js'] } ]
@@ -129,7 +132,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use null if null was passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				subdirectories: null
@@ -140,17 +143,17 @@ describe('Scraper initialization', function () {
 	});
 
 	describe('request', function () {
-		var Scraper;
+		let Scraper;
 
 		before(function() {
-			var defaultsMock = { request: { a: 1, b: 2 } };
+			const defaultsMock = createConfigMock({ request: { a: 1, b: 2 } });
 			Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 		});
 
 		it('should use default request if no request were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
 			});
@@ -159,7 +162,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should merge default and passed objects if request were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				request: {
@@ -179,7 +182,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should override existing properties if request were passed', function () {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
 				request: {
@@ -196,18 +199,18 @@ describe('Scraper initialization', function () {
 
 	describe('resourceHandler', function () {
 		it('should create resourceHandler with correct params', function() {
-			var ResourceHandlerStub = sinon.stub();
-			var Scraper = proxyquire('../../lib/scraper', {
+			const ResourceHandlerStub = sinon.stub();
+			const Scraper = proxyquire('../../lib/scraper', {
 				'./resource-handler': ResourceHandlerStub
 			});
 
-			var options = {
+			const options = {
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
 				maxDepth: 100
 			};
 
-			var s = new Scraper(options);
+			const s = new Scraper(options);
 			ResourceHandlerStub.calledOnce.should.be.eql(true);
 			ResourceHandlerStub.args[0][0].should.be.eql(s.options);
 			ResourceHandlerStub.args[0][1].should.be.eql(s);
@@ -216,7 +219,7 @@ describe('Scraper initialization', function () {
 
 	describe('urls', function () {
 		it('should create an Array of urls if string was passed', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://not-array-url.com',
 				directory: testDirname
 			});
@@ -228,7 +231,7 @@ describe('Scraper initialization', function () {
 
 	describe('resources', function () {
 		it('should create Resource object for each url', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: [
 					'http://first-url.com',
 					{ url: 'http://second-url.com' },
@@ -247,7 +250,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use urls filename', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: { url: 'http://first-url.com', filename: 'first.html' },
 				directory: testDirname
 			});
@@ -255,7 +258,7 @@ describe('Scraper initialization', function () {
 		});
 
 		it('should use default filename if no url filename was provided', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: { url: 'http://first-url.com' },
 				defaultFilename: 'default.html',
 				directory: testDirname
