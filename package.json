@@ -36,7 +36,7 @@
     "bluebird": "^3.0.1",
     "cheerio": "0.22.0",
     "css-url-parser": "^1.0.0",
-    "debug": "^3.0.0",
+    "debug": "^3.1.0",
     "fs-extra": "^4.0.0",
     "he": "^1.1.0",
     "lodash": "^4.11.1",
