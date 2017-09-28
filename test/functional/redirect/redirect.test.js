@@ -1,11 +1,14 @@
-require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var sinon = require('sinon');
-var Scraper = require('../../../lib/scraper');
+'use strict';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+require('should');
+const nock = require('nock');
+const fs = require('fs-extra');
+const sinon = require('sinon');
+const Scraper = require('../../../lib/scraper');
+const scrape = require('../../../index');
+
+const testDirname = __dirname + '/.tmp';
+const mockDirname = __dirname + '/mocks';
 
 describe('Functional redirects', function() {
 
@@ -58,6 +61,49 @@ describe('Functional redirects', function() {
 
 			// true-page.html should have body from 1st response
 			fs.readFileSync(testDirname + '/true-page.html').toString().should.be.eql('true page 1');
+		});
+	});
+
+	it('should correctly handle relative source in redirected page', () => {
+		const options = {
+			urls: [
+				{ url: 'http://example.com', filename: 'index.html'}
+			],
+			directory: testDirname,
+			subdirectories: [
+				{ directory: 'css', extensions: ['.css'] }
+			],
+			maxRecursiveDepth: 1,
+			sources: [
+				{selector: 'link', attr: 'href'},
+				{selector: 'a', attr: 'href'}
+			]
+		};
+
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/relative-resources-index.html');
+		nock('http://example.com/').get('/about').reply(301, '', {'Location': 'http://example.com/about/'});
+		nock('http://example.com/').get('/about/').replyWithFile(200, mockDirname + '/relative-resources-about.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/style.css').reply(200, 'style.css');
+		nock('http://example.com/').get('/about/style.css').reply(200, 'about/style.css');
+
+		return scrape(options).then(function() {
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/css/style.css').should.be.eql(true);
+			fs.existsSync(testDirname + '/css/style_1.css').should.be.eql(true);
+
+			const style = fs.readFileSync(testDirname + '/css/style.css').toString();
+			style.should.be.eql('style.css');
+
+			const style_1 = fs.readFileSync(testDirname + '/css/style_1.css').toString();
+			style_1.should.be.eql('about/style.css');
+
+			const index = fs.readFileSync(testDirname + '/index.html').toString();
+			index.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
+
+			const about = fs.readFileSync(testDirname + '/about.html').toString();
+			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
+			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style_1.css">');
 		});
 	});
 });
