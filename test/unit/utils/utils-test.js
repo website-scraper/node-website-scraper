@@ -220,4 +220,10 @@ describe('Utils', function () {
 			should(utils.decodeHtmlEntities('?a=1&amp;v=2')).be.eql('?a=1&v=2');
 		});
 	});
+
+	describe('#urlsEqual', () => {
+		it('should return false for /path and /path/', function() {
+			should(utils.urlsEqual('http://example.com/path', 'http://example.com/path/')).be.eql(false);
+		});
+	})
 });
