@@ -188,17 +188,17 @@ scrape({
 ```
 
 ###### function
-Custom function which generates filename. It takes 3 arguments: resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object, options - object passed to scrape function, occupiedFileNames - array of occupied filenames and should return string - relative to `directory` path for specified resource. 
+Custom function which generates filename. It takes 3 arguments: resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object, options - object passed to scrape function, occupiedFileNames - array of occupied filenames. Should return string - relative to `directory` path for specified resource. 
 ```javascript
 const scrape = require('website-scraper');
 const crypto = require('crypto');
 
 scrape({
-  urls: [{ url: 'http://example.com', filename: 'index.html' }],
+  urls: ['http://example.com'],
   directory: '/path/to/save',
-  /* Generate random filename for all dependencies */
+  /* Generate random filename */
   filenameGenerator: (resource, options, occupiedFileNames) => {
-    return resource.getFilename() || crypto.randomBytes(20).toString('hex');
+    return crypto.randomBytes(20).toString('hex'); 
   }
 }).then(console.log).catch(console.log);
 ```
