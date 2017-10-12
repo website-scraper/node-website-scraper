@@ -164,10 +164,10 @@ scrape({
 ```
 
 #### filenameGenerator
-String, name of one of the bundled filenameGenerators, or a custom filenameGenerator function. Filename generator determines where the scraped files are saved.
+String (name of the bundled filenameGenerator) or function. Filename generator determines path in file system where the resource will be saved.
 
 ###### byType (default)
-When the `byType` filenameGenerator is used the downloaded files are saved by type (as defined by the `subdirectories` setting) or directly in the `directory` folder, if no subdirectory is specified for the specific type.
+When the `byType` filenameGenerator is used the downloaded files are saved by extension (as defined by the `subdirectories` setting) or directly in the `directory` folder, if no subdirectory is specified for the specific extension.
 
 ###### bySiteStructure
 When the `bySiteStructure` filenameGenerator is used the downloaded files are saved in `directory` using same structure as on the website:
@@ -176,16 +176,30 @@ When the `bySiteStructure` filenameGenerator is used the downloaded files are sa
 - `//cdn.example.com/resources/jquery.min.js` => `DIRECTORY/cdn.example.com/resources/jquery.min.js`
 
 ```javascript
-// Downloads all the crawlable files. The files are saved in the same structure as the structure of the website
-// Links to other websites are filtered out by the urlFilter
 var scrape = require('website-scraper');
 scrape({
   urls: ['http://example.com/'],
-  urlFilter: function(url){ return url.indexOf('http://example.com') === 0; },
+  urlFilter: (url) => url.startsWith('http://example.com'), // Filter links to other websites
   recursive: true,
-  maxDepth: 100,
+  maxRecursiveDepth: 10,
   filenameGenerator: 'bySiteStructure',
   directory: '/path/to/save'
+}).then(console.log).catch(console.log);
+```
+
+###### function
+Custom function which generates filename. It takes 3 arguments: resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object, options - object passed to scrape function, occupiedFileNames - array of occupied filenames. Should return string - relative to `directory` path for specified resource. 
+```javascript
+const scrape = require('website-scraper');
+const crypto = require('crypto');
+
+scrape({
+  urls: ['http://example.com'],
+  directory: '/path/to/save',
+  /* Generate random filename */
+  filenameGenerator: (resource, options, occupiedFileNames) => {
+    return crypto.randomBytes(20).toString('hex'); 
+  }
 }).then(console.log).catch(console.log);
 ```
 
