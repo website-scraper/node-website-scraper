@@ -91,6 +91,9 @@ describe('Utils', function () {
 		it('should decode escaped chars', function () {
 			utils.getFilepathFromUrl('https://example.co/logo/logo-mobile%20(1).svg?q=650').should.equal('logo/logo-mobile (1).svg');
 		});
+		it('should return path as is if url is malformed', () => {
+			utils.getFilepathFromUrl('https://example.co/%%IMAGE%%/logo.png').should.equal('%%IMAGE%%/logo.png');
+		});
 	});
 
 	describe('#getHashFromUrl', function () {
