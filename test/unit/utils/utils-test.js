@@ -91,6 +91,9 @@ describe('Utils', function () {
 		it('should decode escaped chars', function () {
 			utils.getFilepathFromUrl('https://example.co/logo/logo-mobile%20(1).svg?q=650').should.equal('logo/logo-mobile (1).svg');
 		});
+		it('should return path as is if url is malformed', () => {
+			utils.getFilepathFromUrl('https://example.co/%%IMAGE%%/logo.png').should.equal('%%IMAGE%%/logo.png');
+		});
 	});
 
 	describe('#getHashFromUrl', function () {
@@ -225,5 +228,12 @@ describe('Utils', function () {
 		it('should return false for /path and /path/', function() {
 			should(utils.urlsEqual('http://example.com/path', 'http://example.com/path/')).be.eql(false);
 		});
-	})
+	});
+
+	describe('#normalizeUrl', () => {
+		it('should return original url if it is malformed', () => {
+			const malformedUrl = 'http://example.com/%%IMAGEURL%%/bar1q2blitz.png';
+			should(utils.normalizeUrl(malformedUrl)).be.eql(malformedUrl);
+		});
+	});
 });
