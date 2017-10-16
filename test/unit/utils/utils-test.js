@@ -225,5 +225,12 @@ describe('Utils', function () {
 		it('should return false for /path and /path/', function() {
 			should(utils.urlsEqual('http://example.com/path', 'http://example.com/path/')).be.eql(false);
 		});
-	})
+	});
+
+	describe('#normalizeUrl', () => {
+		it('should return original url if it is malformed', () => {
+			const malformedUrl = 'http://example.com/%%IMAGEURL%%/bar1q2blitz.png';
+			should(utils.normalizeUrl(malformedUrl)).be.eql(malformedUrl);
+		});
+	});
 });
