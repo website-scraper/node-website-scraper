@@ -50,7 +50,7 @@
     "coveralls": "^3.0.0",
     "eslint": "^4.1.0",
     "istanbul": "^0.4.0",
-    "mocha": "^4.0.0",
+    "mocha": "^5.0.0",
     "nock": "^9.0.2",
     "proxyquire": "^1.7.3",
     "should": "^13.0.0",
