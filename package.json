@@ -52,7 +52,7 @@
     "istanbul": "^0.4.0",
     "mocha": "^5.0.0",
     "nock": "^9.0.2",
-    "proxyquire": "^1.7.3",
+    "proxyquire": "^2.0.0",
     "should": "^13.0.0",
     "sinon": "^4.0.0"
   },
