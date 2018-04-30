@@ -54,7 +54,7 @@
     "nock": "^9.0.2",
     "proxyquire": "^2.0.0",
     "should": "^13.0.0",
-    "sinon": "^4.0.0"
+    "sinon": "^5.0.1"
   },
   "files": [
     "index.js",
