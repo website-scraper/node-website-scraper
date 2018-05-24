@@ -6,6 +6,8 @@ node_js:
   - '6'
   - '7'
   - '8'
+  - '9'
+  - '10'
 after_success:
   - travis_retry codeclimate-test-reporter < coverage/lcov.info
   - travis_retry coveralls < coverage/lcov.info
