@@ -38,6 +38,13 @@ describe('FilenameGenerator: byType', function() {
 		filename.should.equalFileSystemPath('css.css');
 	});
 
+	it('should add missed extensions for js resources', function () {
+		var r = new Resource('http://example.com/js', '');
+		r.getType = sinon.stub().returns('js');
+		var filename = byTypeFilenameGenerator(r, {}, []);
+		filename.should.equalFileSystemPath('js.js');
+	});
+
 	it('should not add missed extensions for other resources', function () {
 		var r = new Resource('http://1.gravatar.com/avatar/4d63e4a045c7ff22accc33dc08442f86?s=140&amp;d=%2Fwp-content%2Fuploads%2F2015%2F05%2FGood-JOb-150x150.jpg&amp;r=g', '');
 		r.getType = sinon.stub().returns('home');
