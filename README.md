@@ -1,7 +1,7 @@
 ## Introduction
 Download website to a local directory (including all css, images, js, etc.)
 
-[![Build Status](https://img.shields.io/travis/website-scraper/node-website-scraper/master.svg?style=flat)](https://travis-ci.org/website-scraper/node-website-scraper)
+[![Build Status](https://travis-ci.org/website-scraper/node-website-scraper.svg?branch=master)](https://travis-ci.org/website-scraper/node-website-scraper)
 [![Build status](https://ci.appveyor.com/api/projects/status/s7jxui1ngxlbgiav/branch/master?svg=true)](https://ci.appveyor.com/project/s0ph1e/node-website-scraper/branch/master)
 [![Test Coverage](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/coverage.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper/coverage)
 [![Code Climate](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/gpa.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper)
