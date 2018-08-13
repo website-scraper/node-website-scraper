@@ -182,19 +182,21 @@ describe('ResourceHandler', function() {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
 				'http://first.com/b.jpg',
-				'http://second.com/img/c.jpg'
+				'http://second.com/img/c.jpg',
+				'http://second.com/d',
 			]);
 
-			scraperContext.requestResource.onFirstCall().returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
-			scraperContext.requestResource.onSecondCall().returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
-			scraperContext.requestResource.onThirdCall().returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
+			scraperContext.requestResource.onCall(0).returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
+			scraperContext.requestResource.onCall(1).returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
+			scraperContext.requestResource.onCall(2).returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
+			scraperContext.requestResource.onCall(3).returns(Promise.resolve(new Resource('http://second.com/d', 'a%b/"\'( )?p=q&\\#')));
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
 			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
-				updateTextStub.args[0][0].length.should.be.eql(3);
+				updateTextStub.args[0][0].length.should.be.eql(4);
 				updateTextStub.args[0][0].should.containEql({
 					oldPath: 'http://first.com/img/a.jpg',
 					newPath: 'local/a.jpg'
@@ -207,7 +209,11 @@ describe('ResourceHandler', function() {
 					oldPath: 'http://second.com/img/c.jpg',
 					newPath: 'local/c.jpg'
 				});
-				updateChildSpy.calledThrice.should.be.eql(true);
+				updateTextStub.args[0][0].should.containEql({
+					oldPath: 'http://second.com/d',
+					newPath: 'a%25b/%22%27%28%20%29%3Fp%3Dq%26%5C%23'
+				});
+				updateChildSpy.callCount.should.be.eql(4);
 			});
 		});
 

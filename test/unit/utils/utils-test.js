@@ -117,6 +117,13 @@ describe('Utils', function () {
 			utils.getRelativePath('index.html', 'img/1.png').should.be.equal('img/1.png');
 			utils.getRelativePath('css/1.css', 'css/2.css').should.be.equal('2.css');
 		});
+		it('should escape path components with encodeURIComponent', function () {
+			utils.getRelativePath('index.html', 'a/css?family=Open+Sans:300,400,600,700&lang=en').should.be.equal('a/css%3Ffamily%3DOpen%2BSans%3A300%2C400%2C600%2C700%26lang%3Den');
+		});
+		it('should also escape [\'()]', function () {
+			utils.getRelativePath('index.html', '\'single quote for html attrs\'').should.be.equal('%27single%20quote%20for%20html%20attrs%27');
+			utils.getRelativePath('index.html', '(parenthesizes for css url)').should.be.equal('%28parenthesizes%20for%20css%20url%29');
+		});
 	});
 
 	describe('#shortenFilename', function() {
