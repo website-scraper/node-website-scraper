@@ -4,6 +4,7 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const proxyquire = require('proxyquire');
+const path = require('path');
 const Resource = require('../../../lib/resource');
 const ResourceHandler = require('../../../lib/resource-handler');
 
@@ -186,10 +187,10 @@ describe('ResourceHandler', function() {
 				'http://second.com/d',
 			]);
 
-			scraperContext.requestResource.onCall(0).returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local/a.jpg')));
-			scraperContext.requestResource.onCall(1).returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local/b.jpg')));
-			scraperContext.requestResource.onCall(2).returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local/c.jpg')));
-			scraperContext.requestResource.onCall(3).returns(Promise.resolve(new Resource('http://second.com/d', 'a%b/"\'( )?p=q&\\#')));
+			scraperContext.requestResource.onCall(0).returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local' + path.sep + 'a.jpg')));
+			scraperContext.requestResource.onCall(1).returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local' + path.sep + 'b.jpg')));
+			scraperContext.requestResource.onCall(2).returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local' + path.sep + 'c.jpg')));
+			scraperContext.requestResource.onCall(3).returns(Promise.resolve(new Resource('http://second.com/d', 'a%b' + path.sep + '"\'( )?p=q&\\#')));
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
@@ -211,7 +212,7 @@ describe('ResourceHandler', function() {
 				});
 				updateTextStub.args[0][0].should.containEql({
 					oldPath: 'http://second.com/d',
-					newPath: 'a%25b/%22%27%28%20%29%3Fp%3Dq%26%5C%23'
+					newPath: 'a%25b/%22%27%28%20%29%3Fp%3Dq%26' + (path.sep === '\\' ? '/' : '%5C') + '%23'
 				});
 				updateChildSpy.callCount.should.be.eql(4);
 			});
