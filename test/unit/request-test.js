@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should');
 const nock = require('nock');
 const sinon = require('sinon');

@@ -1,5 +1,3 @@
-'use strict';
-
 const Promise = require('bluebird');
 const Scraper = require('./lib/scraper.js');
 
