@@ -168,21 +168,4 @@ describe('Functional base', function() {
 			should(result[0].text).be.eql('TEST PROMISES');
 		});
 	});
-
-	if(process.versions.node.split('.') >= '8') {
-		it('should work with async/await', async () => {
-			nock('http://example.com/').get('/').reply(200, 'TEST ASYNC/AWAIT');
-
-			const options = {
-				urls: [ 'http://example.com/' ],
-				directory: testDirname
-			};
-
-			const result = await scrape(options);
-
-			should(result[0].url).be.eql('http://example.com/');
-			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('TEST ASYNC/AWAIT');
-		});
-	}
 });
