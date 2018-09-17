@@ -62,7 +62,7 @@ describe('ResourceSaver', function () {
 			it('should throw error if directory exists', () => {
 				const ResourceSaver = proxyquire('../../lib/resource-saver', {
 					'fs-extra': {
-						statSync: sinon.stub().returns('fake-stat')
+						existsSync: sinon.stub().returns(true)
 					}
 				});
 
@@ -78,7 +78,7 @@ describe('ResourceSaver', function () {
 			it('should throw other errors as is', () => {
 				const ResourceSaver = proxyquire('../../lib/resource-saver', {
 					'fs-extra': {
-						statSync: sinon.stub().throws(new Error('other fs error'))
+						existsSync: sinon.stub().throws(new Error('other fs error'))
 					}
 				});
 
