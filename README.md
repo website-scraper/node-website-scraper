@@ -25,8 +25,8 @@ npm install website-scraper
 
 ## Usage
 ```javascript
-var scrape = require('website-scraper');
-var options = {
+const scrape = require('website-scraper');
+const options = {
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save/',
 };
@@ -37,6 +37,9 @@ scrape(options).then((result) => {
 }).catch((err) => {
 	/* some code here */
 });
+
+// with async/await (if you use node version >= 8)
+const result = await scrape(options);
 
 // or with callback
 scrape(options, (error, result) => {
@@ -77,7 +80,7 @@ scrape({
     {url: 'http://blog.nodejs.org/', filename: 'blog.html'}
   ],
   directory: '/path/to/save'
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### directory
@@ -95,7 +98,7 @@ scrape({
     {selector: 'link[rel="stylesheet"]', attr: 'href'},
     {selector: 'script', attr: 'src'}
   ]
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### recursive
@@ -108,8 +111,9 @@ Positive number, maximum allowed depth for hyperlinks. Other dependencies will b
 Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
 
 #### request
-Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, etc.
+Object, custom options for [request](https://github.com/request/request#requestoptions-callback) or function which returns such object for each [resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) that will be requested. Allows to set cookies, userAgent, encoding, etc.
 ```javascript
+// use same request options for all resources
 scrape({
   urls: ['http://example.com/'],
   directory: '/path/to/save',
@@ -118,7 +122,14 @@ scrape({
       'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19'
     }
   }
-}).then(console.log).catch(console.log);
+});
+
+// use different request options for different resources
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  request: resource => ({qs: {myParam: 123}})
+});
 ```
 
 #### subdirectories
@@ -137,7 +148,7 @@ scrape({
     {directory: 'js', extensions: ['.js']},
     {directory: 'css', extensions: ['.css']}
   ]
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### defaultFilename
@@ -153,14 +164,13 @@ Boolean, if `true` scraper will continue downloading resources after error occur
 Function which is called for each url to check whether it should be scraped. Defaults to `null` - no url filter will be applied.
 ```javascript
 // Links to other websites are filtered out by the urlFilter
-var scrape = require('website-scraper');
 scrape({
   urls: ['http://example.com/'],
   urlFilter: function(url){
     return url.indexOf('http://example.com') === 0;
   },
   directory: '/path/to/save'
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### filenameGenerator
@@ -176,7 +186,6 @@ When the `bySiteStructure` filenameGenerator is used the downloaded files are sa
 - `//cdn.example.com/resources/jquery.min.js` => `DIRECTORY/cdn.example.com/resources/jquery.min.js`
 
 ```javascript
-var scrape = require('website-scraper');
 scrape({
   urls: ['http://example.com/'],
   urlFilter: (url) => url.startsWith('http://example.com'), // Filter links to other websites
@@ -184,13 +193,12 @@ scrape({
   maxRecursiveDepth: 10,
   filenameGenerator: 'bySiteStructure',
   directory: '/path/to/save'
-}).then(console.log).catch(console.log);
+});
 ```
 
 ###### function
 Custom function which generates filename. It takes 3 arguments: resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object, options - object passed to scrape function, occupiedFileNames - array of occupied filenames. Should return string - relative to `directory` path for specified resource. 
 ```javascript
-const scrape = require('website-scraper');
 const crypto = require('crypto');
 
 scrape({
@@ -200,7 +208,7 @@ scrape({
   filenameGenerator: (resource, options, occupiedFileNames) => {
     return crypto.randomBytes(20).toString('hex'); 
   }
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### httpResponseHandler
@@ -228,7 +236,7 @@ scrape({
 		});
 	}
   }
-}).then(console.log).catch(console.log);
+});
 ```
 Scrape function resolves with array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`.
 
@@ -242,7 +250,7 @@ scrape({
   	saveResource (resource) {/* code to save file where you need */}
   	errorCleanup (err) {/* code to remove all previously saved files in case of error */}
   }
-}).then(console.log).catch(console.log);
+});
 ```
 
 #### onResourceSaved
