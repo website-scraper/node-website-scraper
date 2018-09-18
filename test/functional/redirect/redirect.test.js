@@ -1,5 +1,3 @@
-'use strict';
-
 require('should');
 const nock = require('nock');
 const fs = require('fs-extra');

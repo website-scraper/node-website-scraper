@@ -1,12 +1,12 @@
-require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var cheerio = require('cheerio');
-var scrape = require('../../../index');
-var Resource = require('../../../lib/resource');
+const should = require('should');
+const nock = require('nock');
+const fs = require('fs-extra');
+const cheerio = require('cheerio');
+const scrape = require('../../../index');
+const Resource = require('../../../lib/resource');
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = __dirname + '/.tmp';
+const mockDirname = __dirname + '/mocks';
 
 describe('Functional base', function() {
 
@@ -21,8 +21,8 @@ describe('Functional base', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should load multiple urls to single directory with all specified sources', function () {
-		var options = {
+	it('should load multiple urls to single directory with all specified sources', () => {
+		const options = {
 			urls: [
 				'http://example.com/',   // Will be saved with default filename 'index.html'
 				{ url: 'http://example.com/about', filename: 'about.html' },
@@ -97,7 +97,7 @@ describe('Functional base', function() {
 			fs.existsSync(testDirname + '/js/script.min.js').should.be.eql(true);
 
 			// all sources in index.html should be replaced with local paths
-			var $ = cheerio.load(fs.readFileSync(testDirname + '/index.html').toString());
+			let $ = cheerio.load(fs.readFileSync(testDirname + '/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('css/index.css');
 			$('style').text().should.containEql('img/background.png');
 			$('img').attr('src').should.be.eql('img/cat.jpg');
@@ -111,7 +111,7 @@ describe('Functional base', function() {
 			fs.existsSync(testDirname + '/img/index-image-2.png').should.be.eql(true);
 
 			// all sources in index.css should be replaces with local files recursively
-			var indexCss = fs.readFileSync(testDirname + '/css/index.css').toString();
+			const indexCss = fs.readFileSync(testDirname + '/css/index.css').toString();
 			indexCss.should.not.containEql('files/index-import-1.css');
 			indexCss.should.not.containEql('files/index-import-2.css');
 			indexCss.should.not.containEql('http://example.com/files/index-image-1.png');
@@ -119,7 +119,7 @@ describe('Functional base', function() {
 			indexCss.should.containEql('index-import-2.css');
 			indexCss.should.containEql('../img/index-image-1.png');
 
-			var indexImportCss = fs.readFileSync(testDirname + '/css/index-import-2.css').toString();
+			const indexImportCss = fs.readFileSync(testDirname + '/css/index-import-2.css').toString();
 			indexImportCss.should.not.containEql('http://example.com/files/index-image-2.png');
 			indexImportCss.should.containEql('../img/index-image-2.png');
 
@@ -134,6 +134,38 @@ describe('Functional base', function() {
 			// should not replace not loaded files
 			$ = cheerio.load(fs.readFileSync(testDirname + '/blog.html').toString());
 			$('img').attr('src').should.be.eql('files/fail-1.png');
+		});
+	});
+
+	it('should work with callback', (done) => {
+		nock('http://example.com/').get('/').reply(200, 'TEST CALLBACK');
+
+		const options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname
+		};
+
+		scrape(options, function(err, result) {
+			should(err).be.eql(null);
+			should(result[0].url).be.eql('http://example.com/');
+			should(result[0].filename).be.eql('index.html');
+			should(result[0].text).be.eql('TEST CALLBACK');
+			done();
+		});
+	});
+
+	it('should work with promise', () => {
+		nock('http://example.com/').get('/').reply(200, 'TEST PROMISES');
+
+		const options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname
+		};
+
+		return scrape(options).then((result) => {
+			should(result[0].url).be.eql('http://example.com/');
+			should(result[0].filename).be.eql('index.html');
+			should(result[0].text).be.eql('TEST PROMISES');
 		});
 	});
 });

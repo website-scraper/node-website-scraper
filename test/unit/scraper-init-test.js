@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should');
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');

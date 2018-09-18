@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should');
 const nock = require('nock');
 const sinon = require('sinon');
@@ -21,20 +19,10 @@ describe('Request', () => {
 			let r1 = new Request({});
 			should(r1.handleResponse).be.ok();
 			should(r1.handleResponse).be.instanceOf(Function);
-			should(r1.options).be.eql({});
 
 			let r2 = new Request();
 			should(r2.handleResponse).be.ok();
 			should(r2.handleResponse).be.instanceOf(Function);
-			should(r2.options).be.eql({});
-		});
-
-		it('should set passed request options', () => {
-			let options = { a: 1 };
-			let r = new Request({
-				request: options
-			});
-			should(r.options).be.eql(options);
 		});
 	});
 
@@ -54,16 +42,16 @@ describe('Request', () => {
 			});
 
 			it('should call request with correct params', () => {
-				let r = new Request({});
-				r.options = {
+				const r = new Request({});
+				const options = {
 					headers: {
 						'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
 					}
 				};
-				let url = 'http://www.google.com';
+				const url = 'http://www.google.com';
 
-				return r.get(url).then(() => {
-					let expectedOptions = {
+				return r.get(url, null, options).then(() => {
+					const expectedOptions = {
 						headers: {
 							'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
 						},
