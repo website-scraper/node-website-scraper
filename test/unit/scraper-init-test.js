@@ -223,7 +223,7 @@ describe('Scraper initialization', function () {
 			});
 
 			s.options.urls.should.be.an.instanceOf(Array).and.have.length(1);
-			s.options.urls[0].should.be.eql('http://not-array-url.com');
+			s.options.urls[0].should.be.eql({url: 'http://not-array-url.com', filename: 'index.html'});
 		});
 	});
 
@@ -301,6 +301,82 @@ describe('Scraper initialization', function () {
 			CustomResourceSaverStub.calledOnce.should.be.eql(true);
 			CustomResourceSaverStub.args[0][0].should.be.eql(s.options);
 			DefaultResourceSaverStub.called.should.be.eql(false);
+		});
+	});
+
+	describe('actions', () => {
+		it('should add empty actions when no plugins', () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.actions.should.be.eql({
+				beforeStart: [],
+				afterFinish: [],
+				beforeRequest: [],
+				afterRequest: [],
+				onResourceSaved: [],
+				onResourceError: []
+			});
+		});
+
+		it('should add actions when plugin set', () => {
+			class MyPlugin {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('afterFinish', () => {});
+				}
+			}
+
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				plugins: [
+					new MyPlugin()
+				]
+			});
+
+			s.actions.beforeStart.length.should.be.eql(1);
+			s.actions.afterFinish.length.should.be.eql(1);
+
+			s.actions.beforeRequest.length.should.be.eql(0);
+			s.actions.afterRequest.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.be.eql(0);
+			s.actions.onResourceError.length.should.be.eql(0);
+		});
+
+		it('should add actions when multiple plugins set', () => {
+			class MyPlugin1 {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('afterFinish', () => {});
+				}
+			}
+
+			class MyPlugin2 {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('beforeRequest', () => {});
+					addAction('onResourceSaved', () => {});
+				}
+			}
+
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				plugins: [
+					new MyPlugin1(),
+					new MyPlugin2(),
+				]
+			});
+
+			s.actions.beforeStart.length.should.be.eql(2);
+			s.actions.afterFinish.length.should.be.eql(1);
+			s.actions.beforeRequest.length.should.be.eql(1);
+			s.actions.afterRequest.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.be.eql(1);
+			s.actions.onResourceError.length.should.be.eql(0);
 		});
 	});
 });
