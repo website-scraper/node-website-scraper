@@ -315,7 +315,7 @@ describe('Scraper initialization', function () {
 				beforeStart: [],
 				afterFinish: [],
 				beforeRequest: [],
-				afterRequest: [],
+				afterResponse: [],
 				onResourceSaved: [],
 				onResourceError: []
 			});
@@ -341,7 +341,7 @@ describe('Scraper initialization', function () {
 			s.actions.afterFinish.length.should.be.eql(1);
 
 			s.actions.beforeRequest.length.should.be.eql(0);
-			s.actions.afterRequest.length.should.be.eql(0);
+			s.actions.afterResponse.length.should.be.eql(0);
 			s.actions.onResourceSaved.length.should.be.eql(0);
 			s.actions.onResourceError.length.should.be.eql(0);
 		});
@@ -374,7 +374,7 @@ describe('Scraper initialization', function () {
 			s.actions.beforeStart.length.should.be.eql(2);
 			s.actions.afterFinish.length.should.be.eql(1);
 			s.actions.beforeRequest.length.should.be.eql(1);
-			s.actions.afterRequest.length.should.be.eql(0);
+			s.actions.afterResponse.length.should.be.eql(0);
 			s.actions.onResourceSaved.length.should.be.eql(1);
 			s.actions.onResourceError.length.should.be.eql(0);
 		});

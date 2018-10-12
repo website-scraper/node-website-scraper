@@ -19,6 +19,7 @@ describe('Functional: pass function to "request" option', function() {
 		fs.removeSync(testDirname);
 	});
 
+	// todo: rewrite test with plugins
 	it('should use function which returns request option for resource ', function() {
 		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
 
