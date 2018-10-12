@@ -7,7 +7,7 @@ const scrape = require('../../../index');
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';
 
-describe('Functional callbacks', () => {
+describe('Functional: onResourceSaved and onResourceError callbacks in plugin', () => {
 
 	beforeEach(() => {
 		nock.cleanAll();
