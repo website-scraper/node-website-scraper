@@ -1,14 +1,14 @@
-var should = require('should');
-var sinon = require('sinon');
-var nock = require('nock');
-var proxyquire = require('proxyquire').noCallThru();
-var fs = require('fs-extra');
-var path = require('path');
-var Scraper = require('../../lib/scraper');
-var Resource = require('../../lib/resource');
+const should = require('should');
+const sinon = require('sinon');
+const nock = require('nock');
+const proxyquire = require('proxyquire').noCallThru();
+const fs = require('fs-extra');
+const path = require('path');
+const Scraper = require('../../lib/scraper');
+const Resource = require('../../lib/resource');
 
-var testDirname = __dirname + '/.scraper-test';
-var urls = [ 'http://example.com' ];
+const testDirname = __dirname + '/.scraper-test';
+const urls = [ 'http://example.com' ];
 
 describe('Scraper', function () {
 
@@ -305,22 +305,26 @@ describe('Scraper', function () {
 		});
 
 		it('should update resource data with data returned from request', () => {
-			let metadata = {
+			const metadata = {
 				solarSystemPlanets: [ 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune' ]
 			};
 
-			let s = new Scraper({
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./request': {
+					get: sinon.stub().resolves({
+						url: 'http://google.com',
+						body: 'test body',
+						mimeType: 'text/html',
+						metadata: metadata
+					})
+				}
+			});
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
-			s.request.get = sinon.stub().resolves({
-				url: 'http://google.com',
-				body: 'test body',
-				mimeType: 'text/html',
-				metadata: metadata
-			});
 
-			let r = new Resource('http://example.com');
+			const r = new Resource('http://example.com');
 
 			return s.requestResource(r).finally(function() {
 				r.getText().should.be.eql('test body');
@@ -397,8 +401,8 @@ describe('Scraper', function () {
 
 	describe('defaults', function() {
 		it('should export defaults', function() {
-			var defaultsMock = { subdirectories: null, recursive: true, sources: [] };
-			Scraper = proxyquire('../../lib/scraper', {
+			const defaultsMock = { subdirectories: null, recursive: true, sources: [] };
+			const Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
