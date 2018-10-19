@@ -33,7 +33,7 @@ describe('Functional redirects', function() {
 		nock('http://example.com/').get('/duplicating-page.html').reply(302, '', {'Location': 'http://example.com/true-page.html'});
 		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 3');
 
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
@@ -41,13 +41,13 @@ describe('Functional redirects', function() {
 			maxDepth: 2,
 			sources: []
 		};
-		var scraper = new Scraper(options);
-		var loadToFsSpy = sinon.spy(scraper.resourceSaver, 'saveResource');
+		const scraper = new Scraper(options);
+		const saveSpy = sinon.spy(scraper.actions.saveResource, [0]);
 
 		return scraper.scrape().then(function() {
-			loadToFsSpy.callCount.should.be.eql(2);
-			loadToFsSpy.args[0][0].filename.should.be.eql('index.html');
-			loadToFsSpy.args[1][0].filename.should.be.eql('true-page.html');
+			saveSpy.callCount.should.be.eql(2);
+			saveSpy.args[0][0].resource.filename.should.be.eql('index.html');
+			saveSpy.args[1][0].resource.filename.should.be.eql('true-page.html');
 
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/true-page.html').should.be.eql(true);

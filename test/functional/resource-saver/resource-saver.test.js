@@ -6,7 +6,7 @@ const scrape = require('../../../index');
 
 const testDirname = __dirname + '/.tmp';
 
-describe('Functional resourceSaver', () => {
+describe('Functional: plugin for saving resources', () => {
 
 	beforeEach(() => {
 		nock.cleanAll();
