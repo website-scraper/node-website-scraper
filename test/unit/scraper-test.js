@@ -184,17 +184,24 @@ describe('Scraper', function () {
 
 	describe('#requestResource', function() {
 
+		class GenerateFilenamePlugin {
+			apply(registerAction) {
+				registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+			}
+		}
+
 		describe('url filtering', function() {
 			it('should request the resource if the urlFilter returns true', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: function() { return true; }
+					urlFilter: function() { return true; },
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
 					rr.getUrl().should.be.eql('http://example.com/a.png');
@@ -221,12 +228,13 @@ describe('Scraper', function () {
 			it('should request the resource if the maxDepth option is not set', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
-					directory: testDirname
+					directory: testDirname,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(212);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -239,13 +247,14 @@ describe('Scraper', function () {
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					maxDepth: 3
+					maxDepth: 3,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(2);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -258,13 +267,14 @@ describe('Scraper', function () {
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					maxDepth: 3
+					maxDepth: 3,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(3);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -275,13 +285,13 @@ describe('Scraper', function () {
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', function(){
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://google.com'],
 					directory: testDirname,
 					maxDepth: 3
 				});
 
-				var r = new Resource('http://google.com/a.png');
+				const r = new Resource('http://google.com/a.png');
 				r.getDepth = sinon.stub().returns(4);
 				return s.requestResource(r).then(function(rr) {
 					should.equal(rr, null);
@@ -309,6 +319,12 @@ describe('Scraper', function () {
 				solarSystemPlanets: [ 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune' ]
 			};
 
+			class GenerateFilenamePlugin {
+				apply(registerAction) {
+					registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+				}
+			}
+
 			const Scraper = proxyquire('../../lib/scraper', {
 				'./request': {
 					get: sinon.stub().resolves({
@@ -321,15 +337,17 @@ describe('Scraper', function () {
 			});
 			const s = new Scraper({
 				urls: 'http://example.com',
-				directory: testDirname
+				directory: testDirname,
+				plugins: [ new GenerateFilenamePlugin() ]
 			});
 
 			const r = new Resource('http://example.com');
 
-			return s.requestResource(r).finally(function() {
+			return s.requestResource(r).then(function() {
 				r.getText().should.be.eql('test body');
 				r.getUrl().should.be.eql('http://google.com');
 				r.getType().should.be.eql('html');
+				r.getFilename().should.be.eql('generated-filename');
 				r.metadata.should.be.eql(metadata);
 			});
 		})

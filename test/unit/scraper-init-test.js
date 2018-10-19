@@ -265,45 +265,6 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('resourceSaver', () => {
-		it('should create default resourceSaver with correct params', () => {
-			const ResourceSaverStub = sinon.stub();
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-saver': ResourceSaverStub
-			});
-
-			const options = {
-				urls: { url: 'http://first-url.com' },
-				directory: testDirname,
-				maxDepth: 100
-			};
-
-			const s = new Scraper(options);
-			ResourceSaverStub.calledOnce.should.be.eql(true);
-			ResourceSaverStub.args[0][0].should.be.eql(s.options);
-		});
-
-		it('should create custom resourceSaver with correct params', () => {
-			const DefaultResourceSaverStub = sinon.stub();
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-saver': DefaultResourceSaverStub
-			});
-			const CustomResourceSaverStub = sinon.stub();
-
-			const options = {
-				urls: { url: 'http://first-url.com' },
-				directory: testDirname,
-				maxDepth: 100,
-				resourceSaver: CustomResourceSaverStub
-			};
-
-			const s = new Scraper(options);
-			CustomResourceSaverStub.calledOnce.should.be.eql(true);
-			CustomResourceSaverStub.args[0][0].should.be.eql(s.options);
-			DefaultResourceSaverStub.called.should.be.eql(false);
-		});
-	});
-
 	describe('actions', () => {
 		it('should add empty actions when no plugins', () => {
 			const s = new Scraper({
@@ -311,14 +272,17 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.actions.should.be.eql({
-				beforeStart: [],
-				afterFinish: [],
-				beforeRequest: [],
-				afterResponse: [],
-				onResourceSaved: [],
-				onResourceError: []
-			});
+			s.actions.beforeStart.length.should.be.eql(2);
+			s.actions.afterFinish.length.should.be.eql(0);
+			s.actions.error.length.should.be.eql(1);
+
+			s.actions.beforeRequest.length.should.be.eql(0);
+			s.actions.afterResponse.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.be.eql(0);
+			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
 		});
 
 		it('should add actions when plugin set', () => {
@@ -337,13 +301,17 @@ describe('Scraper initialization', function () {
 				]
 			});
 
-			s.actions.beforeStart.length.should.be.eql(1);
+			s.actions.beforeStart.length.should.be.eql(3);
 			s.actions.afterFinish.length.should.be.eql(1);
+			s.actions.error.length.should.be.eql(1);
 
 			s.actions.beforeRequest.length.should.be.eql(0);
 			s.actions.afterResponse.length.should.be.eql(0);
 			s.actions.onResourceSaved.length.should.be.eql(0);
 			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
 		});
 
 		it('should add actions when multiple plugins set', () => {
@@ -371,12 +339,30 @@ describe('Scraper initialization', function () {
 				]
 			});
 
-			s.actions.beforeStart.length.should.be.eql(2);
+			s.actions.beforeStart.length.should.be.eql(4);
 			s.actions.afterFinish.length.should.be.eql(1);
+			s.actions.error.length.should.be.eql(1);
+
 			s.actions.beforeRequest.length.should.be.eql(1);
 			s.actions.afterResponse.length.should.be.eql(0);
+
 			s.actions.onResourceSaved.length.should.be.eql(1);
 			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
 		});
 	});
+
+	describe('mandatory actions', () => {
+		it('should add mandatory actions - saveResource and generateFilename', () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
+		});
+	})
 });
