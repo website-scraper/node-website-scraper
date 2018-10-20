@@ -538,7 +538,7 @@ describe('Scraper', function () {
 				should(false).eql(true);
 			} catch (err) {
 				should(err).be.instanceOf(Error);
-				should(err.message).containEql(`Directory ${testDirname} exists`);
+				should(err.message).match(/Directory (.*?) exists/);
 			}
 		});
 	});
