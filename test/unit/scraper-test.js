@@ -485,5 +485,61 @@ describe('Scraper', function () {
 				should(fs.existsSync(testDirname)).be.eql(true);
 			}
 		});
+
+		it('should return error if no directory', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if empty directory passed', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: ''
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if incorrect directory passed', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: {}
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if existing directory passed', async () => {
+			try {
+				fs.mkdirpSync(testDirname);
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: testDirname
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql(`Directory ${testDirname} exists`);
+			}
+		});
 	});
 });
