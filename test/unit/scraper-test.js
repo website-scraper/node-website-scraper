@@ -8,7 +8,6 @@ const Scraper = require('../../lib/scraper');
 const Resource = require('../../lib/resource');
 
 const testDirname = __dirname + '/.scraper-test';
-const urls = [ 'http://example.com' ];
 
 describe('Scraper', function () {
 
@@ -24,19 +23,6 @@ describe('Scraper', function () {
 	});
 
 	describe('#load', function() {
-		it('should create directory', function() {
-			nock('http://example.com').get('/').reply(200, 'OK');
-			var s = new Scraper({
-				urls: urls,
-				directory: testDirname
-			});
-
-			return s.load().then(function() {
-				var exists = fs.existsSync(testDirname);
-				exists.should.be.eql(true);
-			});
-		});
-
 		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
@@ -70,45 +56,6 @@ describe('Scraper', function () {
 			}, function(err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('everything was broken!');
-			});
-		});
-
-		it('should remove directory if error occurs and something was loaded', function() {
-			nock('http://example.com').get('/').reply(200, 'OK');
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			fs.existsSync(testDirname).should.be.eql(false);
-
-			return s.load().then(function() {
-				fs.existsSync(testDirname).should.be.eql(true);
-				return s.errorCleanup(new Error('everything was broken!'));
-			}).then(function() {
-				should(true).be.eql(false);
-			}).catch(function(err) {
-				err.should.be.instanceOf(Error);
-				err.message.should.be.eql('everything was broken!');
-				fs.existsSync(testDirname).should.be.eql(false);
-			});
-		});
-
-		it('should not remove directory if error occurs and nothing was loaded', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			fs.mkdirpSync(testDirname);
-			fs.existsSync(testDirname).should.be.eql(true);
-
-			return s.errorCleanup(new Error('everything was broken!')).then(function() {
-				should(true).be.eql(false);
-			}).catch(function(err) {
-				err.should.be.instanceOf(Error);
-				err.message.should.be.eql('everything was broken!');
-				fs.existsSync(testDirname).should.be.eql(true);
 			});
 		});
 	});
@@ -145,23 +92,6 @@ describe('Scraper', function () {
 	});
 
 	describe('#saveResource', function() {
-		it('should save resource to FS', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			var r = new Resource('http://example.com/a.png', 'a.png');
-			r.setText('some text');
-
-			s.resourceHandler.handleResource = sinon.stub().resolves(r);
-
-			return s.saveResource(r).then(function() {
-				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
-				text.should.be.eql(r.getText());
-			});
-		});
-
 		it('should call handleError on error', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
@@ -417,6 +347,66 @@ describe('Scraper', function () {
 		});
 	});
 
+	describe('#runActions', () => {
+		it('should run all actions with correct params and save result from last', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const beforeStartActionStub1 = sinon.stub().resolves({result: 1});
+			const beforeStartActionStub2 = sinon.stub().resolves({result: 2});
+			const beforeStartActionStub3 = sinon.stub().resolves({result: 3});
+
+			s.addAction('beforeStart', beforeStartActionStub1);
+			s.addAction('beforeStart', beforeStartActionStub2);
+			s.addAction('beforeStart', beforeStartActionStub3);
+
+			const result = await s.runActions('beforeStart', {options: s.options});
+
+			should(beforeStartActionStub1.callCount).eql(1);
+			should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+
+			should(beforeStartActionStub2.callCount).eql(1);
+			should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+
+			should(beforeStartActionStub3.callCount).eql(1);
+			should(beforeStartActionStub3.args[0][0]).be.eql({options: s.options, result: 2});
+
+			should(result).eql({result: 3});
+		});
+
+		it('should fail if one of actions fails', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const beforeStartActionStub1 = sinon.stub().resolves({result: 1});
+			const beforeStartActionStub2 = sinon.stub().rejects(new Error('Error from beforeStart 2'));
+			const beforeStartActionStub3 = sinon.stub().resolves({result: 3});
+
+			s.addAction('beforeStart', beforeStartActionStub1);
+			s.addAction('beforeStart', beforeStartActionStub2);
+			s.addAction('beforeStart', beforeStartActionStub3);
+
+			try {
+				await s.runActions('beforeStart', {options: s.options});
+				should(false).eql(true);
+			} catch (err) {
+				should(beforeStartActionStub1.callCount).eql(1);
+				should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+
+				should(beforeStartActionStub2.callCount).eql(1);
+				should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+
+				should(beforeStartActionStub3.callCount).eql(0);
+
+				should(err.message).eql('Error from beforeStart 2');
+			}
+		});
+	});
+
 	describe('defaults', function() {
 		it('should export defaults', function() {
 			const defaultsMock = { subdirectories: null, recursive: true, sources: [] };
@@ -424,6 +414,76 @@ describe('Scraper', function () {
 				'./config/defaults': defaultsMock
 			});
 			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
+		});
+	});
+
+	describe('default saveResource plugin', () => {
+		it('should create directory on scrape', async () => {
+			nock('http://example.com').get('/').reply(200, 'OK');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			await s.scrape();
+
+			should(fs.existsSync(testDirname)).be.eql(true);
+		});
+
+		it('should save resource to FS', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			await s.scrape();
+
+			const filename = path.join(testDirname, 'index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should remove directory on error occurs if something was loaded', async () => {
+			nock('http://example.com').get('/').reply(200, 'OK');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			fs.existsSync(testDirname).should.be.eql(false);
+
+			await s.scrape();
+
+			fs.existsSync(testDirname).should.be.eql(true);
+
+			try {
+				await s.errorCleanup(new Error('everything was broken!'));
+				should(true).be.eql(false);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('everything was broken!');
+				should(fs.existsSync(testDirname)).be.eql(false);
+			}
+		});
+
+		it('should not remove directory if error occurs and nothing was loaded', async () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			fs.mkdirpSync(testDirname);
+			fs.existsSync(testDirname).should.be.eql(true);
+
+			try {
+				await s.errorCleanup(new Error('everything was broken!'));
+				should(true).be.eql(false);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('everything was broken!');
+				should(fs.existsSync(testDirname)).be.eql(true);
+			}
 		});
 	});
 });
