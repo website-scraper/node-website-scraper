@@ -352,6 +352,29 @@ describe('Scraper initialization', function () {
 			s.actions.saveResource.length.should.be.eql(1);
 			s.actions.generateFilename.length.should.be.eql(1);
 		});
+
+		it('should throw error if plugin has wrong action', () => {
+			class MyPlugin {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('wrongAction', () => {});
+				}
+			}
+
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: testDirname,
+					plugins: [
+						new MyPlugin()
+					]
+				});
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('Unknown action "wrongAction"');
+			}
+		})
 	});
 
 	describe('mandatory actions', () => {

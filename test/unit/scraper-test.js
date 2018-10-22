@@ -407,13 +407,22 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('defaults', function() {
+	describe('export defaults', function() {
 		it('should export defaults', function() {
 			const defaultsMock = { subdirectories: null, recursive: true, sources: [] };
 			const Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
+		});
+	});
+
+	describe('export plugins', function() {
+		it('should export default plugins', function() {
+			should(Scraper.plugins).be.instanceOf(Object);
+			should(Scraper.plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
+			should(Scraper.plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
+			should(Scraper.plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
 		});
 	});
 
@@ -540,6 +549,53 @@ describe('Scraper', function () {
 				should(err).be.instanceOf(Error);
 				should(err.message).match(/Directory (.*?) exists/);
 			}
+		});
+	});
+
+	describe('default generateFilename plugins', () => {
+		it('should use byType plugin if filenameGenerator option is set', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: 'byType'
+			});
+
+			await s.scrape();
+
+			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameByTypePlugin);
+
+			const filename = path.join(testDirname, 'index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should use bySiteStructure plugin if filenameGenerator option is set', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: 'bySiteStructure'
+			});
+
+			const a = await s.scrape();
+			console.log(a);
+
+			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameBySiteStructurePlugin);
+
+			const filename = path.join(testDirname, 'example.com/index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should ignore filenameGenerator option if function passed', async () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: () => {}
+			});
+
+			should(s.options.plugins.length).be.eql(0);
 		});
 	});
 });

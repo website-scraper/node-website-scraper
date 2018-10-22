@@ -108,6 +108,7 @@ describe('request', () => {
 						should(true).be.eql(false);
 					}).catch((e) => {
 						should(e).be.instanceOf(Error);
+						should(e.message).match(/Wrong response handler result. Expected string or object, but received/);
 					});
 				});
 			});
