@@ -38,7 +38,7 @@ scrape(options).then((result) => {
 	/* some code here */
 });
 
-// with async/await (if you use node version >= 8)
+// with async/await
 const result = await scrape(options);
 
 // or with callback
@@ -111,7 +111,7 @@ Positive number, maximum allowed depth for hyperlinks. Other dependencies will b
 Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
 
 #### request
-Object, custom options for [request](https://github.com/request/request#requestoptions-callback) or function which returns such object for each [resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) that will be requested. Allows to set cookies, userAgent, encoding, etc.
+Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, encoding, etc.
 ```javascript
 // use same request options for all resources
 scrape({
@@ -174,7 +174,7 @@ scrape({
 ```
 
 #### filenameGenerator
-String (name of the bundled filenameGenerator) or function. Filename generator determines path in file system where the resource will be saved.
+String (name of the bundled filenameGenerator). Filename generator determines path in file system where the resource will be saved.
 
 ###### byType (default)
 When the `byType` filenameGenerator is used the downloaded files are saved by extension (as defined by the `subdirectories` setting) or directly in the `directory` folder, if no subdirectory is specified for the specific extension.
@@ -241,7 +241,7 @@ scrape({
 Scrape function resolves with array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`.
 
 #### resourceSaver
-Class which saves [Resources](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/index.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+Class which saves [Resources](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/save-resource-to-fs-plugin.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
 ```javascript
 scrape({
   urls: ['http://example.com/'],
@@ -304,13 +304,120 @@ scrape({
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
 
-## callback 
-Callback function, optional, includes following parameters:
-  - `error`: if error - `Error` object, if success - `null`
-  - `result`: if error - `null`, if success - array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects containing:
-    - `url`: url of loaded page
-    - `filename`: filename where page was saved (relative to `directory`)
-    - `children`: array of children Resources
+#### plugins
+Object with `.apply` method. 
+Can be used to configure or change scraper behavior. `.apply` method takes one argument - `registerAction` function which allows to customize saving resource or generating filename or handling http response etc.
+You can add multiple plugins which register multiple actions. Plugins will be applied in order they were added to options.
+All actions should be regular or async functions. Scraper will call them in order they were added and use result (if supported by action type) from last call
+
+List of supported actions with detailed descriptions and examples you can find below.
+```javascript
+class MyPlugin {
+	apply(registerAction) {
+		registerAction('beforeStart', async ({options}) => {});
+		registerAction('afterFinish', async () => {});
+		registerAction('error', async ({error}) => {console.error(error)});
+		registerAction('beforeRequest', async ({resource, requestOptions}) => ({requestOptions}));
+		registerAction('afterResponse', ({response}) => response.body);
+		
+		/**
+		 Action onResourceSaved - called each time after resource is saved (to file system or other storage with 'saveResource' action)
+		 @param resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+		 Scraper ignores result returned from this action
+		*/
+		registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
+		
+		/**
+		 Action onResourceError - called each time when resource's downloading/handling/saving to was failed
+		 @param resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+		 @param error - error occurred
+		*/
+		registerAction('onResourceError', ({resource, error}) => console.log(`Resource ${resource.url} has error ${error}`));
+	}
+}
+
+scrape({
+  urls: ['http://example.com/'],
+  directory: '/path/to/save',
+  plugins: [ new MyPlugin() ]
+});
+```
+
+##### beforeStart
+Action `beforeStart` is called before downloading is started. It can be used to initialize something needed for other actions.
+Parameters: 
+* options - scraper options, normalized options object passed to scrape function
+```javascript
+registerAction('beforeStart', async ({options}) => {});
+```
+
+##### afterFinish
+Action afterFinish is called after all resources downloaded or error occurred. Good place to shut down/close something initialized and used in other actions.
+No parameters.
+```javascript
+registerAction('afterFinish', async () => {});
+```
+
+##### error
+Action error is called when error occurred.
+Parameters: 
+* error - Error object
+```javascript
+registerAction('error', async ({error}) => {console.log(error)});
+```
+
+##### beforeRequest
+Action beforeRequest is called before requesting resource. You can use it to customize request options per resource, for example if you want to use different encodings for different resource types or add something to querystring.
+Parameters:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+* requestOptions - default options for [request](https://github.com/request/request#requestoptions-callback) module or options returned by previous beforeRequest action call
+
+Should return custom options for [request](https://github.com/request/request#requestoptions-callback) module.
+If multiple actions `beforeRequest` added - scraper will use `requestOptions` from last one.
+```javascript
+// Add ?myParam=123 to querystring for resource with url 'http://example.com'
+registerAction('beforeRequest', ({resource, requestOptions}) => {
+	if (resource.getUrl() === 'http://example.com') {
+		return extend(requestOptions, {qs: {myParam: 123}});
+	}
+	return {requestOptions};
+});
+```
+
+##### afterResponse
+Action afterResponse is called after each response, allows to customize resource or reject its saving.
+Parameters:
+* response - response object of [request](https://github.com/request/request) module
+
+Should return resolved `Promise` if resource should be saved or rejected with Error `Promise` if it should be skipped.
+Promise should be resolved with:
+* `string` which contains response body
+* or object with properties `body` (response body, string) and `metadata` - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
+
+If multiple actions `afterResponse` added - scraper will use result from last one.
+```javascript
+// Do not save resources which responded with 404 not found status code
+registerAction('afterResponse', ({response}) => {
+	if (response.statusCode === 404) {
+			return Promise.reject(new Error('status is 404'));
+		} else {
+			// if you don't need metadata - you can just return Promise.resolve(response.body)
+			return Promise.resolve({
+				body: response.body,
+				metadata: {
+					headers: response.headers,
+					someOtherData: [ 1, 2, 3 ]
+			}
+		});
+	}
+});
+```
+
+## result
+Array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects containing:
+- `url`: url of loaded page
+- `filename`: filename where page was saved (relative to `directory`)
+- `children`: array of children Resources
 
 ## Log and debug
 This module uses [debug](https://github.com/visionmedia/debug) to log events. To enable logs you should use environment variable `DEBUG`.
