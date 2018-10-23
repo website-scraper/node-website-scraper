@@ -140,20 +140,22 @@ describe('Functional: base', function() {
 
 	it('should load multiple urls to single directory with all specified sources with bySiteStructureFilenameGenerator', () => {
 		return scrape({...options, filenameGenerator: 'bySiteStructure'}).then(function(result) {
-			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
 
-			result[0].should.have.properties({ url: 'http://example.com/', filename: 'example.com/index.html' });
+			should(result[0].url).eql('http://example.com/');
+			should(result[0].filename).equalFileSystemPath('example.com/index.html');
 			result[0].should.have.properties('children');
 			result[0].children.should.be.instanceOf(Array).and.have.length(4);
 			result[0].children[0].should.be.instanceOf(Resource);
 
-			result[1].should.have.properties({ url: 'http://example.com/about', filename: 'example.com/about/index.html' });
+			should(result[1].url).eql('http://example.com/about');
+			should(result[1].filename).equalFileSystemPath('example.com/about/index.html');
 			result[1].should.have.properties('children');
 			result[1].children.should.be.instanceOf(Array).and.have.length(4);
 			result[1].children[0].should.be.instanceOf(Resource);
 
-			result[2].should.have.properties({ url: 'http://blog.example.com/', filename: 'blog.example.com/index.html' }); // url after redirect
+			should(result[2].url).eql('http://blog.example.com/');  // url after redirect
+			should(result[2].filename).equalFileSystemPath('blog.example.com/index.html');
 			result[2].should.have.properties('children');
 			result[2].children.should.be.instanceOf(Array).and.have.length(1);
 			result[2].children[0].should.be.instanceOf(Resource);
