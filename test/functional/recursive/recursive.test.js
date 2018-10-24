@@ -26,7 +26,7 @@ describe('Functional recursive downloading', function() {
 			subdirectories: null,
 			sources: [],
 			recursive: true,
-			replaceLinks: true,
+			updateSources: true,
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -58,7 +58,7 @@ describe('Functional recursive downloading', function() {
 			subdirectories: null,
 			sources: [],
 			recursive: true,
-			replaceLinks: false,
+			updateSources: false,
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -105,7 +105,7 @@ describe('Functional recursive downloading', function() {
 			subdirectories: null,
 			sources: [],
 			recursive: true,
-			replaceLinks: false,
+			updateSources: false,
 			filenameGenerator: (resource, options, occupiedFileNames) => {
 				return generateFilename(resource.url);
 			}
