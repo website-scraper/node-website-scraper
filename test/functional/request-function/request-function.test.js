@@ -1,12 +1,12 @@
-var should = require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+const should = require('should');
+const nock = require('nock');
+const fs = require('fs-extra');
+const scrape = require('../../../index');
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = __dirname + '/.tmp';
+const mockDirname = __dirname + '/mocks';
 
-describe('Functional: pass function to "request" option', function() {
+describe('Functional: customize request options with plugin', function() {
 
 	beforeEach(function() {
 		nock.cleanAll();
@@ -22,14 +22,24 @@ describe('Functional: pass function to "request" option', function() {
 	it('should use function which returns request option for resource ', function() {
 		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
 
+		class CustomRequestOptions {
+			apply(add) {
+				add('beforeRequest', ()=> {
+					return {
+						requestOptions:{
+							qs: {myParam: 122}
+						}
+					};
+				});
+			}
+		}
+
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
-			request: () => {
-					return {
-						qs: {myParam: 122}
-					}
-			}
+			plugins: [
+				new CustomRequestOptions()
+			]
 		};
 
 		return scrape(options).then(function() {

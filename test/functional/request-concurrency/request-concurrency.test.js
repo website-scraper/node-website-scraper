@@ -2,6 +2,7 @@ const should = require('should');
 const nock = require('nock');
 const fs = require('fs-extra');
 const Scraper = require('../../../lib/scraper');
+const proxyquire = require('proxyquire');
 
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';
@@ -28,25 +29,31 @@ describe('Functional concurrent requests', function() {
 			subdirectories: null,
 			recursive: true,
 			sources: [],
-			requestConcurrency: 2
+			requestConcurrency: 1
 		};
+
+		const originalGet = require('../../../lib/request').get;
+
+		const Scraper = proxyquire('../../../lib/scraper', {
+			'./request': {
+				get: ({url, referer}) => {
+					currentConcurrentRequests++;
+					if (maxConcurrentRequests < currentConcurrentRequests) {
+						maxConcurrentRequests = currentConcurrentRequests;
+					}
+
+					return originalGet.call(null, {url, referer}).then(data => {
+						currentConcurrentRequests--;
+						return data;
+					});
+				}
+			}
+		});
+
 		scraper = new Scraper(options);
 
 		maxConcurrentRequests = 0;
 		currentConcurrentRequests = 0;
-
-		const originalGet = scraper.request.get;
-		scraper.request.get = function (url, referer) {
-			currentConcurrentRequests++;
-			if (maxConcurrentRequests < currentConcurrentRequests) {
-				maxConcurrentRequests = currentConcurrentRequests;
-			}
-
-			return originalGet.call(scraper.request, url, referer).then(data => {
-				currentConcurrentRequests--;
-				return data;
-			});
-		};
 
 		return scraper.scrape();
 	});
@@ -58,6 +65,6 @@ describe('Functional concurrent requests', function() {
 	});
 
 	it('should have maximum concurrent requests == requestConcurrency option', () => {
-		maxConcurrentRequests.should.be.belowOrEqual(2);
+		maxConcurrentRequests.should.be.belowOrEqual(1);
 	});
 });

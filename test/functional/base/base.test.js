@@ -8,7 +8,27 @@ const Resource = require('../../../lib/resource');
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';
 
-describe('Functional base', function() {
+describe('Functional: base', function() {
+	const options = {
+		urls: [
+			'http://example.com/',   // Will be saved with default filename 'index.html'
+			{ url: 'http://example.com/about', filename: 'about.html' },
+			{ url: 'http://example.com/blog', filename: 'blog.html' }
+		],
+		directory: testDirname,
+		defaultFilename: 'index.html',
+		subdirectories: [
+			{ directory: 'img', extensions: ['.jpg', '.png'] },
+			{ directory: 'js', extensions: ['.js'] },
+			{ directory: 'css', extensions: ['.css'] }
+		],
+		sources: [
+			{ selector: 'img', attr: 'src' },
+			{ selector: 'link[rel="stylesheet"]', attr: 'href' },
+			{ selector: 'script', attr: 'src' },
+			{ selector: 'style' }
+		]
+	};
 
 	beforeEach(function() {
 		nock.cleanAll();
@@ -21,33 +41,12 @@ describe('Functional base', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should load multiple urls to single directory with all specified sources', () => {
-		const options = {
-			urls: [
-				'http://example.com/',   // Will be saved with default filename 'index.html'
-				{ url: 'http://example.com/about', filename: 'about.html' },
-				{ url: 'http://example.com/blog', filename: 'blog.html' }
-			],
-			directory: testDirname,
-			defaultFilename: 'index.html',
-			subdirectories: [
-				{ directory: 'img', extensions: ['.jpg', '.png'] },
-				{ directory: 'js', extensions: ['.js'] },
-				{ directory: 'css', extensions: ['.css'] }
-			],
-			sources: [
-				{ selector: 'img', attr: 'src' },
-				{ selector: 'link[rel="stylesheet"]', attr: 'href' },
-				{ selector: 'script', attr: 'src' },
-				{ selector: 'style' }
-			]
-		};
-
+	beforeEach(() => {
 		// mock base urls
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/about').replyWithFile(200, mockDirname + '/about.html');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/about').replyWithFile(200, mockDirname + '/about.html', {'content-type': 'text/html'});
 		nock('http://example.com/').get('/blog').reply(303, '', { 'Location': 'http://blog.example.com/' });
-		nock('http://blog.example.com/').get('/').replyWithFile(200, mockDirname + '/blog.html');
+		nock('http://blog.example.com/').get('/').replyWithFile(200, mockDirname + '/blog.html', {'content-type': 'text/html'});
 
 		// mock sources for index.html
 		nock('http://example.com/').get('/index.css').replyWithFile(200, mockDirname + '/index.css');
@@ -64,7 +63,9 @@ describe('Functional base', function() {
 
 		// mocks for blog.html
 		nock('http://blog.example.com/').get('/files/fail-1.png').replyWithError('something awful happened');
+	});
 
+	it('should load multiple urls to single directory with all specified sources', () => {
 		return scrape(options).then(function(result) {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
@@ -137,35 +138,74 @@ describe('Functional base', function() {
 		});
 	});
 
-	it('should work with callback', (done) => {
-		nock('http://example.com/').get('/').reply(200, 'TEST CALLBACK');
+	it('should load multiple urls to single directory with all specified sources with bySiteStructureFilenameGenerator', () => {
+		return scrape({...options, filenameGenerator: 'bySiteStructure'}).then(function(result) {
+			result.should.be.instanceOf(Array).and.have.length(3);
 
-		const options = {
-			urls: [ 'http://example.com/' ],
-			directory: testDirname
-		};
+			should(result[0].url).eql('http://example.com/');
+			should(result[0].filename).equalFileSystemPath('example.com/index.html');
+			result[0].should.have.properties('children');
+			result[0].children.should.be.instanceOf(Array).and.have.length(4);
+			result[0].children[0].should.be.instanceOf(Resource);
 
-		scrape(options, function(err, result) {
-			should(err).be.eql(null);
-			should(result[0].url).be.eql('http://example.com/');
-			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('TEST CALLBACK');
-			done();
-		});
-	});
+			should(result[1].url).eql('http://example.com/about');
+			should(result[1].filename).equalFileSystemPath('example.com/about/index.html');
+			result[1].should.have.properties('children');
+			result[1].children.should.be.instanceOf(Array).and.have.length(4);
+			result[1].children[0].should.be.instanceOf(Resource);
 
-	it('should work with promise', () => {
-		nock('http://example.com/').get('/').reply(200, 'TEST PROMISES');
+			should(result[2].url).eql('http://blog.example.com/');  // url after redirect
+			should(result[2].filename).equalFileSystemPath('blog.example.com/index.html');
+			result[2].should.have.properties('children');
+			result[2].children.should.be.instanceOf(Array).and.have.length(1);
+			result[2].children[0].should.be.instanceOf(Resource);
 
-		const options = {
-			urls: [ 'http://example.com/' ],
-			directory: testDirname
-		};
+			// should create directory and subdirectories
+			fs.existsSync(testDirname).should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/about').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/files').should.be.eql(true);
+			fs.existsSync(testDirname + '/blog.example.com').should.be.eql(true);
 
-		return scrape(options).then((result) => {
-			should(result[0].url).be.eql('http://example.com/');
-			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('TEST PROMISES');
+			// should contain all sources found in index.html
+			fs.existsSync(testDirname + '/example.com/index.css').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/background.png').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/cat.jpg').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/script.min.js').should.be.eql(true);
+
+			// all sources in index.html should be replaced with local paths
+			let $ = cheerio.load(fs.readFileSync(testDirname + '/example.com/index.html').toString());
+			$('link[rel="stylesheet"]').attr('href').should.be.eql('index.css');
+			$('style').text().should.containEql('background.png');
+			$('img').attr('src').should.be.eql('cat.jpg');
+			$('script').attr('src').should.be.eql('script.min.js');
+
+			// should contain all sources found in index.css recursively
+			fs.existsSync(testDirname + '/example.com/files/index-import-1.css').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/files/index-import-2.css').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/files/index-import-3.css').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/files/index-image-1.png').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/files/index-image-2.png').should.be.eql(true);
+
+			// all sources in index.css should be replaces with local files recursively
+			const indexCss = fs.readFileSync(testDirname + '/example.com/index.css').toString();
+			indexCss.should.containEql('files/index-import-1.css');
+			indexCss.should.containEql('files/index-import-2.css');
+			indexCss.should.containEql('files/index-image-1.png');
+
+			const indexImportCss = fs.readFileSync(testDirname + '/example.com/files/index-import-2.css').toString();
+			indexImportCss.should.containEql('index-image-2.png');
+
+			// should deal with base tag in about.html and not load new resources
+			// all sources in about.html should be replaced with already loaded local resources
+			$ = cheerio.load(fs.readFileSync(testDirname + '/example.com/about/index.html').toString());
+			$('link[rel="stylesheet"]').attr('href').should.be.eql('../index.css');
+			$('style').text().should.containEql('../background.png');
+			$('img').attr('src').should.be.eql('../cat.jpg');
+			$('script').attr('src').should.be.eql('../script.min.js');
+
+			// should not replace not loaded files
+			$ = cheerio.load(fs.readFileSync(testDirname + '/blog.example.com/index.html').toString());
+			$('img').attr('src').should.be.eql('files/fail-1.png');
 		});
 	});
 });

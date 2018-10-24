@@ -6,7 +6,7 @@ const scrape = require('../../../index');
 
 const testDirname = __dirname + '/.tmp';
 
-describe('Functional resourceSaver', () => {
+describe('Functional: plugin for saving resources', () => {
 
 	beforeEach(() => {
 		nock.cleanAll();
@@ -19,48 +19,50 @@ describe('Functional resourceSaver', () => {
 		fs.removeSync(testDirname);
 	});
 
-	it('should use passed resourceSaver when saving resource', function() {
-		nock('http://example.com/').get('/').reply(200, 'OK');
+	let saveResourceStub, handleErrorStub, saveResourcePlugin;
 
-		class MyResourceSaver {
-			saveResource() {}
-			errorCleanup() {}
+	beforeEach(() => {
+		saveResourceStub = sinon.stub().resolves().onCall(2).rejects(new Error('FS FAILED!'));
+		handleErrorStub = sinon.stub().resolves();
+
+		class SaveResourcePlugin {
+			apply(registerAction) {
+				registerAction('saveResource', saveResourceStub);
+				registerAction('error', handleErrorStub)
+			}
 		}
 
-		const saveResourceStub = sinon.stub(MyResourceSaver.prototype, 'saveResource').resolves();
+		saveResourcePlugin = new SaveResourcePlugin();
+	});
+
+	it('should use passed resourceSaver when saving resource', function() {
+		nock('http://example.com/').get('/').reply(200, 'OK');
 
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
-			resourceSaver: MyResourceSaver
+			plugins: [ saveResourcePlugin ]
 		};
 
 		return scrape(options).catch(function() {
 			should(saveResourceStub.calledOnce).be.eql(true);
-			should(saveResourceStub.args[0][0].url).be.eql('http://example.com/');
+			should(saveResourceStub.args[0][0].resource.url).be.eql('http://example.com/');
 		});
 	});
 
 	it('should use passed resourceSaver on error', function() {
 		nock('http://example.com/').get('/').replyWithError('SCRAPER AWFUL ERROR');
 
-		class MyResourceSaver {
-			saveResource() {}
-			errorCleanup() {}
-		}
-
-		const removeResourcesStub = sinon.stub(MyResourceSaver.prototype, 'errorCleanup').resolves();
-
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
-			resourceSaver: MyResourceSaver,
+			plugins: [ saveResourcePlugin ],
 			ignoreErrors: false
 		};
 
 		return scrape(options).catch(function() {
-			should(removeResourcesStub.calledOnce).be.eql(true);
-			should(removeResourcesStub.args[0][0].message).be.eql('SCRAPER AWFUL ERROR');
+			should(handleErrorStub.calledOnce).be.eql(true);
+			should(handleErrorStub.args[0][0].error.message).be.eql('SCRAPER AWFUL ERROR');
 		});
 	});
 
