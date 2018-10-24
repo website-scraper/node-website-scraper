@@ -1,14 +1,13 @@
-var should = require('should');
-var sinon = require('sinon');
-var nock = require('nock');
-var proxyquire = require('proxyquire').noCallThru();
-var fs = require('fs-extra');
-var path = require('path');
-var Scraper = require('../../lib/scraper');
-var Resource = require('../../lib/resource');
+const should = require('should');
+const sinon = require('sinon');
+const nock = require('nock');
+const proxyquire = require('proxyquire').noCallThru();
+const fs = require('fs-extra');
+const path = require('path');
+const Scraper = require('../../lib/scraper');
+const Resource = require('../../lib/resource');
 
-var testDirname = __dirname + '/.scraper-test';
-var urls = [ 'http://example.com' ];
+const testDirname = __dirname + '/.scraper-test';
 
 describe('Scraper', function () {
 
@@ -24,19 +23,6 @@ describe('Scraper', function () {
 	});
 
 	describe('#load', function() {
-		it('should create directory', function() {
-			nock('http://example.com').get('/').reply(200, 'OK');
-			var s = new Scraper({
-				urls: urls,
-				directory: testDirname
-			});
-
-			return s.load().then(function() {
-				var exists = fs.existsSync(testDirname);
-				exists.should.be.eql(true);
-			});
-		});
-
 		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
@@ -70,45 +56,6 @@ describe('Scraper', function () {
 			}, function(err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('everything was broken!');
-			});
-		});
-
-		it('should remove directory if error occurs and something was loaded', function() {
-			nock('http://example.com').get('/').reply(200, 'OK');
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			fs.existsSync(testDirname).should.be.eql(false);
-
-			return s.load().then(function() {
-				fs.existsSync(testDirname).should.be.eql(true);
-				return s.errorCleanup(new Error('everything was broken!'));
-			}).then(function() {
-				should(true).be.eql(false);
-			}).catch(function(err) {
-				err.should.be.instanceOf(Error);
-				err.message.should.be.eql('everything was broken!');
-				fs.existsSync(testDirname).should.be.eql(false);
-			});
-		});
-
-		it('should not remove directory if error occurs and nothing was loaded', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			fs.mkdirpSync(testDirname);
-			fs.existsSync(testDirname).should.be.eql(true);
-
-			return s.errorCleanup(new Error('everything was broken!')).then(function() {
-				should(true).be.eql(false);
-			}).catch(function(err) {
-				err.should.be.instanceOf(Error);
-				err.message.should.be.eql('everything was broken!');
-				fs.existsSync(testDirname).should.be.eql(true);
 			});
 		});
 	});
@@ -145,23 +92,6 @@ describe('Scraper', function () {
 	});
 
 	describe('#saveResource', function() {
-		it('should save resource to FS', function() {
-			var s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			var r = new Resource('http://example.com/a.png', 'a.png');
-			r.setText('some text');
-
-			s.resourceHandler.handleResource = sinon.stub().resolves(r);
-
-			return s.saveResource(r).then(function() {
-				var text = fs.readFileSync(path.join(testDirname, r.getFilename())).toString();
-				text.should.be.eql(r.getText());
-			});
-		});
-
 		it('should call handleError on error', function() {
 			var s = new Scraper({
 				urls: 'http://example.com',
@@ -184,17 +114,24 @@ describe('Scraper', function () {
 
 	describe('#requestResource', function() {
 
+		class GenerateFilenamePlugin {
+			apply(registerAction) {
+				registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+			}
+		}
+
 		describe('url filtering', function() {
 			it('should request the resource if the urlFilter returns true', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: function() { return true; }
+					urlFilter: function() { return true; },
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
 					rr.getUrl().should.be.eql('http://example.com/a.png');
@@ -221,12 +158,13 @@ describe('Scraper', function () {
 			it('should request the resource if the maxDepth option is not set', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
-					directory: testDirname
+					directory: testDirname,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(212);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -239,13 +177,14 @@ describe('Scraper', function () {
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					maxDepth: 3
+					maxDepth: 3,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(2);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -258,13 +197,14 @@ describe('Scraper', function () {
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', function(){
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					maxDepth: 3
+					maxDepth: 3,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
-				var r = new Resource('http://example.com/a.png');
+				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(3);
 				return s.requestResource(r).then(function(rr) {
 					rr.should.be.eql(r);
@@ -275,13 +215,13 @@ describe('Scraper', function () {
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', function(){
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://google.com'],
 					directory: testDirname,
 					maxDepth: 3
 				});
 
-				var r = new Resource('http://google.com/a.png');
+				const r = new Resource('http://google.com/a.png');
 				r.getDepth = sinon.stub().returns(4);
 				return s.requestResource(r).then(function(rr) {
 					should.equal(rr, null);
@@ -305,27 +245,39 @@ describe('Scraper', function () {
 		});
 
 		it('should update resource data with data returned from request', () => {
-			let metadata = {
+			const metadata = {
 				solarSystemPlanets: [ 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune' ]
 			};
 
-			let s = new Scraper({
+			class GenerateFilenamePlugin {
+				apply(registerAction) {
+					registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+				}
+			}
+
+			const Scraper = proxyquire('../../lib/scraper', {
+				'./request': {
+					get: sinon.stub().resolves({
+						url: 'http://google.com',
+						body: 'test body',
+						mimeType: 'text/html',
+						metadata: metadata
+					})
+				}
+			});
+			const s = new Scraper({
 				urls: 'http://example.com',
-				directory: testDirname
-			});
-			s.request.get = sinon.stub().resolves({
-				url: 'http://google.com',
-				body: 'test body',
-				mimeType: 'text/html',
-				metadata: metadata
+				directory: testDirname,
+				plugins: [ new GenerateFilenamePlugin() ]
 			});
 
-			let r = new Resource('http://example.com');
+			const r = new Resource('http://example.com');
 
-			return s.requestResource(r).finally(function() {
+			return s.requestResource(r).then(function() {
 				r.getText().should.be.eql('test body');
 				r.getUrl().should.be.eql('http://google.com');
 				r.getType().should.be.eql('html');
+				r.getFilename().should.be.eql('generated-filename');
 				r.metadata.should.be.eql(metadata);
 			});
 		})
@@ -395,13 +347,255 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('defaults', function() {
+	describe('#runActions', () => {
+		it('should run all actions with correct params and save result from last', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const beforeStartActionStub1 = sinon.stub().resolves({result: 1});
+			const beforeStartActionStub2 = sinon.stub().resolves({result: 2});
+			const beforeStartActionStub3 = sinon.stub().resolves({result: 3});
+
+			s.addAction('beforeStart', beforeStartActionStub1);
+			s.addAction('beforeStart', beforeStartActionStub2);
+			s.addAction('beforeStart', beforeStartActionStub3);
+
+			const result = await s.runActions('beforeStart', {options: s.options});
+
+			should(beforeStartActionStub1.callCount).eql(1);
+			should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+
+			should(beforeStartActionStub2.callCount).eql(1);
+			should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+
+			should(beforeStartActionStub3.callCount).eql(1);
+			should(beforeStartActionStub3.args[0][0]).be.eql({options: s.options, result: 2});
+
+			should(result).eql({result: 3});
+		});
+
+		it('should fail if one of actions fails', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const beforeStartActionStub1 = sinon.stub().resolves({result: 1});
+			const beforeStartActionStub2 = sinon.stub().rejects(new Error('Error from beforeStart 2'));
+			const beforeStartActionStub3 = sinon.stub().resolves({result: 3});
+
+			s.addAction('beforeStart', beforeStartActionStub1);
+			s.addAction('beforeStart', beforeStartActionStub2);
+			s.addAction('beforeStart', beforeStartActionStub3);
+
+			try {
+				await s.runActions('beforeStart', {options: s.options});
+				should(false).eql(true);
+			} catch (err) {
+				should(beforeStartActionStub1.callCount).eql(1);
+				should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+
+				should(beforeStartActionStub2.callCount).eql(1);
+				should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+
+				should(beforeStartActionStub3.callCount).eql(0);
+
+				should(err.message).eql('Error from beforeStart 2');
+			}
+		});
+	});
+
+	describe('export defaults', function() {
 		it('should export defaults', function() {
-			var defaultsMock = { subdirectories: null, recursive: true, sources: [] };
-			Scraper = proxyquire('../../lib/scraper', {
+			const defaultsMock = { subdirectories: null, recursive: true, sources: [] };
+			const Scraper = proxyquire('../../lib/scraper', {
 				'./config/defaults': defaultsMock
 			});
 			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
+		});
+	});
+
+	describe('export plugins', function() {
+		it('should export default plugins', function() {
+			should(Scraper.plugins).be.instanceOf(Object);
+			should(Scraper.plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
+			should(Scraper.plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
+			should(Scraper.plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
+		});
+	});
+
+	describe('default saveResource plugin', () => {
+		it('should create directory on scrape', async () => {
+			nock('http://example.com').get('/').reply(200, 'OK');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			await s.scrape();
+
+			should(fs.existsSync(testDirname)).be.eql(true);
+		});
+
+		it('should save resource to FS', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			await s.scrape();
+
+			const filename = path.join(testDirname, 'index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should remove directory on error occurs if something was loaded', async () => {
+			nock('http://example.com').get('/').reply(200, 'OK');
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			fs.existsSync(testDirname).should.be.eql(false);
+
+			await s.scrape();
+
+			fs.existsSync(testDirname).should.be.eql(true);
+
+			try {
+				await s.errorCleanup(new Error('everything was broken!'));
+				should(true).be.eql(false);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('everything was broken!');
+				should(fs.existsSync(testDirname)).be.eql(false);
+			}
+		});
+
+		it('should not remove directory if error occurs and nothing was loaded', async () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			fs.mkdirpSync(testDirname);
+			fs.existsSync(testDirname).should.be.eql(true);
+
+			try {
+				await s.errorCleanup(new Error('everything was broken!'));
+				should(true).be.eql(false);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('everything was broken!');
+				should(fs.existsSync(testDirname)).be.eql(true);
+			}
+		});
+
+		it('should return error if no directory', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if empty directory passed', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: ''
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if incorrect directory passed', async () => {
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: {}
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).containEql('Incorrect directory');
+			}
+		});
+
+		it('should return error if existing directory passed', async () => {
+			try {
+				fs.mkdirpSync(testDirname);
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: testDirname
+				});
+				await s.scrape();
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).match(/Directory (.*?) exists/);
+			}
+		});
+	});
+
+	describe('default generateFilename plugins', () => {
+		it('should use byType plugin if filenameGenerator option is set', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: 'byType'
+			});
+
+			await s.scrape();
+
+			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameByTypePlugin);
+
+			const filename = path.join(testDirname, 'index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should use bySiteStructure plugin if filenameGenerator option is set', async () => {
+			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: 'bySiteStructure'
+			});
+
+			const a = await s.scrape();
+			console.log(a);
+
+			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameBySiteStructurePlugin);
+
+			const filename = path.join(testDirname, 'example.com/index.html');
+			should(fs.existsSync(filename)).be.eql(true);
+			should(fs.readFileSync(filename).toString()).be.eql('some text');
+		});
+
+		it('should ignore filenameGenerator option if function passed', async () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				filenameGenerator: () => {}
+			});
+
+			should(s.options.plugins.length).be.eql(0);
 		});
 	});
 });

@@ -223,7 +223,7 @@ describe('Scraper initialization', function () {
 			});
 
 			s.options.urls.should.be.an.instanceOf(Array).and.have.length(1);
-			s.options.urls[0].should.be.eql('http://not-array-url.com');
+			s.options.urls[0].should.be.eql({url: 'http://not-array-url.com', filename: 'index.html'});
 		});
 	});
 
@@ -265,42 +265,127 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('resourceSaver', () => {
-		it('should create default resourceSaver with correct params', () => {
-			const ResourceSaverStub = sinon.stub();
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-saver': ResourceSaverStub
+	describe('actions', () => {
+		it('should add empty actions when no plugins', () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
 			});
 
-			const options = {
-				urls: { url: 'http://first-url.com' },
-				directory: testDirname,
-				maxDepth: 100
-			};
+			s.actions.beforeStart.length.should.be.eql(2);
+			s.actions.afterFinish.length.should.be.eql(0);
+			s.actions.error.length.should.be.eql(1);
 
-			const s = new Scraper(options);
-			ResourceSaverStub.calledOnce.should.be.eql(true);
-			ResourceSaverStub.args[0][0].should.be.eql(s.options);
+			s.actions.beforeRequest.length.should.be.eql(0);
+			s.actions.afterResponse.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.be.eql(0);
+			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
 		});
 
-		it('should create custom resourceSaver with correct params', () => {
-			const DefaultResourceSaverStub = sinon.stub();
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./resource-saver': DefaultResourceSaverStub
+		it('should add actions when plugin set', () => {
+			class MyPlugin {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('afterFinish', () => {});
+				}
+			}
+
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				plugins: [
+					new MyPlugin()
+				]
 			});
-			const CustomResourceSaverStub = sinon.stub();
 
-			const options = {
-				urls: { url: 'http://first-url.com' },
-				directory: testDirname,
-				maxDepth: 100,
-				resourceSaver: CustomResourceSaverStub
-			};
+			s.actions.beforeStart.length.should.be.eql(3);
+			s.actions.afterFinish.length.should.be.eql(1);
+			s.actions.error.length.should.be.eql(1);
 
-			const s = new Scraper(options);
-			CustomResourceSaverStub.calledOnce.should.be.eql(true);
-			CustomResourceSaverStub.args[0][0].should.be.eql(s.options);
-			DefaultResourceSaverStub.called.should.be.eql(false);
+			s.actions.beforeRequest.length.should.be.eql(0);
+			s.actions.afterResponse.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.be.eql(0);
+			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
 		});
+
+		it('should add actions when multiple plugins set', () => {
+			class MyPlugin1 {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('afterFinish', () => {});
+				}
+			}
+
+			class MyPlugin2 {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('beforeRequest', () => {});
+					addAction('onResourceSaved', () => {});
+				}
+			}
+
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname,
+				plugins: [
+					new MyPlugin1(),
+					new MyPlugin2(),
+				]
+			});
+
+			s.actions.beforeStart.length.should.be.eql(4);
+			s.actions.afterFinish.length.should.be.eql(1);
+			s.actions.error.length.should.be.eql(1);
+
+			s.actions.beforeRequest.length.should.be.eql(1);
+			s.actions.afterResponse.length.should.be.eql(0);
+
+			s.actions.onResourceSaved.length.should.be.eql(1);
+			s.actions.onResourceError.length.should.be.eql(0);
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
+		});
+
+		it('should throw error if plugin has wrong action', () => {
+			class MyPlugin {
+				apply(addAction) {
+					addAction('beforeStart', () => {});
+					addAction('wrongAction', () => {});
+				}
+			}
+
+			try {
+				const s = new Scraper({
+					urls: 'http://example.com',
+					directory: testDirname,
+					plugins: [
+						new MyPlugin()
+					]
+				});
+				should(false).eql(true);
+			} catch (err) {
+				should(err).be.instanceOf(Error);
+				should(err.message).be.eql('Unknown action "wrongAction"');
+			}
+		})
 	});
+
+	describe('mandatory actions', () => {
+		it('should add mandatory actions - saveResource and generateFilename', () => {
+			const s = new Scraper({
+				urls: 'http://example.com',
+				directory: testDirname
+			});
+
+			s.actions.saveResource.length.should.be.eql(1);
+			s.actions.generateFilename.length.should.be.eql(1);
+		});
+	})
 });

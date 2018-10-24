@@ -7,7 +7,7 @@ const scrape = require('../../../index');
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';
 
-describe('Functional callbacks', () => {
+describe('Functional: onResourceSaved and onResourceError callbacks in plugin', () => {
 
 	beforeEach(() => {
 		nock.cleanAll();
@@ -27,21 +27,29 @@ describe('Functional callbacks', () => {
 		const resourceSavedStub = sinon.stub();
 		const resourceErrorStub = sinon.stub();
 
+		class MyPlugin {
+			apply(addAction) {
+				addAction('onResourceSaved', resourceSavedStub);
+				addAction('onResourceError', resourceErrorStub);
+			}
+		}
+
 		const options = {
 			urls: [ 'http://example.com/', 'http://nodejs.org/' ],
 			directory: testDirname,
 			subdirectories: null,
-			onResourceSaved: resourceSavedStub,
-			onResourceError: resourceErrorStub
+			plugins: [
+				new MyPlugin()
+			]
 		};
 
 		return scrape(options).then(function() {
 			should(resourceSavedStub.calledOnce).be.eql(true);
-			should(resourceSavedStub.args[0][0].url).be.eql('http://example.com/');
+			should(resourceSavedStub.args[0][0].resource.url).be.eql('http://example.com/');
 
 			should(resourceErrorStub.calledOnce).be.eql(true);
-			should(resourceErrorStub.args[0][0].url).be.eql('http://nodejs.org/');
-			should(resourceErrorStub.args[0][1].message).be.eql('REQUEST ERROR!!');
+			should(resourceErrorStub.args[0][0].resource.url).be.eql('http://nodejs.org/');
+			should(resourceErrorStub.args[0][0].error.message).be.eql('REQUEST ERROR!!');
 		});
 	});
 });

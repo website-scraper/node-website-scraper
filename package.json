@@ -5,8 +5,8 @@
   "readmeFilename": "README.md",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover node_modules/mocha/bin/_mocha --dir ./coverage --report lcov -- -R spec --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
-    "test-e2e": "node_modules/mocha/bin/_mocha --timeout 300000 ./test/e2e/*-test.js",
+    "test": "nyc --reporter=html --reporter=text mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
+    "test-e2e": "mocha --timeout 300000 ./test/e2e/*-test.js",
     "eslint": "eslint lib/** index.js"
   },
   "repository": {
@@ -49,9 +49,9 @@
     "codeclimate-test-reporter": "^0.5.0",
     "coveralls": "^3.0.0",
     "eslint": "^5.6.0",
-    "istanbul": "^0.4.0",
     "mocha": "^5.0.0",
     "nock": "^10.0.0",
+    "nyc": "^13.0.1",
     "proxyquire": "^2.0.0",
     "should": "^13.0.0",
     "sinon": "^6.0.0"
