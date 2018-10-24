@@ -64,7 +64,7 @@ scrape(options, (error, result) => {
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
 * [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
-* [replaceLinks](#replacelinks) - set to false to keep all content of htmls without modifying paths
+* [updateSources](#updateSources) - set to false to keep all html content unmodified
  
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
@@ -297,11 +297,10 @@ scrape({
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
 
-#### replacelinks
-Boolean. Defaults to `true`. Sometimes you may want to use `false` if
-scraped site structure is too complicated and does not fit into your custom
-filename generator. When using default `true` value, all followed href links are
-being replaced with simplified versions, but it does not always work.
+#### updateSources
+Boolean. Defaults to `true`. Use `false` when scraped site structure does not
+fit your custom filename generator or if you do not want html content to be
+modified in any way.
 
 
 ## callback 
