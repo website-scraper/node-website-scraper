@@ -61,12 +61,9 @@ scrape(options, (error, result) => {
 * [ignoreErrors](#ignoreerrors) - whether to ignore errors on resource downloading
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
-* [httpResponseHandler](#httpresponsehandler) - customize http response handling
-* [resourceSaver](#resourcesaver) - customize resources saving
-* [onResourceSaved](#onresourcesaved) - callback called when resource is saved
-* [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
 * [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
+* [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
  
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
@@ -122,13 +119,6 @@ scrape({
       'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19'
     }
   }
-});
-
-// use different request options for different resources
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  request: resource => ({qs: {myParam: 123}})
 });
 ```
 
@@ -196,87 +186,6 @@ scrape({
 });
 ```
 
-###### function
-Custom function which generates filename. It takes 3 arguments: resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object, options - object passed to scrape function, occupiedFileNames - array of occupied filenames. Should return string - relative to `directory` path for specified resource. 
-```javascript
-const crypto = require('crypto');
-
-scrape({
-  urls: ['http://example.com'],
-  directory: '/path/to/save',
-  /* Generate random filename */
-  filenameGenerator: (resource, options, occupiedFileNames) => {
-    return crypto.randomBytes(20).toString('hex'); 
-  }
-});
-```
-
-#### httpResponseHandler
-Function which is called on each response, allows to customize resource or reject its downloading.
-It takes 1 argument - response object of [request](https://github.com/request/request) module and should return resolved `Promise` if resource should be downloaded or rejected with Error `Promise` if it should be skipped.
-Promise should be resolved with:
-* `string` which contains response body
-* or object with properies `body` (response body, string) and `metadata` - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
-```javascript
-// Rejecting resources with 404 status and adding metadata to other resources
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  httpResponseHandler: (response) => {
-  	if (response.statusCode === 404) {
-		return Promise.reject(new Error('status is 404'));
-	} else {
-		// if you don't need metadata - you can just return Promise.resolve(response.body)
-		return Promise.resolve({
-			body: response.body,
-			metadata: {
-				headers: response.headers,
-				someOtherData: [ 1, 2, 3 ]
-			}
-		});
-	}
-  }
-});
-```
-Scrape function resolves with array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects which contain `metadata` property from `httpResponseHandler`.
-
-#### resourceSaver
-Class which saves [Resources](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js), should have methods `saveResource` and `errorCleanup` which return Promises. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [lib/resource-saver/save-resource-to-fs-plugin.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
-```javascript
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  resourceSaver: class MyResourceSaver {
-  	saveResource (resource) {/* code to save file where you need */}
-  	errorCleanup (err) {/* code to remove all previously saved files in case of error */}
-  }
-});
-```
-
-#### onResourceSaved
-Function called each time when resource is saved to file system. Callback is called with [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object. Defaults to `null` - no callback will be called.
-```javascript
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  onResourceSaved: (resource) => {
-  	console.log(`Resource ${resource} was saved to fs`);
-  }
-})
-```
-
-#### onResourceError
-Function called each time when resource's downloading/handling/saving to fs was failed. Callback is called with - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object and `Error` object. Defaults to `null` - no callback will be called.
-```javascript
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  onResourceError: (resource, err) => {
-  	console.log(`Resource ${resource} was not saved because of ${err}`);
-  }
-})
-```
-
 #### updateMissingSources
 Boolean, if `true` scraper will set absolute urls for all failing `sources`, if `false` - it will leave them as is (which may cause incorrectly displayed page).
 Also can contain array of `sources` to update (structure is similar to [sources](#sources)).
@@ -308,7 +217,7 @@ Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 Object with `.apply` method. 
 Can be used to configure or change scraper behavior. `.apply` method takes one argument - `registerAction` function which allows to customize saving resource or generating filename or handling http response etc.
 You can add multiple plugins which register multiple actions. Plugins will be applied in order they were added to options.
-All actions should be regular or async functions. Scraper will call them in order they were added and use result (if supported by action type) from last call
+All actions should be regular or async functions. Scraper will call actions of specific type in order they were added and use result (if supported by action type) from last action call.
 
 List of supported actions with detailed descriptions and examples you can find below.
 ```javascript
@@ -318,21 +227,11 @@ class MyPlugin {
 		registerAction('afterFinish', async () => {});
 		registerAction('error', async ({error}) => {console.error(error)});
 		registerAction('beforeRequest', async ({resource, requestOptions}) => ({requestOptions}));
-		registerAction('afterResponse', ({response}) => response.body);
-		
-		/**
-		 Action onResourceSaved - called each time after resource is saved (to file system or other storage with 'saveResource' action)
-		 @param resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
-		 Scraper ignores result returned from this action
-		*/
-		registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
-		
-		/**
-		 Action onResourceError - called each time when resource's downloading/handling/saving to was failed
-		 @param resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
-		 @param error - error occurred
-		*/
-		registerAction('onResourceError', ({resource, error}) => console.log(`Resource ${resource.url} has error ${error}`));
+		registerAction('afterResponse', async ({response}) => response.body);
+		registerAction('onResourceSaved', ({resource}) => {});
+		registerAction('onResourceError', ({resource, error}) => {});
+		registerAction('saveResource', async ({resource}) => {});
+		registerAction('generateFilename', async ({resource}) => {})
 	}
 }
 
@@ -410,6 +309,60 @@ registerAction('afterResponse', ({response}) => {
 			}
 		});
 	}
+});
+```
+
+##### onResourceSaved
+Action onResourceSaved is called each time after resource is saved (to file system or other storage with 'saveResource' action). 
+Parameters:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+
+Scraper ignores result returned from this action and does not wait until it is resolved
+```javascript
+registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
+```
+
+##### onResourceError
+Action onResourceError is called each time when resource's downloading/handling/saving to was failed
+Parameters:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+* error - Error object
+
+Scraper ignores result returned from this action and does not wait until it is resolved
+```javascript
+registerAction('onResourceError', ({resource, error}) => console.log(`Resource ${resource.url} has error ${error}`));
+```
+
+##### generateFilename
+Action generateFilename is called to determine path in file system where the resource will be saved. 
+Parameters:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+
+Should return:
+* filename - String, relative to `directory` path for specified resource
+
+If multiple actions `generateFilename` added - scraper will use result from last one.
+
+Default plugins which generate filenames: [byType](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-type-plugin.js), [bySiteStructure](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-site-structure-plugin.js)
+```javascript
+// Generate random filename 
+const crypto = require('crypto');
+registerAction('generateFilename', ({resource}) => {
+  return {filename: crypto.randomBytes(20).toString('hex')};
+});
+```
+
+##### saveResource
+Action saveResource is called to save file to some storage. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [SaveResourceToFileSystemPlugin](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+Parameters:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+
+If multiple actions `saveResource` added - resource will be saved to multiple storages.
+```javascript
+registerAction('saveResource', async ({resource}) => {
+  const filename = resource.getFilename();
+  const text = resource.getText();
+  await saveItSomewhere(filename, text);
 });
 ```
 
