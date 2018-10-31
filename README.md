@@ -64,6 +64,7 @@ scrape(options, (error, result) => {
 * [onResourceError](#onresourceerror) - callback called when resource's downloading is failed
 * [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
+* [updateSources](#updateSources) - set to false to keep all html content unmodified
  
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
@@ -294,6 +295,12 @@ scrape({
 
 #### requestConcurrency
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
+
+
+#### updateSources
+Boolean. Defaults to `true`. Use `false` when scraped site structure does not
+fit your custom filename generator or if you do not want html content to be
+modified in any way.
 
 
 ## callback 

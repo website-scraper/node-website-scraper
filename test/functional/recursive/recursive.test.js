@@ -3,8 +3,9 @@ var nock = require('nock');
 var fs = require('fs-extra');
 var scrape = require('../../../index');
 
-var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
+var testDirname = __dirname + '/.tmp';
+var URL = require('url');
 
 describe('Functional recursive downloading', function() {
 
@@ -25,7 +26,8 @@ describe('Functional recursive downloading', function() {
 			directory: testDirname,
 			subdirectories: null,
 			sources: [],
-			recursive: true
+			recursive: true,
+			updateSources: true,
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -35,6 +37,7 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link1.html').reply(200, 'content 1');
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
+		nock('http://example.com/').get('/data/data.html').replyWithFile(200, mockDirname + '/data.html');
 
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
@@ -46,6 +49,93 @@ describe('Functional recursive downloading', function() {
 			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
 			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
+		});
+	});
+
+	it('should follow anchors if recursive flag is set and links not replaced', function () {
+		var options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			subdirectories: null,
+			sources: [],
+			recursive: true,
+			updateSources: false,
+		};
+
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
+
+		// mock for anchors
+		nock('http://example.com/').get('/about.html').replyWithFile(200, mockDirname + '/about.html');
+		nock('http://example.com/').get('/link1.html').reply(200, 'content 1');
+		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
+		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
+		nock('http://example.com/').get('/data/data.html').replyWithFile(200, mockDirname + '/data.html');
+
+		return scrape(options).then(function() {
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+
+			fs.readFileSync(testDirname + '/data.html').toString().should.eql(
+				fs.readFileSync(mockDirname + '/data.html').toString());
+
+			fs.readFileSync(testDirname + '/index.html').toString().should.eql(
+				fs.readFileSync(mockDirname + '/index.html').toString());
+
+			// index.html anchors loaded
+			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
+
+			// about.html anchors loaded
+			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
+		});
+	});
+
+	it('should follow anchors if recursive flag is set and custom filename generator follows exact site structure',
+	    function () {
+		var generateFilename = function (url) {
+			var parsedUrl = URL.parse(url);
+			if (parsedUrl.pathname === '/') {
+				return parsedUrl.hostname + parsedUrl.pathname + "/index.html";
+			}
+			return parsedUrl.hostname + parsedUrl.pathname;
+		};
+		var options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			subdirectories: null,
+			sources: [],
+			recursive: true,
+			updateSources: false,
+			filenameGenerator: (resource, options, occupiedFileNames) => {
+				return generateFilename(resource.url);
+			}
+		};
+
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
+
+		// mock for anchors
+		nock('http://example.com/').get('/about.html').replyWithFile(200, mockDirname + '/about.html');
+		nock('http://example.com/').get('/link1.html').reply(200, 'content 1');
+		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
+		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
+		nock('http://example.com/').get('/data/data.html').replyWithFile(200, mockDirname + '/data.html');
+
+		return scrape(options).then(function() {
+			fs.existsSync(testDirname + '/example.com/index.html').should.be.eql(true);
+
+			fs.readFileSync(testDirname + '/example.com/data/data.html').toString().should.eql(
+				fs.readFileSync(mockDirname + '/data.html').toString());
+
+			fs.readFileSync(testDirname + '/example.com/index.html').toString().should.eql(
+				fs.readFileSync(mockDirname + '/index.html').toString());
+
+			// index.html anchors loaded
+			fs.existsSync(testDirname + '/example.com/about.html').should.be.eql(true);
+
+			// about.html anchors loaded
+			fs.existsSync(testDirname + '/example.com/link1.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/link2.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/example.com/link3.html').should.be.eql(true);
 		});
 	});
 
