@@ -5,7 +5,7 @@ var scrape = require('../../../index');
 
 var mockDirname = __dirname + '/mocks';
 var testDirname = __dirname + '/.tmp';
-var URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
+var URL = require('url');
 
 describe('Functional recursive downloading', function() {
 
@@ -93,12 +93,11 @@ describe('Functional recursive downloading', function() {
 	it('should follow anchors if recursive flag is set and custom filename generator follows exact site structure',
 	    function () {
 		var generateFilename = function (url) {
-			var parsedUrl = new URLParser(url);
-			var lastPath = parsedUrl.pathname.substring(parsedUrl.pathname.lastIndexOf("/")+1);
-			if (lastPath.indexOf(".") == -1 && parsedUrl.search == "") {
+			var parsedUrl = URL.parse(url);
+			if (parsedUrl.pathname === '/') {
 				return parsedUrl.hostname + parsedUrl.pathname + "/index.html";
 			}
-			return parsedUrl.hostname + parsedUrl.pathname + parsedUrl.search;
+			return parsedUrl.hostname + parsedUrl.pathname;
 		};
 		var options = {
 			urls: [ 'http://example.com/' ],
