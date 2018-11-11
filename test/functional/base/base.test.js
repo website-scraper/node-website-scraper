@@ -27,7 +27,8 @@ describe('Functional: base', function() {
 			{ selector: 'link[rel="stylesheet"]', attr: 'href' },
 			{ selector: 'script', attr: 'src' },
 			{ selector: 'style' }
-		]
+		],
+		ignoreErrors: false
 	};
 
 	beforeEach(function() {
