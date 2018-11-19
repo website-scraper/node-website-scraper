@@ -14,7 +14,7 @@ class UpdateMissingResourceReferencePlugin {
 			getUrl = utils.getUrl;
 		});
 
-		registerAction('getUpdatedPath', ({resource, parentResource, originalPath}) => {
+		registerAction('getReference', ({resource, parentResource, originalPath}) => {
 			if (!resource) {
 				return { path: getUrl(parentResource.url, originalPath) }
 			}

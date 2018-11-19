@@ -142,7 +142,7 @@ describe('ResourceHandler', function() {
 
 			resHandler = new ResourceHandler({defaultFilename: 'index.html'}, {
 				requestResource: requestResourceStub,
-				getUpdatedPath: ({resource}) => ({path: resource.filename})
+				getReference: ({resource}) => ({path: resource.filename})
 			});
 		});
 
