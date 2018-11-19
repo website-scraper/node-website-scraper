@@ -14,12 +14,12 @@ class UpdateMissingResourceReferencePlugin {
 			getUrl = utils.getUrl;
 		});
 
-		registerAction('getReference', ({resource, parentResource, originalPath}) => {
+		registerAction('getReference', ({resource, parentResource, originalReference}) => {
 			if (!resource) {
-				return { path: getUrl(parentResource.url, originalPath) }
+				return { reference: getUrl(parentResource.url, originalReference) }
 			}
 
-			return {path: resource.getFilename()};
+			return {reference: resource.getFilename()};
 		});
 	}
 }
