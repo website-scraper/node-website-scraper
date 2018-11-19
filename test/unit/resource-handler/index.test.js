@@ -180,21 +180,19 @@ describe('ResourceHandler', function() {
 			pathContainer.getPaths.returns([
 				'http://first.com/img/a.jpg',
 				'http://first.com/b.jpg',
-				'http://second.com/img/c.jpg',
-				'http://second.com/d',
+				'http://second.com/img/c.jpg'
 			]);
 
 			requestResourceStub.onCall(0).returns(Promise.resolve(new Resource('http://first.com/img/a.jpg', 'local' + path.sep + 'a.jpg')));
 			requestResourceStub.onCall(1).returns(Promise.resolve(new Resource('http://first.com/b.jpg', 'local' + path.sep + 'b.jpg')));
 			requestResourceStub.onCall(2).returns(Promise.resolve(new Resource('http://second.com/img/c.jpg', 'local' + path.sep + 'c.jpg')));
-			requestResourceStub.onCall(3).returns(Promise.resolve(new Resource('http://second.com/d', 'a%b' + path.sep + '"\'( )?p=q&\\#')));
 
 			var updateChildSpy = sinon.spy(parentResource, 'updateChild');
 
 			return resHandler.downloadChildrenResources(pathContainer, parentResource).then(function () {
 				var updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
-				updateTextStub.args[0][0].length.should.be.eql(4);
+				updateTextStub.args[0][0].length.should.be.eql(3);
 				updateTextStub.args[0][0].should.containEql({
 					oldPath: 'http://first.com/img/a.jpg',
 					newPath: 'local/a.jpg'
@@ -207,11 +205,7 @@ describe('ResourceHandler', function() {
 					oldPath: 'http://second.com/img/c.jpg',
 					newPath: 'local/c.jpg'
 				});
-				updateTextStub.args[0][0].should.containEql({
-					oldPath: 'http://second.com/d',
-					newPath: 'a%25b/%22%27%28%20%29%3Fp%3Dq%26' + (path.sep === '\\' ? '/' : '%5C') + '%23'
-				});
-				updateChildSpy.callCount.should.be.eql(4);
+				updateChildSpy.callCount.should.be.eql(3);
 			});
 		});
 
@@ -315,90 +309,5 @@ describe('ResourceHandler', function() {
 				});
 			});
 		});
-
-		describe('updateMissingSources', () => {
-			beforeEach(() => {
-				pathContainer.getPaths.returns([
-					'/success.png',
-					'/failed.png'
-				]);
-				requestResourceStub.onFirstCall().returns(Promise.resolve(new Resource('http://example.com/success.png', 'local/success.png')));
-				requestResourceStub.onSecondCall().returns(Promise.resolve(null));
-			});
-
-			it('should update missing path with absolute url if updateIfFailed = true', () => {
-				const updateIfFailed = true;
-
-				return resHandler.downloadChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
-					pathContainer.updateText.calledOnce.should.be.eql(true);
-					pathContainer.updateText.args[0][0].length.should.be.eql(2);
-					pathContainer.updateText.args[0][0].should.containEql({
-						oldPath: '/success.png',
-						newPath: 'local/success.png'
-					});
-					pathContainer.updateText.args[0][0].should.containEql({
-						oldPath: '/failed.png',
-						newPath: 'http://example.com/failed.png'
-					});
-				});
-			});
-
-			it('should not update missing path with absolute url if updateIfFailed = false', () => {
-				const updateIfFailed = false;
-
-				return resHandler.downloadChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
-					pathContainer.updateText.calledOnce.should.be.eql(true);
-					pathContainer.updateText.args[0][0].length.should.be.eql(1);
-					pathContainer.updateText.args[0][0].should.containEql({
-						oldPath: '/success.png',
-						newPath: 'local/success.png'
-					});
-				});
-			})
-		});
-	});
-
-	describe('#updateChildrenResources', () => {
-		describe('updateMissingSources', () => {
-			let pathContainer, parentResource, resHandler;
-
-			beforeEach(() => {
-				pathContainer = {};
-				pathContainer.getPaths = sinon.stub().returns([
-					'/failed1.png',
-					'/failed2.png'
-				]);
-				pathContainer.updateText = sinon.stub();
-				parentResource = new Resource('http://example.com', 'index.html');
-				resHandler = new ResourceHandler({});
-			});
-
-			it('should update all paths with absolute urls if updateIfFailed = true', () => {
-				const updateIfFailed = true;
-
-				return resHandler.updateChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
-					pathContainer.updateText.calledOnce.should.be.eql(true);
-					pathContainer.updateText.args[0][0].length.should.be.eql(2);
-					pathContainer.updateText.args[0][0].should.containEql({
-						oldPath: '/failed1.png',
-						newPath: 'http://example.com/failed1.png'
-					});
-					pathContainer.updateText.args[0][0].should.containEql({
-						oldPath: '/failed2.png',
-						newPath: 'http://example.com/failed2.png'
-					});
-				});
-			});
-
-			it('should not update paths if updateIfFailed = false', () => {
-				const updateIfFailed = false;
-
-				return resHandler.updateChildrenResources(pathContainer, parentResource, updateIfFailed).then(() => {
-					pathContainer.updateText.calledOnce.should.be.eql(true);
-					pathContainer.updateText.args[0][0].length.should.be.eql(0);
-				});
-			})
-		});
-
 	});
 });

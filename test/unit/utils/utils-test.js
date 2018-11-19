@@ -174,6 +174,20 @@ describe('Utils', function () {
 		});
 	});
 
+	describe('#prettifyFilename', () => {
+		it('should delete default filename if filename === defaultFilename', () => {
+			should(utils.prettifyFilename('index.html', {defaultFilename: 'index.html'})).be.eql('');
+		});
+
+		it('should delete default filename if filename ends with defaultFilename', () => {
+			should(utils.prettifyFilename('somepage/index.html', {defaultFilename: 'index.html'})).be.eql('somepage/');
+		});
+
+		it('should not prettify if defaultFilename is part of filename', () => {
+			should(utils.prettifyFilename('somepageindex.html', {defaultFilename: 'index.html'})).be.eql('somepageindex.html');
+		})
+	});
+
 	describe('#waitAllFulfilled', function() {
 		it('should resolve when all promises are resolved', function() {
 			var p1 = Promise.resolve();
