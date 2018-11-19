@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 const proxyquire = require('proxyquire');
 const path = require('path');
+const { getUnixPath } = require('../../../lib/utils');
 const Resource = require('../../../lib/resource');
 const ResourceHandler = require('../../../lib/resource-handler');
 
@@ -142,7 +143,7 @@ describe('ResourceHandler', function() {
 
 			resHandler = new ResourceHandler({defaultFilename: 'index.html'}, {
 				requestResource: requestResourceStub,
-				getReference: ({resource}) => ({reference: resource.filename})
+				getReference: ({resource}) => ({reference: getUnixPath(resource.filename)})
 			});
 		});
 
