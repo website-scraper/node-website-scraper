@@ -65,7 +65,6 @@ scrape(options, (error, result) => {
 * [ignoreErrors](#ignoreerrors) - whether to ignore errors on resource downloading
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
-* [updateMissingSources](#updatemissingsources) - update url for missing sources with absolute url
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
 * [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
  
@@ -190,29 +189,6 @@ scrape({
 });
 ```
 
-#### updateMissingSources
-Boolean, if `true` scraper will set absolute urls for all failing `sources`, if `false` - it will leave them as is (which may cause incorrectly displayed page).
-Also can contain array of `sources` to update (structure is similar to [sources](#sources)).
-Defaults to `false`.
-```javascript
-// update all failing img srcs with absolute url
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  sources: [{selector: 'img', attr: 'src'}],
-  updateMissingSources: true
-});
-
-// download nothing, just update all img srcs with absolute urls
-scrape({
-  urls: ['http://example.com/'],
-  directory: '/path/to/save',
-  sources: [],
-  updateMissingSources: [{selector: 'img', attr: 'src'}] 
-});
-
-```
-
 #### requestConcurrency
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
@@ -238,6 +214,7 @@ class MyPlugin {
 		registerAction('onResourceError', ({resource, error}) => {});
 		registerAction('saveResource', async ({resource}) => {});
 		registerAction('generateFilename', async ({resource}) => {})
+		registerAction('getReference', async ({resource, parentResource, originalReference}) => {})
 	}
 }
 
@@ -253,8 +230,10 @@ Action `beforeStart` is called before downloading is started. It can be used to 
 
 Parameters - object which includes: 
 * options - scraper normalized options object passed to scrape function
+* utils - scraper [utils](https://github.com/website-scraper/node-website-scraper/blob/master/lib/utils/index.js)
+
 ```javascript
-registerAction('beforeStart', async ({options}) => {});
+registerAction('beforeStart', async ({options, utils}) => {});
 ```
 
 ##### afterFinish
@@ -366,8 +345,31 @@ registerAction('generateFilename', ({resource}) => {
 });
 ```
 
+##### getReference
+Action getReference is called to retrieve reference to resource for parent resource. Can be used to customize reference to resource, for example, update missing resource (which was not loaded) with absolute url. By default reference is relative path from `parentResource` to `resource` (see [GetRelativePathReferencePlugin](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/get-relative-path-reference-plugin.js)).
+
+Parameters - object which includes:
+* resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+* parentResource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+* originalReference - string, original reference to `resource` in `parentResource`
+
+Should return object which includes:
+* reference - string or null, reference to `resource` for `parentResource`. If you don't want to update reference - return null
+
+If multiple actions `getReference` added - scraper will use result from last one.
+```javascript
+// Use relative filenames for saved resources and absolute urls for missing
+registerAction('getReference', ({resource, parentResource, originalReference}) => {
+  if (!resource) {
+    return { reference: parentResource.url + originalReference }
+  }
+  return { reference: utils.getRelativePath(parentResource.filename, resource.filename) };
+});
+```
+
+
 ##### saveResource
-Action saveResource is called to save file to some storage. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [SaveResourceToFileSystemPlugin](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource-saver/index.js)).
+Action saveResource is called to save file to some storage. Use it to save files where you need: to dropbox, amazon S3, existing directory, etc. By default all files are saved in local file system to new directory passed in `directory` option (see [SaveResourceToFileSystemPlugin](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/save-resource-to-fs-plugin.js)).
 
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
