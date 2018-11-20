@@ -6,6 +6,24 @@ const scrape = require('../../../index');
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';
 
+class UpdateMissingResourceReferencePlugin {
+	apply (registerAction) {
+		let getUrl;
+
+		registerAction('beforeStart', ({utils}) => {
+			getUrl = utils.getUrl;
+		});
+
+		registerAction('getReference', ({resource, parentResource, originalReference}) => {
+			if (!resource) {
+				return { reference: getUrl(parentResource.url, originalReference) }
+			}
+
+			return {reference: resource.getFilename()};
+		});
+	}
+}
+
 describe('Functional: update missing sources', () => {
 
 	beforeEach(() => {
@@ -19,13 +37,12 @@ describe('Functional: update missing sources', () => {
 		fs.removeSync(testDirname);
 	});
 
-	it('should not update missing sources if updateMissingSources = false', () => {
+	it('should not update missing sources by default', () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
-			sources: [{ selector: 'img', attr: 'src' }],
-			updateMissingSources: false
+			sources: [{ selector: 'img', attr: 'src' }]
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -41,13 +58,13 @@ describe('Functional: update missing sources', () => {
 		});
 	});
 
-	it('should update missing sources if updateMissingSources = true', () => {
+	it('should update missing sources if missing resource plugin added', () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{ selector: 'img', attr: 'src' }],
-			updateMissingSources: true
+			plugins: [ new UpdateMissingResourceReferencePlugin() ]
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -60,36 +77,6 @@ describe('Functional: update missing sources', () => {
 
 			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
 			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
-		});
-	});
-
-	it('should update missing sources if updateMissingSources = array of sources', () => {
-		const options = {
-			urls: [ 'http://example.com/' ],
-			directory: testDirname,
-			subdirectories: null,
-			sources: [
-				{ selector: 'img', attr: 'src' },
-				{ selector: 'script', attr: 'src' }
-			],
-			updateMissingSources: [
-				{ selector: 'img', attr: 'src' }
-			]
-		};
-
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/missing-img.png').replyWithError('COULDN\'T DOWNLOAD IMAGE');
-		nock('http://example.com/').get('/missing-script.js').replyWithError('COULDN\'T DOWNLOAD SCRIPT');
-
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-img.png').should.be.eql(false);
-			fs.existsSync(testDirname + '/missing-script.js').should.be.eql(false);
-
-
-			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
-			indexBody.should.containEql('<script src="/missing-script.js"');
 		});
 	});
 
@@ -99,7 +86,7 @@ describe('Functional: update missing sources', () => {
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{ selector: 'img', attr: 'src' }],
-			updateMissingSources: true,
+			plugins: [ new UpdateMissingResourceReferencePlugin() ],
 			urlFilter: function (url) {
 				return url.indexOf('/missing-img.png') === -1;
 			}
@@ -126,7 +113,8 @@ describe('Functional: update missing sources', () => {
 			sources: [],
 			recursive: true,
 			maxRecursiveDepth: 1,
-			updateMissingSources: true,
+			plugins: [ new UpdateMissingResourceReferencePlugin() ],
+			ignoreErrors: false
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -150,7 +138,7 @@ describe('Functional: update missing sources', () => {
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{selector: 'style'}],
-			updateMissingSources: true,
+			plugins: [ new UpdateMissingResourceReferencePlugin() ]
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/path-containers.html');
@@ -171,38 +159,5 @@ describe('Functional: update missing sources', () => {
 			index.should.containEql(`.c { background: url('c.png') }`);
 		});
 	});
-
-	it('should update all and download nothing', () => {
-		const options = {
-			urls: [ 'http://example.com/' ],
-			directory: testDirname,
-			subdirectories: null,
-			sources: [],
-			updateMissingSources: [
-				{ selector: 'img', attr: 'src' },
-				{ selector: 'script', attr: 'src' },
-				{ selector: 'a', attr: 'href' },
-			]
-		};
-
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/missing-img.png').reply(200, 'ok');
-		nock('http://example.com/').get('/missing-script.js').reply(200, 'ok');
-		nock('http://example.com/').get('/link1.html').reply(200, 'ok');
-
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-img.png').should.be.eql(false);
-			fs.existsSync(testDirname + '/missing-script.js').should.be.eql(false);
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(false);
-
-
-			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
-			indexBody.should.containEql('<script src="http://example.com/missing-script.js"');
-			indexBody.should.containEql('<a href="http://example.com/link1.html"');
-		});
-	})
-
 });
 
