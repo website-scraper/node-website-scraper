@@ -11,7 +11,11 @@ All members of our community are expected to follow our [Code of Conduct](https:
 ### Issues
 If you've found a bug or have a new feature to suggest - let us know.
 
-#### Reporting a bug
+#### Reporting Bugs
+When you are creating a bug report, please include as many details as possible. Fill out the [required template](https://github.com/website-scraper/node-website-scraper/blob/master/.github/ISSUE_TEMPLATE.md), the information it asks for helps us resolve issues faster.
 
+#### Suggesting Enhancements
+If you have an idea that would be nice to have, create an issue. Provide a clear and detailed explanation of the feature you want and why it's important to add.
 
-#### Suggesting a feature
+### Pull requests
+
