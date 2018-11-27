@@ -6,7 +6,7 @@
 -->
 
 ### Configuration
-**version:** [package version]
+**version:** [result of `npm view website-scraper version` command]
 
 **options:** [provide your full options object]
 ```js
