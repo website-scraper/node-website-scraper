@@ -405,6 +405,17 @@ describe('Scraper', function () {
 				should(err.message).eql('Error from beforeStart 2');
 			}
 		});
+
+		it('should return passed params as result if no actions to run', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const result = await s.runActions('beforeRequest', {requestOptions: {a: 1}});
+
+			should(result).eql({requestOptions: {a: 1}});
+		});
 	});
 
 	describe('export defaults', function() {

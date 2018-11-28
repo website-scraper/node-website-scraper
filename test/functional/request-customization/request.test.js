@@ -19,7 +19,25 @@ describe('Functional: customize request options with plugin', function() {
 		fs.removeSync(testDirname);
 	});
 
-	it('should use function which returns request option for resource ', function() {
+	it('should use options from request property if no beforeRequest actions', function() {
+		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
+
+		const options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			request: {
+				qs: {myParam: 122}
+			}
+		};
+
+		return scrape(options).then(function() {
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+			should(indexHtml).containEql('response for url with query');
+		});
+	});
+
+	it('should use options returned by beforeRequest action', function() {
 		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
 
 		class CustomRequestOptions {
