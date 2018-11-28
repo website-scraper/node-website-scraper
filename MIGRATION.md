@@ -107,6 +107,7 @@ scrape({
 		return Promise.reject(new Error('status is 404'));
 	} else {
 		return Promise.resolve(response.body);
+  	}
   }
 })
 
@@ -115,12 +116,11 @@ class MyAfterResponsePlugin {
   apply(registerAction) {
     registerAction('afterResponse', ({response}) => {
     if (response.statusCode === 404) {
-        return Promise.reject(new Error('status is 404'));
+        return null;
       } else {
-        return Promise.resolve(response.body);
-      });
-    }
-  });
+        return response.body;
+      }
+    });
   }
 }
 scrape({

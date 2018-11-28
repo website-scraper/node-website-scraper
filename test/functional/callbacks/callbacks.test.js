@@ -20,7 +20,7 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		fs.removeSync(testDirname);
 	});
 
-	it('should call onResourceSaved callback and onResourceError callback', function() {
+	it('should call onResourceSaved callback and onResourceError callback if ignoreErrors = true', function() {
 		nock('http://example.com/').get('/').reply(200, 'OK');
 		nock('http://nodejs.org/').get('/').replyWithError('REQUEST ERROR!!');
 
@@ -38,6 +38,7 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 			urls: [ 'http://example.com/', 'http://nodejs.org/' ],
 			directory: testDirname,
 			subdirectories: null,
+			ignoreErrors: true,
 			plugins: [
 				new MyPlugin()
 			]
@@ -47,6 +48,40 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 			should(resourceSavedStub.calledOnce).be.eql(true);
 			should(resourceSavedStub.args[0][0].resource.url).be.eql('http://example.com/');
 
+			should(resourceErrorStub.calledOnce).be.eql(true);
+			should(resourceErrorStub.args[0][0].resource.url).be.eql('http://nodejs.org/');
+			should(resourceErrorStub.args[0][0].error.message).be.eql('REQUEST ERROR!!');
+		});
+	});
+
+	it('should call onResourceError callback if ignoreErrors = false', function() {
+		// it is not necessary that 1st (successful) resource will be saved before error occurred, so skip onResourceSaved check
+		nock('http://example.com/').get('/').reply(200, 'OK');
+		nock('http://nodejs.org/').get('/').replyWithError('REQUEST ERROR!!');
+
+		const resourceSavedStub = sinon.stub();
+		const resourceErrorStub = sinon.stub();
+
+		class MyPlugin {
+			apply(addAction) {
+				addAction('onResourceSaved', resourceSavedStub);
+				addAction('onResourceError', resourceErrorStub);
+			}
+		}
+
+		const options = {
+			urls: [ 'http://example.com/', 'http://nodejs.org/' ],
+			directory: testDirname,
+			subdirectories: null,
+			ignoreErrors: true,
+			plugins: [
+				new MyPlugin()
+			]
+		};
+
+		return scrape(options).then(function() {
+			should(true).eql(false);
+		}).catch(() => {
 			should(resourceErrorStub.calledOnce).be.eql(true);
 			should(resourceErrorStub.args[0][0].resource.url).be.eql('http://nodejs.org/');
 			should(resourceErrorStub.args[0][0].error.message).be.eql('REQUEST ERROR!!');
