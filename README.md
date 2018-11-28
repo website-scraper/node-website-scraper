@@ -109,6 +109,18 @@ Positive number, maximum allowed depth for hyperlinks. Other dependencies will b
 
 #### maxDepth
 Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
+In most of cases you need [maxRecursiveDepth](#maxRecursiveDepth) instead of this option.
+
+The difference between [maxRecursiveDepth](#maxRecursiveDepth) and [maxDepth](#maxDepth) is that
+* maxDepth is for all type of resources, so if you have 
+  > maxDepth=1 AND html (depth 0) ⟶ html (depth 1) ⟶ img (depth 2)
+
+  last image will be filtered out by depth
+
+* maxRecursiveDepth is only for html resources, so if you have
+  > maxRecursiveDepth=1 AND html (depth 0) ⟶ html (depth 1) ⟶ img (depth 2)
+
+  only html resources with depth 2 will be filtered out, last image will be downloaded
 
 #### request
 Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, encoding, etc.
