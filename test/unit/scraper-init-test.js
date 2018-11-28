@@ -211,7 +211,8 @@ describe('Scraper initialization', function () {
 			const s = new Scraper(options);
 			ResourceHandlerStub.calledOnce.should.be.eql(true);
 			ResourceHandlerStub.args[0][0].should.be.eql(s.options);
-			ResourceHandlerStub.args[0][1].should.be.eql(s);
+			ResourceHandlerStub.args[0][1].should.have.property('requestResource');
+			ResourceHandlerStub.args[0][1].should.have.property('getReference');
 		});
 	});
 

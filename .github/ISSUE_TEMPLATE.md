@@ -5,24 +5,25 @@
     If you are here for another reason, please remove section below.
 -->
 
-* **website-scraper version:**
+### Configuration
+**version:** [package version]
 
-**Please provide your full options object:**
-
-<details>
-<summary>Options</summary>
-
-<!-- Paste your options object below (including urls property): -->
+**options:** [provide your full options object]
 ```js
 
 
 
 ```
-
 <!-- Note that if you don't provide urls which we can use to reproduce problem - in most of cases we will not be able to help and issue will be closed. -->
-</details>
 
+### Description
 
-**What is expected result?**
+[Description of the issue]
 
-**What is actual result?**
+**Expected behavior:** [What you expect to happen]
+
+**Actual behavior:** [What actually happens]
+
+### Additional Information
+
+[Any additional information configuration or data that might be necessary to reproduce the issue]
