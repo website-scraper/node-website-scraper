@@ -163,7 +163,7 @@ String, filename for index page. Defaults to `index.html`.
 Boolean, whether urls should be 'prettified', by having the `defaultFilename` removed. Defaults to `false`.
 
 #### ignoreErrors
-Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `true`.
+Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `false`.
 
 #### urlFilter
 Function which is called for each url to check whether it should be scraped. Defaults to `null` - no url filter will be applied.
@@ -300,16 +300,16 @@ If multiple actions `afterResponse` added - scraper will use result from last on
 // Do not save resources which responded with 404 not found status code
 registerAction('afterResponse', ({response}) => {
 	if (response.statusCode === 404) {
-			return Promise.reject(new Error('status is 404'));
-		} else {
-			// if you don't need metadata - you can just return Promise.resolve(response.body)
-			return Promise.resolve({
-				body: response.body,
-				metadata: {
-					headers: response.headers,
-					someOtherData: [ 1, 2, 3 ]
+			return null;
+	} else {
+		// if you don't need metadata - you can just return Promise.resolve(response.body)
+		return {
+			body: response.body,
+			metadata: {
+				headers: response.headers,
+				someOtherData: [ 1, 2, 3 ]
 			}
-		});
+		}
 	}
 });
 ```
