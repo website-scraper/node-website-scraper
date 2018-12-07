@@ -83,7 +83,7 @@ describe('Scraper', function () {
 			var r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
-			return s.saveResource(r).finally(function() {
+			return s.saveResource(r).then(() => should(true).eql(false)).catch(function() {
 				s.handleError.calledOnce.should.be.eql(true);
 				s.handleError.calledWith(dummyError).should.be.eql(true);
 			});
@@ -217,7 +217,7 @@ describe('Scraper', function () {
 
 			var r = new Resource('http://example.com/a.png');
 
-			return s.requestResource(r).finally(function() {
+			return s.requestResource(r).then(() => should(true).eql(false)).catch(function() {
 				s.handleError.calledOnce.should.be.eql(true);
 			});
 		});
