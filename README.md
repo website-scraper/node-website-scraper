@@ -109,6 +109,18 @@ Positive number, maximum allowed depth for hyperlinks. Other dependencies will b
 
 #### maxDepth
 Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
+In most of cases you need [maxRecursiveDepth](#maxRecursiveDepth) instead of this option.
+
+The difference between [maxRecursiveDepth](#maxRecursiveDepth) and [maxDepth](#maxDepth) is that
+* maxDepth is for all type of resources, so if you have 
+  > maxDepth=1 AND html (depth 0) ⟶ html (depth 1) ⟶ img (depth 2)
+
+  last image will be filtered out by depth
+
+* maxRecursiveDepth is only for html resources, so if you have
+  > maxRecursiveDepth=1 AND html (depth 0) ⟶ html (depth 1) ⟶ img (depth 2)
+
+  only html resources with depth 2 will be filtered out, last image will be downloaded
 
 #### request
 Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, encoding, etc.
@@ -151,7 +163,7 @@ String, filename for index page. Defaults to `index.html`.
 Boolean, whether urls should be 'prettified', by having the `defaultFilename` removed. Defaults to `false`.
 
 #### ignoreErrors
-Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `true`.
+Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `false`.
 
 #### urlFilter
 Function which is called for each url to check whether it should be scraped. Defaults to `null` - no url filter will be applied.
@@ -288,16 +300,16 @@ If multiple actions `afterResponse` added - scraper will use result from last on
 // Do not save resources which responded with 404 not found status code
 registerAction('afterResponse', ({response}) => {
 	if (response.statusCode === 404) {
-			return Promise.reject(new Error('status is 404'));
-		} else {
-			// if you don't need metadata - you can just return Promise.resolve(response.body)
-			return Promise.resolve({
-				body: response.body,
-				metadata: {
-					headers: response.headers,
-					someOtherData: [ 1, 2, 3 ]
+			return null;
+	} else {
+		// if you don't need metadata - you can just return Promise.resolve(response.body)
+		return {
+			body: response.body,
+			metadata: {
+				headers: response.headers,
+				someOtherData: [ 1, 2, 3 ]
 			}
-		});
+		}
 	}
 });
 ```

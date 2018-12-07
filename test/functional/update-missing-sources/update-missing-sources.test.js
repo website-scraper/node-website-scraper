@@ -64,7 +64,8 @@ describe('Functional: update missing sources', () => {
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{ selector: 'img', attr: 'src' }],
-			plugins: [ new UpdateMissingResourceReferencePlugin() ]
+			plugins: [ new UpdateMissingResourceReferencePlugin() ],
+			ignoreErrors: true
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
@@ -138,7 +139,8 @@ describe('Functional: update missing sources', () => {
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{selector: 'style'}],
-			plugins: [ new UpdateMissingResourceReferencePlugin() ]
+			plugins: [ new UpdateMissingResourceReferencePlugin() ],
+			ignoreErrors: true
 		};
 
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/path-containers.html');

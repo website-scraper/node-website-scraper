@@ -22,28 +22,6 @@ describe('Scraper', function () {
 		fs.removeSync(testDirname);
 	});
 
-	describe('#load', function() {
-		it('should return array of objects with url, filename and children', function() {
-			nock('http://first-url.com').get('/').reply(200, 'OK');
-			nock('http://second-url.com').get('/').reply(500);
-
-			var s = new Scraper({
-				urls: [
-					'http://first-url.com',
-					'http://second-url.com'
-				],
-				directory: testDirname
-			});
-
-			return s.load().then(function(res) {
-				res.should.be.instanceOf(Array);
-				res.should.have.length(2);
-				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
-				res[1].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
-			});
-		});
-	});
-
 	describe('#errorCleanup', function() {
 		it('should throw error', function() {
 			var s = new Scraper({
@@ -345,6 +323,26 @@ describe('Scraper', function () {
 				err.message.should.be.eql('Awful error');
 			});
 		});
+
+		it('should return array of objects with url, filename and children', function() {
+			nock('http://first-url.com').get('/').reply(200, 'OK');
+			nock('http://second-url.com').get('/').reply(500);
+
+			var s = new Scraper({
+				urls: [
+					'http://first-url.com',
+					'http://second-url.com'
+				],
+				directory: testDirname
+			});
+
+			return s.scrape().then(function(res) {
+				res.should.be.instanceOf(Array);
+				res.should.have.length(2);
+				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
+				res[1].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
+			});
+		});
 	});
 
 	describe('#runActions', () => {
@@ -404,6 +402,17 @@ describe('Scraper', function () {
 
 				should(err.message).eql('Error from beforeStart 2');
 			}
+		});
+
+		it('should return passed params as result if no actions to run', async () => {
+			const s = new Scraper({
+				urls: ['http://example.com'],
+				directory: testDirname
+			});
+
+			const result = await s.runActions('beforeRequest', {requestOptions: {a: 1}});
+
+			should(result).eql({requestOptions: {a: 1}});
 		});
 	});
 
