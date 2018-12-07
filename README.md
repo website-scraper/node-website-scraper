@@ -1,5 +1,3 @@
-# NOTE: this is documentation for next major version, which is work in progress. If you need documentation for version 3 you can find it [here](https://github.com/website-scraper/node-website-scraper/blob/3.x/README.md)
-
 ## Introduction
 Download website to a local directory (including all css, images, js, etc.)
 
@@ -35,20 +33,14 @@ const options = {
   directory: '/path/to/save/',
 };
 
-// with promise
-scrape(options).then((result) => {
-	/* some code here */
-}).catch((err) => {
-	/* some code here */
-});
-
 // with async/await
 const result = await scrape(options);
 
+// with promise
+scrape(options).then((result) => {});
+
 // or with callback
-scrape(options, (error, result) => {
-	/* some code here */
-});
+scrape(options, (error, result) => {});
 ```
 
 ## options
