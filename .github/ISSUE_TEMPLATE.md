@@ -6,7 +6,7 @@
 -->
 
 ### Configuration
-**version:** [result of `npm view website-scraper version` command]
+**version:** [result of `npm ls website-scraper --depth 0` command]
 
 **options:** [provide your full options object]
 ```js
@@ -26,4 +26,5 @@
 
 ### Additional Information
 
-[Any additional information configuration or data that might be necessary to reproduce the issue]
+[Any additional information, configuration or data that might be necessary to reproduce the issue]
+
