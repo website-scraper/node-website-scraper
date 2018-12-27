@@ -9,7 +9,7 @@
 
 # website-scraper
 
-[Options](#usage) | [Plugins](#plugins) | [Log and debug](#log-and-debug) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
+[Options](#usage) | [Plugins](#plugins) | [Log and debug](#log-and-debug) | [Frequently Asked Quesions]((https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md)) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
 
 
 Download website to local directory (including all css, images, js, etc.)
