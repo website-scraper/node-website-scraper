@@ -32,7 +32,7 @@ TLDR: don't use large maxRecursiveDepth, it may try to download whole internet, 
 
 Imagine you are trying to download page with 20 links to other pages. Other pages also contain 20 links to other pages.
 
-![max recursive depth example](https://github.com/website-scraper/node-website-scraper/blob/add-faq/docs/images/max-recursive-depth.png)
+![max recursive depth example](https://github.com/website-scraper/node-website-scraper/blob/master/docs/images/max-recursive-depth.png)
 
 Even if each page (with resources like images) has size 200Kb (which is quite optimistic expectation, it may be up to 10Mb) and it takes 200 ms to download page, setting maxRecursiveDepth to 5 will lead to:
 ```
