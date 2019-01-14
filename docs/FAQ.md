@@ -18,7 +18,7 @@ Keep in mind that saving to existing directory may overwrite your files. Be care
 
 ### Q: Why website with javascript is not downloaded correcly?
 By default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. 
-If you need to download dynamic website take a look on [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom). It can handle javascript but scraping will take much more time.
+If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) or [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom). It can handle javascript but scraping will take much more time.
 
 ### Q: Can I download files to amazon S3/dropbox/database/other place?
 Yes. To save resources where you need you can implement plugin with [saveResource](https://github.com/website-scraper/node-website-scraper#saveresource) action.

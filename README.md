@@ -16,7 +16,7 @@ Download website to local directory (including all css, images, js, etc.)
 
 Try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://github.com/website-scraper/web-scraper))
 
-**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom).
+**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) or [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom).
 
 ## Requirements
 * nodejs version >= 8
