@@ -43,7 +43,7 @@
     "normalize-url": "^4.0.0",
     "p-queue": "^5.0.0",
     "request": "^2.85.0",
-    "srcset": "^1.0.0"
+    "srcset": "^2.0.0"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.5.0",
