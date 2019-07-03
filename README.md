@@ -47,6 +47,7 @@ scrape(options, (error, result) => {});
 ## options
 * [urls](#urls) - urls to download, *required*
 * [directory](#directory) - path to save files, *required*
+* [overwrite](#overwrite) - doesn't check output directory
 * [sources](#sources) - selects which resources should be downloaded
 * [recursive](#recursive) - follow hyperlinks in html files
 * [maxRecursiveDepth](#maxrecursivedepth) - maximum depth for hyperlinks
@@ -78,6 +79,9 @@ scrape({
 
 #### directory
 String, absolute path to directory where downloaded files will be saved. Directory should not exist. It will be created by scraper. **_Required_**.
+
+#### overwrite
+Boolean, if `true` scraper doesn't check the output directory and allows to use it for updating files.  Defaults to `false`.
 
 #### sources
 Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources.
