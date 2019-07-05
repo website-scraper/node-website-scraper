@@ -78,6 +78,7 @@ scrape({
 
 #### directory
 String, absolute path to directory where downloaded files will be saved. Directory should not exist. It will be created by scraper. **_Required_**.
+How to download file to existing directory and why it's not supported by default - check [here](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md#q-im-getting-directory-exists-error-can-i-save-website-to-existing-directory).
 
 #### sources
 Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources.
