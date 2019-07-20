@@ -271,17 +271,17 @@ If multiple actions `beforeRequest` added - scraper will use `requestOptions` fr
 ```javascript
 // Add ?myParam=123 to querystring for resource with url 'http://example.com'
 registerAction('beforeRequest', async ({resource, requestOptions}) => {
-  if (resource.getUrl() === 'http://example.com') {
-    return {requestOptions: extend(requestOptions, {qs: {myParam: 123}})};
-  }
-  return {requestOptions};
+	if (resource.getUrl() === 'http://example.com') {
+		return {requestOptions: extend(requestOptions, {qs: {myParam: 123}})};
+	}
+	return {requestOptions};
 });
 
 // Server rejecting a scrape attempt, simply add in some synthetic delays
 registerAction('beforeRequest', async ({ resource, requestOptions }) => {
-  const time = Math.round(Math.random() * 10000);
-  await new Promise((resolve) => setTimeout(resolve, time));
-  return { requestOptions };
+	const time = Math.round(Math.random() * 10000);
+	await new Promise((resolve) => setTimeout(resolve, time));
+	return { requestOptions };
 });
 ```
 
