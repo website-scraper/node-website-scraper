@@ -97,11 +97,11 @@ describe('Functional redirects', function() {
 			style_1.should.be.eql('about/style.css');
 
 			const index = fs.readFileSync(testDirname + '/index.html').toString();
-			index.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
+			index.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css"/>');
 
 			const about = fs.readFileSync(testDirname + '/about.html').toString();
-			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
-			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style_1.css">');
+			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css"/>');
+			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style_1.css"/>');
 		});
 	});
 });

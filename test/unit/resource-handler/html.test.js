@@ -144,6 +144,26 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
+	it('should not update attribute names to lowercase', () => {
+		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
+		const html = `
+			<html>
+			<body>
+				<svg width="50" height="50" viewBox="0 0 100 100">
+  					<ellipse cx="50" cy="50" rx="50" ry="50"></ellipse>
+				</svg>
+			</body>
+			</html>
+		`;
+
+		const resource = new Resource('http://example.com', 'index.html');
+		resource.setText(html);
+
+		return htmlHandler.handle(resource).then(() => {
+			resource.getText().should.containEql('viewBox="0 0 100 100"');
+		});
+	});
+
 	it('should call downloadChildrenResources for each source', () => {
 		const sources = [{ selector: 'img', attr: 'src' }];
 		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
