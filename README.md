@@ -78,6 +78,7 @@ scrape({
 
 #### directory
 String, absolute path to directory where downloaded files will be saved. Directory should not exist. It will be created by scraper. **_Required_**.
+How to download website to existing directory and why it's not supported by default - check [here](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md#q-im-getting-directory-exists-error-can-i-save-website-to-existing-directory).
 
 #### sources
 Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources.
@@ -269,11 +270,18 @@ Should return object which includes custom options for [request](https://github.
 If multiple actions `beforeRequest` added - scraper will use `requestOptions` from last one.
 ```javascript
 // Add ?myParam=123 to querystring for resource with url 'http://example.com'
-registerAction('beforeRequest', ({resource, requestOptions}) => {
+registerAction('beforeRequest', async ({resource, requestOptions}) => {
 	if (resource.getUrl() === 'http://example.com') {
 		return {requestOptions: extend(requestOptions, {qs: {myParam: 123}})};
 	}
 	return {requestOptions};
+});
+
+// Server rejecting a scrape attempt, simply add in some synthetic delays
+registerAction('beforeRequest', async ({ resource, requestOptions }) => {
+	const time = Math.round(Math.random() * 10000);
+	await new Promise((resolve) => setTimeout(resolve, time));
+	return { requestOptions };
 });
 ```
 
