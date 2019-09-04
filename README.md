@@ -343,6 +343,7 @@ Action generateFilename is called to determine path in file system where the res
 
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
+* responseData - object returned from afterResponse action, contains `url`, `mimeType`, `body`, `metadata` properties
 
 Should return object which includes:
 * filename - String, relative to `directory` path for specified resource
