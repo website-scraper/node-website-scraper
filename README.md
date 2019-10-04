@@ -31,7 +31,7 @@ npm install website-scraper
 const scrape = require('website-scraper');
 const options = {
   urls: ['http://nodejs.org/'],
-  directory: '/path/to/save/',
+  directory: '/path/to/save/'
 };
 
 // with async/await
@@ -60,7 +60,7 @@ scrape(options, (error, result) => {});
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
 * [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
- 
+
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
 
 #### urls
@@ -99,14 +99,14 @@ scrape({
 Boolean, if `true` scraper will follow hyperlinks in html files. Don't forget to set `maxRecursiveDepth` to avoid infinite downloading. Defaults to `false`.
 
 #### maxRecursiveDepth
-Positive number, maximum allowed depth for hyperlinks. Other dependencies will be saved regardless of their depth. Defaults to `null` - no maximum recursive depth set. 
+Positive number, maximum allowed depth for hyperlinks. Other dependencies will be saved regardless of their depth. Defaults to `null` - no maximum recursive depth set.
 
 #### maxDepth
-Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set. 
+Positive number, maximum allowed depth for all dependencies. Defaults to `null` - no maximum depth set.
 In most of cases you need [maxRecursiveDepth](#maxRecursiveDepth) instead of this option.
 
 The difference between [maxRecursiveDepth](#maxRecursiveDepth) and [maxDepth](#maxDepth) is that
-* maxDepth is for all type of resources, so if you have 
+* maxDepth is for all type of resources, so if you have
   > maxDepth=1 AND html (depth 0) ⟶ html (depth 1) ⟶ img (depth 2)
 
   last image will be filtered out by depth
@@ -165,7 +165,7 @@ Function which is called for each url to check whether it should be scraped. Def
 // Links to other websites are filtered out by the urlFilter
 scrape({
   urls: ['http://example.com/'],
-  urlFilter: function(url){
+  urlFilter: function(url) {
     return url.indexOf('http://example.com') === 0;
   },
   directory: '/path/to/save'
@@ -200,10 +200,10 @@ Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
 
 #### plugins
-Plugin is object with `.apply` method, can be used to change scraper behavior. 
+Plugin is object with `.apply` method, can be used to change scraper behavior.
 
 `.apply` method takes one argument - `registerAction` function which allows to add handlers for different actions. Action handlers are functions that are called by scraper on different stages of downloading website. For example `generateFilename` is called to generate filename for resource based on its url, `onResourceError` is called when error occured during requesting/handling/saving resource.
- 
+
 You can add multiple plugins which register multiple actions. Plugins will be applied in order they were added to options.
 All actions should be regular or async functions. Scraper will call actions of specific type in order they were added and use result (if supported by action type) from last action call.
 
@@ -234,7 +234,7 @@ scrape({
 ##### beforeStart
 Action `beforeStart` is called before downloading is started. It can be used to initialize something needed for other actions.
 
-Parameters - object which includes: 
+Parameters - object which includes:
 * options - scraper normalized options object passed to scrape function
 * utils - scraper [utils](https://github.com/website-scraper/node-website-scraper/blob/master/lib/utils/index.js)
 
@@ -253,7 +253,7 @@ registerAction('afterFinish', async () => {});
 ##### error
 Action error is called when error occurred.
 
-Parameters - object which includes: 
+Parameters - object which includes:
 * error - Error object
 ```javascript
 registerAction('error', async ({error}) => {console.log(error)});
@@ -278,10 +278,10 @@ registerAction('beforeRequest', async ({resource, requestOptions}) => {
 });
 
 // Server rejecting a scrape attempt, simply add in some synthetic delays
-registerAction('beforeRequest', async ({ resource, requestOptions }) => {
+registerAction('beforeRequest', async ({resource, requestOptions}) => {
 	const time = Math.round(Math.random() * 10000);
 	await new Promise((resolve) => setTimeout(resolve, time));
-	return { requestOptions };
+	return {requestOptions};
 });
 ```
 
@@ -316,7 +316,7 @@ registerAction('afterResponse', ({response}) => {
 ```
 
 ##### onResourceSaved
-Action onResourceSaved is called each time after resource is saved (to file system or other storage with 'saveResource' action). 
+Action onResourceSaved is called each time after resource is saved (to file system or other storage with 'saveResource' action).
 
 Parameters- object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
@@ -339,7 +339,7 @@ registerAction('onResourceError', ({resource, error}) => console.log(`Resource $
 ```
 
 ##### generateFilename
-Action generateFilename is called to determine path in file system where the resource will be saved. 
+Action generateFilename is called to determine path in file system where the resource will be saved.
 
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
@@ -352,7 +352,7 @@ If multiple actions `generateFilename` added - scraper will use result from last
 
 Default plugins which generate filenames: [byType](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-type-plugin.js), [bySiteStructure](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-site-structure-plugin.js)
 ```javascript
-// Generate random filename 
+// Generate random filename
 const crypto = require('crypto');
 registerAction('generateFilename', ({resource}) => {
   return {filename: crypto.randomBytes(20).toString('hex')};
@@ -375,9 +375,9 @@ If multiple actions `getReference` added - scraper will use result from last one
 // Use relative filenames for saved resources and absolute urls for missing
 registerAction('getReference', ({resource, parentResource, originalReference}) => {
   if (!resource) {
-    return { reference: parentResource.url + originalReference }
+    return {reference: parentResource.url + originalReference}
   }
-  return { reference: utils.getRelativePath(parentResource.filename, resource.filename) };
+  return {reference: utils.getRelativePath(parentResource.filename, resource.filename)};
 });
 ```
 
