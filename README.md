@@ -81,7 +81,7 @@ String, absolute path to directory where downloaded files will be saved. Directo
 How to download website to existing directory and why it's not supported by default - check [here](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md#q-im-getting-directory-exists-error-can-i-save-website-to-existing-directory).
 
 #### sources
-Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources.
+Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources. Scraper uses cheerio to select html elements so `selector` can be any [selector that cheerio supports](https://github.com/cheeriojs/cheerio#selectors).
 ```javascript
 // Downloading images, css files and scripts
 scrape({
