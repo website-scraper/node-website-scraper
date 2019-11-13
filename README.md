@@ -51,7 +51,7 @@ scrape(options, (error, result) => {});
 * [recursive](#recursive) - follow hyperlinks in html files
 * [maxRecursiveDepth](#maxrecursivedepth) - maximum depth for hyperlinks
 * [maxDepth](#maxdepth) - maximum depth for all dependencies
-* [request](#request) - custom options for for [request](https://github.com/request/request)
+* [request](#request) - custom options for [request](https://github.com/request/request)
 * [subdirectories](#subdirectories) - subdirectories for file extensions
 * [defaultFilename](#defaultfilename) - filename for index page
 * [prettifyUrls](#prettifyurls) - prettify urls
