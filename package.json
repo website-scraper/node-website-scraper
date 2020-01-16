@@ -54,7 +54,7 @@
     "nyc": "^14.0.0",
     "proxyquire": "^2.0.0",
     "should": "^13.0.0",
-    "sinon": "^7.1.1"
+    "sinon": "^8.1.0"
   },
   "files": [
     "index.js",
