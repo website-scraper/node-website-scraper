@@ -40,7 +40,7 @@
     "fs-extra": "^8.0.1",
     "he": "^1.1.0",
     "lodash": "^4.17.5",
-    "normalize-url": "^4.0.0",
+    "normalize-url": "^5.0.0",
     "p-queue": "^6.0.0",
     "request": "^2.85.0",
     "srcset": "^2.0.0"
