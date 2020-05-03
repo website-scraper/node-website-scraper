@@ -6,7 +6,7 @@ var scrape = require('../../../index');
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';
 
-describe('Functional: html entities in url', function() {
+describe('Functional: html entities', function() {
 
 	beforeEach(function() {
 		nock.cleanAll();
@@ -27,7 +27,9 @@ describe('Functional: html entities in url', function() {
 		// /fonts?family=Myriad&amp;v=2 => /fonts?family=Myriad&v=2
 		nock('http://example.com/').get('/fonts?family=Myriad&v=2').reply(200, 'fonts.css', {'content-type': 'text/css'});
 		// /?a=1&amp;style-attr.png => /?a=1&style-attr.png
-		nock('http://example.com/').get('/style-attr.png?a=1&style-attr.png').reply(200, 'style-attr.png', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/style-attr.png?a=1&style-attr.png').reply(200, 'style-attr.png');
+		// &quot;style-attr2.png&quot; => style-attr2.png
+		nock('http://example.com/').get('/style-attr2.png').reply(200, 'style-attr2.png');
 		// /?a=1&amp;b=2 => /?a=1&b=2
 		nock('http://example.com/').get('/img.png?a=1&b=2').reply(200, 'img.png');
 		// /test?b=2&amp;c=3&amp;d=4 => /test?b=2&c=3&d=4
@@ -56,9 +58,15 @@ describe('Functional: html entities in url', function() {
 			fs.existsSync(testDirname + '/local/fonts.css').should.be.eql(true);
 			should(fs.readFileSync(testDirname + '/local/fonts.css').toString()).be.eql('fonts.css');
 
-			should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
+			// single quote (') replaced with &#x27; in attribute
+			should(indexHtml).containEql('background: url(&#x27;local/style-attr.png&#x27;)');
 			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
 			should(fs.readFileSync(testDirname + '/local/style-attr.png').toString()).be.eql('style-attr.png');
+
+			// double quote (") replaced with &quot; in attribute
+			should(indexHtml).containEql('background: url(&quot;local/style-attr2.png&quot;)');
+			fs.existsSync(testDirname + '/local/style-attr2.png').should.be.eql(true);
+			should(fs.readFileSync(testDirname + '/local/style-attr2.png').toString()).be.eql('style-attr2.png');
 
 			should(indexHtml).containEql('img src="local/img.png');
 			fs.existsSync(testDirname + '/local/img.png').should.be.eql(true);

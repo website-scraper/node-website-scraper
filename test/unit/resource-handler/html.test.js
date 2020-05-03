@@ -268,7 +268,7 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
-	it('should use correct html entities for updated attributes', () => {
+	it('should use html entities for updated attributes', () => {
 		const sources = [
 			{ selector: '[style]', attr: 'style' },
 		];
