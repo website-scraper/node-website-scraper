@@ -267,4 +267,27 @@ describe('ResourceHandler: Html', () => {
 			resource.getText().should.not.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 		});
 	});
+
+	it('should use html entities for updated attributes', () => {
+		const sources = [
+			{ selector: '[style]', attr: 'style' },
+		];
+		downloadChildrenPaths.onFirstCall().resolves('width: 300px; height: 300px; background-image:url("./images/cat.jpg")');
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
+
+		const html = `
+			<html>
+			<body>
+				 <div style="width: 300px; height: 300px; background-image:url(&quot;http://example.com/cat.jpg&quot;)"></div>
+			</body>
+			</html>
+		`;
+
+		const resource = new Resource('http://example.com', 'index.html');
+		resource.setText(html);
+
+		return htmlHandler.handle(resource).then(() => {
+			resource.getText().should.containEql('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
+		});
+	});
 });
