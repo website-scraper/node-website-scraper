@@ -18,6 +18,8 @@ Try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://githu
 
 **Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) or [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom).
 
+This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [Patreon](https://www.patreon.com/s0ph1e).
+
 ## Requirements
 * nodejs version >= 8
 
