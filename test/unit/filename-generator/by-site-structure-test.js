@@ -85,4 +85,19 @@ describe('FilenameGenerator: bySiteStructure', function() {
 		var filename2 = bySiteStructureFilenameGenerator(r2, options);
 		filename2.should.equalFileSystemPath('developer.mozilla.org/Hello Günter.png');
 	});
+
+	it('should keep query strings', function () {
+		var isHtmlMock = sinon.stub().returns(true);
+
+		var r1 = new Resource('http://example.com/path?q=test');
+		r1.isHtml = isHtmlMock;
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/path/q=test.html');
+
+		var r2 = new Resource('http://example.com/path?q1=test1&q2=test2');
+		r2.isHtml = isHtmlMock;
+		bySiteStructureFilenameGenerator(r2, options).should.equalFileSystemPath('example.com/path/q1=test1&q2=test2.html');
+
+		var r3 = new Resource('http://example.com/path/picture.png?q1=test1&q2=test2');
+		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('example.com/path/picture_q1=test1&q2=test2.png');
+	})
 });
