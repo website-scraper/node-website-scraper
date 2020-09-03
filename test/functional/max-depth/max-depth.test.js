@@ -110,4 +110,52 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 		});
 	});
 
+	it('should correctly save same resource with different depth and maxRecursiveDepth', () => {
+		/*
+		pageA -> pageB
+		pageA -> pageC
+		pageB -> pageC
+		* */
+		const options = {
+			urls: [ {url: 'http://example.com/pageA.html', filename: 'pageA.html'} ],
+			directory: testDirname,
+			subdirectories: null,
+			sources: [
+				{ selector: 'a', attr: 'href' }
+			],
+			maxRecursiveDepth: 1
+		};
+
+		const pageA = `<html>
+			<body>
+				<a href="/pageB.html"></a>
+				<a href="/pageC.html"></a>
+			</body>
+		</html>`;
+
+		const pageB = `<html>
+			<body>
+				<a href="/pageC.html"></a>
+			</body>
+		</html>`;
+
+		nock('http://example.com/').get('/pageA.html').reply(200, pageA, {'Content-Type': 'text/html'});
+		nock('http://example.com/').get('/pageB.html').reply(200, pageB, {'Content-Type': 'text/html'});
+		nock('http://example.com/').get('/pageC.html').reply(200, 'pageC', {'Content-Type': 'text/html'});
+
+		return scrape(options).then(() => {
+			fs.existsSync(testDirname + '/pageA.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/pageB.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/pageC.html').should.be.eql(true);
+
+			const pageASaved = fs.readFileSync(testDirname + '/pageA.html').toString();
+			pageASaved.should.containEql('<a href="pageB.html"');
+			pageASaved.should.containEql('<a href="pageC.html"');
+
+			const pageBSaved = fs.readFileSync(testDirname + '/pageB.html').toString();
+			// todo: should we change reference here because pageC was already downloaded?
+			pageBSaved.should.containEql('<a href="/pageC.html"'); // reference to pageC was not changed here because it > maxRecursiveDepth
+		});
+	});
+
 });
