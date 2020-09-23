@@ -14,9 +14,17 @@ describe('FilenameGenerator: bySiteStructure', () => {
 
 		const r2 = new Resource('http://example.com/a.png');
 		bySiteStructureFilenameGenerator(r2, options).should.equalFileSystemPath('example.com/a.png');
+	});
 
-		const r3 = new Resource('http://example.com/some/path/../images/a.png');
-		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('example.com/some/images/a.png');
+	it('should remove . and .. from path', () => {
+		const r1 = new Resource('http://example.com/some/path/../images/a.png');
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/some/images/a.png');
+
+		const r2 = new Resource('http://example.com/some/path/../../../images/b.png');
+		bySiteStructureFilenameGenerator(r2, options).should.equalFileSystemPath('example.com/images/b.png');
+
+		const r3 = new Resource('http://example.com/some/path/./images/c.png');
+		bySiteStructureFilenameGenerator(r3, options).should.equalFileSystemPath('example.com/some/path/images/c.png');
 	});
 
 	it('should replace the colon, for url with port number', () =>{
@@ -24,9 +32,14 @@ describe('FilenameGenerator: bySiteStructure', () => {
 		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com_8080/some/path/a.png');
 	});
 
-	it('should remove not allowed characters from filename', () => {
+	it('should replace not allowed characters from filename', () => {
 		const r1 = new Resource('http://example.com/some/path/<*a*>.png');
 		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/some/path/__a__.png');
+	});
+
+	it('should replace not allowed characters from path', () => {
+		const r1 = new Resource('http://example.com/some:path/a.png');
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/some_path/a.png');
 	});
 
 	it('should add the defaultFilename to the path, for html resources without extension', () =>{
@@ -56,13 +69,6 @@ describe('FilenameGenerator: bySiteStructure', () => {
 	it('should normalize to safe relative paths, without ..', () =>{
 		const r = new Resource('http://example.com/some/path/../../../../images/a.png');
 		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('example.com/images/a.png');
-	});
-
-	it('should not replace thrice dot in filenames', () => {
-		// if it replaces them we receive 'some/path/../../../../etc/passwd'
-		// path.resolve('some/path/../../../../etc/passwd'); = '/etc/passwd' => which is not safe
-		const r = new Resource('http://example.com/some/path/.../.../.../.../etc/passwd');
-		bySiteStructureFilenameGenerator(r, options).should.equalFileSystemPath('example.com/some/path/.../.../.../.../etc/passwd');
 	});
 
 	it('should shorten filename', () => {
