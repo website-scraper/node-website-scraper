@@ -202,6 +202,33 @@ Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
 
 #### plugins
+
+Plugins allow to extend scraper behaviour
+
+* [Existing plugins](#existing-plugins)
+* [Create plugin](#create-plugin)
+* Create action
+    * [beforeStart](#beforestart)
+    * [afterFinish](#afterfinish)
+    * [error](#error)
+    * [beforeRequest](#beforerequest)
+    * [afterResponse](#afterresponse)
+    * [onResourceSaved](#onresourcesaved)
+    * [onResourceError](#onresourceerror)
+    * [saveResource](#saveresource)
+    * [generateFilename](#generatefilename)
+    * [getReference](#getreference)
+
+##### Existing plugins
+* [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
+* [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom) - download dynamic (rendered with js) websites using phantomJS
+* [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
+* [request throttle](https://benjaminhorn.io/code/request-throttle-for-npm-package-website-scraper/) - add random timeout between requests
+
+##### Create plugin
+
+Note! Before creating new plugins consider using/extending [existing plugins](#existing-plugins).
+
 Plugin is object with `.apply` method, can be used to change scraper behavior.
 
 `.apply` method takes one argument - `registerAction` function which allows to add handlers for different actions. Action handlers are functions that are called by scraper on different stages of downloading website. For example `generateFilename` is called to generate filename for resource based on its url, `onResourceError` is called when error occured during requesting/handling/saving resource.
