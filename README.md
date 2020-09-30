@@ -7,7 +7,7 @@
 [![Gitter](https://badges.gitter.im/website-scraper/node-website-scraper.svg)](https://gitter.im/website-scraper/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
-# website-scraper
+# Website-Scraper
 
 [Options](#usage) | [Plugins](#plugins) | [Log and debug](#log-and-debug) | [Frequently Asked Questions](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
 
@@ -46,7 +46,7 @@ scrape(options).then((result) => {});
 scrape(options, (error, result) => {});
 ```
 
-## options
+## Options
 * [urls](#urls) - urls to download, *required*
 * [directory](#directory) - path to save files, *required*
 * [sources](#sources) - selects which resources should be downloaded
