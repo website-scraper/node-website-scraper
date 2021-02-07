@@ -6,4 +6,4 @@ If website-scraper has helped you in your work or personal projects - you're wel
 If you want to thank the author you can use [Patreon](https://www.patreon.com/s0ph1e).
 
 ### Backers via Patreon
-* The Rubyist
+
