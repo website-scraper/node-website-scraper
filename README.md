@@ -223,7 +223,6 @@ Plugins allow to extend scraper behaviour
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
 * [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom) - download dynamic (rendered with js) websites using phantomJS
 * [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
-* [request throttle](https://benjaminhorn.io/code/request-throttle-for-npm-package-website-scraper/) - add random timeout between requests
 
 ##### Create plugin
 
