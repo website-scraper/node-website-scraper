@@ -3,7 +3,7 @@ const nock = require('nock');
 const fs = require('fs-extra');
 const sinon = require('sinon');
 const Scraper = require('../../../lib/scraper');
-const scrape = require('../../../index');
+const scrape = require('../../../index.mjs');
 
 const testDirname = __dirname + '/.tmp';
 const mockDirname = __dirname + '/mocks';

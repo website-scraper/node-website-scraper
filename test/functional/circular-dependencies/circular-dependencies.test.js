@@ -1,7 +1,7 @@
 require('should');
 var nock = require('nock');
 var fs = require('fs-extra');
-var scrape = require('../../../index');
+var scrape = require('../../../index.mjs');
 
 var testDirname = __dirname + '/.tmp';
 var mockDirname = __dirname + '/mocks';

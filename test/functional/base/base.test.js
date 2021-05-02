@@ -2,7 +2,7 @@ const should = require('should');
 const nock = require('nock');
 const fs = require('fs-extra');
 const cheerio = require('cheerio');
-const scrape = require('../../../index');
+const scrape = require('../../../index.mjs');
 const Resource = require('../../../lib/resource');
 
 const testDirname = __dirname + '/.tmp';
