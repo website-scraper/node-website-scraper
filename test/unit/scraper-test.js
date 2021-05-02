@@ -1,13 +1,15 @@
-const should = require('should');
-const sinon = require('sinon');
-const nock = require('nock');
-const proxyquire = require('proxyquire').noCallThru();
-const fs = require('fs-extra');
-const path = require('path');
-const Scraper = require('../../lib/scraper');
-const Resource = require('../../lib/resource');
+import should from 'should';
+import sinon from 'sinon';
+import nock from 'nock';
+import proxyquire from 'proxyquire';
+proxyquire.noCallThru();
 
-const testDirname = __dirname + '/.scraper-test';
+import fs from 'fs-extra';
+import path from 'path';
+import Scraper from '../../lib/scraper.js';
+import Resource from '../../lib/resource.js';
+
+const testDirname = './test/unit/.scraper-test';
 
 describe('Scraper', function () {
 

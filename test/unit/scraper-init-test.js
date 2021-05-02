@@ -1,10 +1,12 @@
-const should = require('should');
-const proxyquire = require('proxyquire').noCallThru();
-const sinon = require('sinon');
-const Scraper = require('../../lib/scraper');
-const Resource = require('../../lib/resource');
+import should from 'should';
+import sinon from 'sinon';
+import proxyquire from 'proxyquire';
+proxyquire.noCallThru();
 
-const testDirname = __dirname + '/.scraper-init-test';
+import Scraper from '../../lib/scraper.js';
+import Resource from '../../lib/resource.js';
+
+const testDirname = './test/unit/.scraper-init-test';
 const urls = [ 'http://example.com' ];
 
 function createConfigMock (params) {
@@ -363,7 +365,7 @@ describe('Scraper initialization', function () {
 			}
 
 			try {
-				const s = new Scraper({
+				new Scraper({
 					urls: 'http://example.com',
 					directory: testDirname,
 					plugins: [
@@ -375,7 +377,7 @@ describe('Scraper initialization', function () {
 				should(err).be.instanceOf(Error);
 				should(err.message).be.eql('Unknown action "wrongAction"');
 			}
-		})
+		});
 	});
 
 	describe('mandatory actions', () => {
@@ -388,5 +390,5 @@ describe('Scraper initialization', function () {
 			s.actions.saveResource.length.should.be.eql(1);
 			s.actions.generateFilename.length.should.be.eql(1);
 		});
-	})
+	});
 });

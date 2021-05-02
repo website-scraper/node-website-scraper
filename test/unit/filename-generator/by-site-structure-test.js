@@ -1,9 +1,11 @@
-const _ = require('lodash');
-const should = require('should');
-require('../../utils/assertions');
-const sinon = require('sinon');
-const Resource = require('../../../lib/resource');
-const bySiteStructureFilenameGenerator = require('../../../lib/filename-generator/by-site-structure');
+import should from 'should';
+import '../../utils/assertions.js';
+
+import sinon from 'sinon';
+import _ from 'lodash';
+
+import Resource from '../../../lib/resource.js';
+import bySiteStructureFilenameGenerator from '../../../lib/filename-generator/by-site-structure.js';
 
 const options = { defaultFilename: 'index.html' };
 
