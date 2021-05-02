@@ -1,5 +1,5 @@
 import should from 'should';
-import HtmlImgSrcSetTag from '../../../../lib/resource-handler/path-containers/html-img-srcset-tag';
+import HtmlImgSrcSetTag from '../../../../lib/resource-handler/path-containers/html-img-srcset-tag.js';
 
 describe('PathsContainer: HtmlImgSrcSetTag', function () {
 

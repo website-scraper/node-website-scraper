@@ -1,9 +1,6 @@
 import should from 'should';
 import sinon from 'sinon';
 import nock from 'nock';
-import proxyquire from 'proxyquire';
-proxyquire.noCallThru();
-
 import fs from 'fs-extra';
 import path from 'path';
 import Scraper from '../../lib/scraper.js';
@@ -231,34 +228,34 @@ describe('Scraper', function () {
 
 			class GenerateFilenamePlugin {
 				apply(registerAction) {
-					registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+					registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }));
 				}
 			}
 
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./request': {
-					get: sinon.stub().resolves({
-						url: 'http://google.com',
-						body: 'test body',
-						mimeType: 'text/html',
-						metadata: metadata
-					})
+			class AddMetadataPlugin {
+				apply(registerAction) {
+					registerAction('afterResponse', sinon.stub().returns({body: 'test body', metadata}));
 				}
+			}
+
+			nock('http://example.com').get('/').reply(200, 'test body', {
+				'content-type': 'text/html; charset=utf-8'
 			});
+
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname,
-				plugins: [ new GenerateFilenamePlugin() ]
+				plugins: [ new GenerateFilenamePlugin(), new AddMetadataPlugin() ]
 			});
 
 			const r = new Resource('http://example.com');
 
 			return s.requestResource(r).then(function() {
-				r.getText().should.be.eql('test body');
-				r.getUrl().should.be.eql('http://google.com');
-				r.getType().should.be.eql('html');
-				r.getFilename().should.be.eql('generated-filename');
-				r.metadata.should.be.eql(metadata);
+				should(r.getText()).be.eql('test body');
+				should(r.getUrl()).be.eql('http://example.com');
+				should(r.getType()).be.eql('html');
+				should(r.getFilename()).be.eql('generated-filename');
+				should(r.metadata).be.eql(metadata);
 			});
 		})
 	});
@@ -418,16 +415,14 @@ describe('Scraper', function () {
 		});
 	});
 
+	// TODO: update tests for defaults, should be exported by "export" in package.json
 	describe('export defaults', function() {
 		it('should export defaults', function() {
-			const defaultsMock = { subdirectories: null, recursive: true, sources: [] };
-			const Scraper = proxyquire('../../lib/scraper', {
-				'./config/defaults': defaultsMock
-			});
 			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
 		});
 	});
 
+	// TODO: update tests for defaults, should be exported by "export" in package.json
 	describe('export plugins', function() {
 		it('should export default plugins', function() {
 			should(Scraper.plugins).be.instanceOf(Object);
