@@ -2,7 +2,6 @@ import should from 'should';
 import sinon from 'sinon';
 import Promise from 'bluebird';
 import path from 'path';
-import proxyquire from 'proxyquire';
 import Resource from '../../../lib/resource.js';
 import { getUnixPath } from '../../../lib/utils/index.js';
 
@@ -32,35 +31,12 @@ describe('ResourceHandler', function() {
 		});
 
 		it('should init specific resource handlers', function() {
-			const htmlHandlerStub = sinon.stub();
-			const cssHandlerStub = sinon.stub();
-
-			const ResourceHandler = proxyquire('../../../lib/resource-handler', {
-				'./html': htmlHandlerStub,
-				'./css': cssHandlerStub
-			});
-
-			const handleChildResStub = sinon.stub(ResourceHandler.prototype, 'downloadChildrenResources').usingPromise(Promise).resolves();
 			const options = { defaultFilename: 'test' };
 			const context = { dummy: 'context' };
 
 			const resHandler = new ResourceHandler(options, context);
 			should.exist(resHandler.htmlHandler);
 			should.exist(resHandler.cssHandler);
-
-			handleChildResStub.called.should.be.eql(false);
-
-			htmlHandlerStub.calledOnce.should.be.eql(true);
-			htmlHandlerStub.args[0][0].should.be.eql(options);
-			htmlHandlerStub.args[0][1].downloadChildrenPaths();
-			handleChildResStub.calledOnce.should.be.eql(true);
-
-			cssHandlerStub.calledOnce.should.be.eql(true);
-			cssHandlerStub.args[0][0].should.be.eql(options);
-			cssHandlerStub.args[0][1].downloadChildrenPaths();
-			handleChildResStub.calledTwice.should.be.eql(true);
-
-			handleChildResStub.restore();
 		});
 	});
 
