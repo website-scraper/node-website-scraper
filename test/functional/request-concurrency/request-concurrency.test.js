@@ -1,12 +1,11 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const Scraper = require('../../../lib/scraper');
-const proxyquire = require('proxyquire');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
-let scraper;
+const testDirname = './test/functional/request-concurrency/.tmp';
+const mockDirname = './test/functional/request-concurrency/mocks';
 
 describe('Functional concurrent requests', function() {
 	let maxConcurrentRequests, currentConcurrentRequests;
@@ -15,7 +14,7 @@ describe('Functional concurrent requests', function() {
 		nock.cleanAll();
 		nock.disableNetConnect();
 
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html')
 		nock('http://example.com/').get('/page1.html').delay(200).reply(200, 'ok');
 		nock('http://example.com/').get('/page2.html').delay(200).reply(200, 'ok');
 		nock('http://example.com/').get('/page3.html').delay(200).reply(200, 'ok');
@@ -23,39 +22,36 @@ describe('Functional concurrent requests', function() {
 		nock('http://example.com/').get('/page5.html').delay(200).reply(200, 'ok');
 		nock('http://example.com/').get('/page6.html').delay(200).reply(200, 'ok');
 
+		class MyPlugin {
+			apply (registerAction) {
+				registerAction('beforeRequest', ({requestOptions}) => {
+					currentConcurrentRequests++;
+					if (maxConcurrentRequests < currentConcurrentRequests) {
+						maxConcurrentRequests = currentConcurrentRequests;
+					}
+					return {requestOptions};
+				});
+				registerAction('afterResponse', ({response}) => {
+					currentConcurrentRequests--;
+					return response.body;
+				});
+			}
+		}
+
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
 			recursive: true,
 			sources: [],
-			requestConcurrency: 1
+			requestConcurrency: 1,
+			plugins: [new MyPlugin()]
 		};
-
-		const originalGet = require('../../../lib/request').get;
-
-		const Scraper = proxyquire('../../../lib/scraper', {
-			'./request': {
-				get: ({url, referer}) => {
-					currentConcurrentRequests++;
-					if (maxConcurrentRequests < currentConcurrentRequests) {
-						maxConcurrentRequests = currentConcurrentRequests;
-					}
-
-					return originalGet.call(null, {url, referer}).then(data => {
-						currentConcurrentRequests--;
-						return data;
-					});
-				}
-			}
-		});
-
-		scraper = new Scraper(options);
 
 		maxConcurrentRequests = 0;
 		currentConcurrentRequests = 0;
 
-		return scraper.scrape();
+		return scrape(options);
 	});
 
 	afterEach(function () {

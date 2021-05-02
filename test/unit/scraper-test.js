@@ -585,7 +585,6 @@ describe('Scraper', function () {
 			});
 
 			const a = await s.scrape();
-			console.log(a);
 
 			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameBySiteStructurePlugin);
 
