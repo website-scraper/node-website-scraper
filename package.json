@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./index.mjs",
-    "./defaultOptions": "./lib/config/defaults.js"
+    "./defaultOptions": "./lib/config/defaults.js",
+    "./plugins": "./lib/plugins/index.js"
   },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",

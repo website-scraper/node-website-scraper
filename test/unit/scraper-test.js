@@ -6,6 +6,9 @@ import path from 'path';
 import Scraper from '../../lib/scraper.js';
 import Resource from '../../lib/resource.js';
 
+import defaultOptions from 'website-scraper/defaultOptions';
+import * as plugins from 'website-scraper/plugins';
+
 const testDirname = './test/unit/.scraper-test';
 
 describe('Scraper', function () {
@@ -23,7 +26,7 @@ describe('Scraper', function () {
 
 	describe('#errorCleanup', function() {
 		it('should throw error', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
@@ -39,14 +42,14 @@ describe('Scraper', function () {
 
 	describe('#loadResource', function() {
 		it('should add different resource to the map', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
 
-			var r1 = new Resource('http://example.com/a1.png', 'a1.png');
-			var r2 = new Resource('http://example.com/a2.png', 'a2.png');
-			var r3 = new Resource('http://example.com/a3.png', 'a3.png');
+			const r1 = new Resource('http://example.com/a1.png', 'a1.png');
+			const r2 = new Resource('http://example.com/a2.png', 'a2.png');
+			const r3 = new Resource('http://example.com/a3.png', 'a3.png');
 
 			s.loadResource(r1);
 			s.loadResource(r2);
@@ -55,12 +58,12 @@ describe('Scraper', function () {
 		});
 
 		it('should not add the same resource twice', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
 
-			var r = new Resource('http://example.com/a.png', 'a.png');
+			const r = new Resource('http://example.com/a.png', 'a.png');
 
 			s.loadResource(r);
 			s.loadResource(r);
@@ -70,16 +73,16 @@ describe('Scraper', function () {
 
 	describe('#saveResource', function() {
 		it('should call handleError on error', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
-			var dummyError = new Error('resource handler error');
+			const dummyError = new Error('resource handler error');
 			s.resourceHandler.handleResource = sinon.stub().rejects(dummyError);
 
 			sinon.stub(s, 'handleError').resolves();
 
-			var r = new Resource('http://example.com/a.png', 'a.png');
+			const r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
 			return s.saveResource(r).then(() => should(true).eql(false)).catch(function() {
@@ -118,13 +121,13 @@ describe('Scraper', function () {
 			});
 
 			it('should return promise resolved with null if the urlFilter returns false', function(){
-				var s = new Scraper({
+				const s = new Scraper({
 					urls: ['http://google.com'],
 					directory: testDirname,
 					urlFilter: function(){ return false; }
 				});
 
-				var r = new Resource('http://google.com/a.png');
+				const r = new Resource('http://google.com/a.png');
 				return s.requestResource(r).then(function(rr) {
 					should.equal(rr, null);
 				});
@@ -207,14 +210,14 @@ describe('Scraper', function () {
 		});
 
 		it('should call handleError on error', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
 			nock('http://example.com').get('/a.png').replyWithError('err');
 			sinon.stub(s, 'handleError').resolves();
 
-			var r = new Resource('http://example.com/a.png');
+			const r = new Resource('http://example.com/a.png');
 
 			return s.requestResource(r).then(() => should(true).eql(false)).catch(function() {
 				s.handleError.calledOnce.should.be.eql(true);
@@ -262,7 +265,7 @@ describe('Scraper', function () {
 
 	describe('#handleError', function() {
 		it('should ignore error and return resolved promise if ignoreErrors option is true', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: ['http://example.com'],
 				directory: testDirname,
 				ignoreErrors: true
@@ -273,7 +276,7 @@ describe('Scraper', function () {
 		});
 
 		it('should return rejected promise if ignoreErrors option is false', function() {
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: ['http://example.com'],
 				directory: testDirname,
 				ignoreErrors: false
@@ -290,12 +293,12 @@ describe('Scraper', function () {
 		it('should call load', function() {
 			nock('http://example.com').get('/').reply(200, 'OK');
 
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
 
-			var loadSpy = sinon.spy(s, 'load');
+			const loadSpy = sinon.spy(s, 'load');
 
 			return s.scrape().then(function() {
 				loadSpy.calledOnce.should.be.eql(true);
@@ -305,14 +308,14 @@ describe('Scraper', function () {
 		it('should call errorCleanup on error', function() {
 			nock('http://example.com').get('/').reply(200, 'OK');
 
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
 			});
 
 			sinon.stub(s, 'load').rejects(new Error('Awful error'));
 
-			var errorCleanupSpy = sinon.spy(s, 'errorCleanup');
+			const errorCleanupSpy = sinon.spy(s, 'errorCleanup');
 
 			return s.scrape().then(function() {
 				should(true).be.eql(false);
@@ -327,7 +330,7 @@ describe('Scraper', function () {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(500);
 
-			var s = new Scraper({
+			const s = new Scraper({
 				urls: [
 					'http://first-url.com',
 					'http://second-url.com'
@@ -415,20 +418,21 @@ describe('Scraper', function () {
 		});
 	});
 
-	// TODO: update tests for defaults, should be exported by "export" in package.json
 	describe('export defaults', function() {
 		it('should export defaults', function() {
-			should(Scraper.defaults).be.eql({ subdirectories: null, recursive: true, sources: [] });
+			should(defaultOptions).be.have.properties([
+				'subdirectories', 'sources', 'defaultFilename', 'prettifyUrls',
+				'request', 'requestConcurrency', 'ignoreErrors', 'urlFilter',
+				'maxDepth', 'maxRecursiveDepth'
+			]);
 		});
 	});
 
-	// TODO: update tests for defaults, should be exported by "export" in package.json
 	describe('export plugins', function() {
 		it('should export default plugins', function() {
-			should(Scraper.plugins).be.instanceOf(Object);
-			should(Scraper.plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
-			should(Scraper.plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
-			should(Scraper.plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
+			should(plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
+			should(plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
+			should(plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
 		});
 	});
 
@@ -569,7 +573,7 @@ describe('Scraper', function () {
 
 			await s.scrape();
 
-			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameByTypePlugin);
+			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameByTypePlugin);
 
 			const filename = path.join(testDirname, 'index.html');
 			should(fs.existsSync(filename)).be.eql(true);
@@ -586,7 +590,7 @@ describe('Scraper', function () {
 
 			const a = await s.scrape();
 
-			should(s.options.plugins[0]).be.instanceOf(Scraper.plugins.GenerateFilenameBySiteStructurePlugin);
+			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameBySiteStructurePlugin);
 
 			const filename = path.join(testDirname, 'example.com/index.html');
 			should(fs.existsSync(filename)).be.eql(true);
