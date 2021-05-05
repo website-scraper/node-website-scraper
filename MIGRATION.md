@@ -1,5 +1,23 @@
 # Migration Guide
 
+## From version 4 to 5
+
+#### ESM module
+
+Module is now pure ESM and cannot be `require`d from CommonJS module. [Read about ESM modules and how to migrate from CommonJS to ESM](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
+
+#### defaults
+If you're using `scrape.defaults` now you need to receive them with
+```javascript
+import defaultOptions from 'website-scraper/defaultOptions';
+``` 
+
+#### built-in plugins
+If you're using `scrape.plugins` now you need to receive them with
+```javascript
+import * as plugins from 'website-scraper/plugins';
+``` 
+
 ## From version 3 to 4
 
 #### resourceSaver option
