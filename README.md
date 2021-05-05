@@ -22,7 +22,7 @@ This module is an Open Source Software maintained by one developer in free time.
 
 ## Requirements
 * nodejs version >= 12
-* website-scraper v5 is pure ESM (it doesn't with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
+* website-scraper v5 is pure ESM (it doesn't work with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
 
 ## Installation
 ```
