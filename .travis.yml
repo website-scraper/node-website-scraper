@@ -12,6 +12,5 @@ before_script:
   - if [[ $TRAVIS_NODE_VERSION == "14" ]]; then travis_retry ./cc-test-reporter before-build; fi
 
 after_success:
-  - travis_retry nyc report --reporter=lcov
   - travis_retry cat ./coverage/lcov.info | coveralls
   - if [[ $TRAVIS_NODE_VERSION == "14" ]]; then travis_retry ./cc-test-reporter after-build -t lcov -p ./coverage --exit-code $TRAVIS_TEST_RESULT; fi

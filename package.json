@@ -10,7 +10,7 @@
     "./plugins": "./lib/plugins/index.js"
   },
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
+    "test": "c8 --all --reporter=text --reporter=lcov mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
     "test-e2e": "mocha --timeout 300000 ./test/e2e/*-test.js",
     "eslint": "eslint lib/** index.mjs"
   },
@@ -52,11 +52,11 @@
     "srcset": "^3.0.0"
   },
   "devDependencies": {
+    "c8": "^7.7.2",
     "coveralls": "^3.1.0",
     "eslint": "^7.24.0",
     "mocha": "^8.3.2",
     "nock": "^13.0.11",
-    "nyc": "^15.1.0",
     "should": "^13.2.3",
     "sinon": "^10.0.1"
   },
