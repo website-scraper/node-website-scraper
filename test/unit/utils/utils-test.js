@@ -3,7 +3,7 @@ import _ from 'lodash';
 import {
 	isUrl, getUrl, getUnixPath, getFilenameFromUrl,
 	getFilepathFromUrl, getHashFromUrl, getRelativePath,
-	shortenFilename, prettifyFilename, waitAllFulfilled,
+	shortenFilename, prettifyFilename,
 	isUriSchemaSupported, decodeHtmlEntities, urlsEqual,
 	normalizeUrl
 } from '../../../lib/utils/index.js';
@@ -190,24 +190,6 @@ describe('Utils', function () {
 
 		it('should not prettify if defaultFilename is part of filename', () => {
 			should(prettifyFilename('somepageindex.html', {defaultFilename: 'index.html'})).be.eql('somepageindex.html');
-		})
-	});
-
-	describe('#waitAllFulfilled', function() {
-		it('should resolve when all promises are resolved', function() {
-			var p1 = Promise.resolve();
-			var p2 = Promise.resolve();
-			return waitAllFulfilled([p1, p2]).then(function() {
-				should(true).be.eql(true);
-			});
-		});
-
-		it('should resolve when some promises are rejected', function() {
-			var p1 = Promise.resolve();
-			var p2 = Promise.reject();
-			return waitAllFulfilled([p1, p2]).then(function() {
-				should(true).be.eql(true);
-			});
 		});
 	});
 
