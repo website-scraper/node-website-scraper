@@ -1,12 +1,13 @@
-require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const sinon = require('sinon');
-const Scraper = require('../../../lib/scraper');
-const scrape = require('../../../index');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import sinon from 'sinon';
+import scrape from 'website-scraper';
+import Scraper from '../../../lib/scraper.js';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/redirect/.tmp';
+const mockDirname = './test/functional/redirect/mocks';
 
 describe('Functional redirects', function() {
 
@@ -93,8 +94,8 @@ describe('Functional redirects', function() {
 			const style = fs.readFileSync(testDirname + '/css/style.css').toString();
 			style.should.be.eql('style.css');
 
-			const style_1 = fs.readFileSync(testDirname + '/css/style_1.css').toString();
-			style_1.should.be.eql('about/style.css');
+			const style1 = fs.readFileSync(testDirname + '/css/style_1.css').toString();
+			style1.should.be.eql('about/style.css');
 
 			const index = fs.readFileSync(testDirname + '/index.html').toString();
 			index.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');

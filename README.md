@@ -21,7 +21,8 @@ Try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://githu
 This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
 
 ## Requirements
-* nodejs version >= 8
+* nodejs version >= 12.17.0
+* website-scraper v5 is pure ESM (it doesn't work with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
 
 ## Installation
 ```
@@ -30,7 +31,7 @@ npm install website-scraper
 
 ## Usage
 ```javascript
-const scrape = require('website-scraper');
+import scrape from 'website-scraper'; // only as ESM, no CommonJS
 const options = {
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save/'
@@ -41,9 +42,6 @@ const result = await scrape(options);
 
 // with promise
 scrape(options).then((result) => {});
-
-// or with callback
-scrape(options, (error, result) => {});
 ```
 
 ## options
@@ -63,7 +61,10 @@ scrape(options, (error, result) => {});
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
 * [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
 
-Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using `scrape.defaults`.
+Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using 
+```javascript
+import defaultOptions from 'website-scraper/defaultOptions';
+```
 
 #### urls
 Array of objects which contain urls to download and filenames for them. **_Required_**.
@@ -205,6 +206,7 @@ Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
 Plugins allow to extend scraper behaviour
 
+* [Built-in plugins](#built-in-plugins)
 * [Existing plugins](#existing-plugins)
 * [Create plugin](#create-plugin)
 * Create action
@@ -219,14 +221,19 @@ Plugins allow to extend scraper behaviour
     * [generateFilename](#generatefilename)
     * [getReference](#getreference)
 
+##### Built-in plugins
+Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](https://github.com/website-scraper/node-website-scraper/tree/master/lib/plugins) directory or get them using 
+```javascript
+import * as plugins from 'website-scraper/plugins';
+```
+
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
 * [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom) - download dynamic (rendered with js) websites using phantomJS
 * [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
 
 ##### Create plugin
-
-Note! Before creating new plugins consider using/extending [existing plugins](#existing-plugins).
+**Note:** before creating new plugins consider using/extending/contributing to [existing plugins](#existing-plugins).
 
 Plugin is object with `.apply` method, can be used to change scraper behavior.
 

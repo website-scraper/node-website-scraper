@@ -1,10 +1,11 @@
-require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/circular-dependencies/.tmp';
+const mockDirname = './test/functional/circular-dependencies/mocks';
 
 describe('Functional circular dependencies', function() {
 
@@ -20,7 +21,7 @@ describe('Functional circular dependencies', function() {
 	});
 
 	it('should correctly load files with circular dependency', function() {
-		var options = {
+		const options = {
 			urls: [
 				{ url: 'http://example.com/index.html', filename: 'index.html'},
 				{ url: 'http://example.com/about.html', filename: 'about.html'}

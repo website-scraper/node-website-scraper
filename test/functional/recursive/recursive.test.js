@@ -1,10 +1,11 @@
-require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/recursive/.tmp';
+const mockDirname = './test/functional/recursive/mocks';
 
 describe('Functional recursive downloading', function() {
 
@@ -20,7 +21,7 @@ describe('Functional recursive downloading', function() {
 	});
 
 	it('should follow anchors if recursive flag is set', function () {
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
@@ -50,7 +51,7 @@ describe('Functional recursive downloading', function() {
 	});
 
 	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', function () {
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
@@ -91,7 +92,7 @@ describe('Functional recursive downloading', function() {
 	});
 
 	it('should not follow anchors if recursive flag is not set', function () {
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,

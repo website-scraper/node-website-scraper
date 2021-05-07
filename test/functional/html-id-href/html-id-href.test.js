@@ -1,10 +1,11 @@
-var should = require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/html-id-href/.tmp';
+const mockDirname = './test/functional/html-id-href/mocks';
 
 describe('Functional html id href', function() {
 
@@ -25,7 +26,7 @@ describe('Functional html id href', function() {
 		nock('https://mdn.mozillademos.org/').get('/files/6457/mdn_logo_only_color.png').reply(200, 'mdn_logo_only_color.png');
 		nock('http://example.com/').get('/some/other.html').reply(200, 'other.html');
 
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			recursive: true,
@@ -46,7 +47,7 @@ describe('Functional html id href', function() {
 			fs.existsSync(testDirname + '/local/sprite.svg').should.be.eql(true);
 			fs.existsSync(testDirname + '/local/mdn_logo_only_color.png').should.be.eql(true);
 
-			var indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
 			// should update path to external svgs
 			should(indexHtml).containEql('xlink:href="local/sprite.svg#icon-undo"');

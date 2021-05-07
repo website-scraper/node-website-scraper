@@ -1,11 +1,12 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const sinon = require('sinon');
-const scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import sinon from 'sinon';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/callbacks/.tmp';
+const mockDirname = './test/functional/base/mocks';
 
 describe('Functional: onResourceSaved and onResourceError callbacks in plugin', () => {
 

@@ -1,10 +1,12 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const sinon = require('sinon');
-const scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import sinon from 'sinon';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
+const testDirname = './test/functional/resource-saver/.tmp';
+const mockDirname = './test/functional/resource-saver/mocks';
 
 describe('Functional: plugin for saving resources', () => {
 

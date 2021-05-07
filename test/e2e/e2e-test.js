@@ -1,13 +1,13 @@
-var should = require('should');
-var scrape = require('../../index');
-var URL = require('url');
-var fs = require('fs-extra');
-var _ = require('lodash');
+import 'should';
+import scrape from 'website-scraper';
+import fs from 'fs-extra';
+import _ from 'lodash';
 
-var urls = require('./urls.json');
-var options = require('./options.json');
+import { readFile } from 'fs/promises';
+const urls = JSON.parse(await readFile(new URL('./urls.json', import.meta.url)));
+const options = JSON.parse(await readFile(new URL('./options.json', import.meta.url)));
 
-var resultDirname = __dirname + '/results';
+const resultDirname = './test/e2e/results';
 
 describe('E2E', function() {
 	before(function() {
@@ -21,8 +21,8 @@ describe('E2E', function() {
 	urls.forEach(function(url) {
 		describe(url, function() {
 			it('should be successfully scraped with byType filename generator', function() {
-				var scraperOptions = _.clone(options);
-				var hostname = URL.parse(url).hostname;
+				const scraperOptions = _.clone(options);
+				const hostname = new URL(url).hostname;
 				scraperOptions.directory = resultDirname + '/' + hostname + '-byType';
 				scraperOptions.urls = [ { url: url, filename: 'index.html' } ];
 				scraperOptions.filenameGenerator = 'byType';
@@ -32,8 +32,8 @@ describe('E2E', function() {
 			});
 
 			it('should be successfully scraped with bySiteStructure filename generator', function() {
-				var scraperOptions = _.clone(options);
-				var hostname = URL.parse(url).hostname;
+				const scraperOptions = _.clone(options);
+				const hostname = new URL(url).hostname;
 				scraperOptions.directory = resultDirname + '/' + hostname + '-bySiteStructure';
 				scraperOptions.urls = [ { url: url } ];
 				scraperOptions.filenameGenerator = 'bySiteStructure';

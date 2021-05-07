@@ -1,10 +1,11 @@
-var should = require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/css-handling/.tmp';
+const mockDirname = './test/functional/css-handling/mocks';
 
 describe('Functional: css handling', function() {
 
@@ -30,7 +31,7 @@ describe('Functional: css handling', function() {
 		nock('http://example.com/').get('/css-like-text-in-html.png').reply(200, 'css-like-text-in-html.png');
 		nock('http://example.com/').get('/external-style.png').reply(200, 'external-style.png');
 
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			maxDepth: 2,
@@ -48,7 +49,7 @@ describe('Functional: css handling', function() {
 			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
 			fs.existsSync(testDirname + '/local/css-like-text-in-html.png').should.be.eql(false);
 
-			var indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
 			should(indexHtml).containEql('local/style-tag.png');
 			should(indexHtml).containEql('local/style-attr.png');

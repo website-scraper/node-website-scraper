@@ -1,12 +1,12 @@
-require('should');
-const Promise = require('bluebird');
-const sinon = require('sinon');
-const Resource = require('../../../lib/resource');
-const HtmlHandler = require('../../../lib/resource-handler/html');
+import 'should';
+import Promise from 'bluebird';
+import sinon from 'sinon';
+import Resource from '../../../lib/resource.js';
+import HtmlHandler from '../../../lib/resource-handler/html/index.js';
 
-const HtmlImgSrcsetTag = require('../../../lib/resource-handler/path-containers/html-img-srcset-tag');
-const HtmlCommonTag = require('../../../lib/resource-handler/path-containers/html-common-tag');
-const CssText = require('../../../lib/resource-handler/path-containers/css-text');
+import HtmlImgSrcsetTag from '../../../lib/resource-handler/path-containers/html-img-srcset-tag.js';
+import HtmlCommonTag from '../../../lib/resource-handler/path-containers/html-common-tag.js';
+import CssText from '../../../lib/resource-handler/path-containers/css-text.js';
 
 describe('ResourceHandler: Html', () => {
 	let downloadChildrenPaths, htmlHandler;

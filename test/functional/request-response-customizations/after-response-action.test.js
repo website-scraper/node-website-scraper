@@ -1,10 +1,11 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/req-res-customizations-after-response/.tmp';
+const mockDirname = './test/functional/req-res-customizations-after-response/mocks';
 
 describe('Functional: afterResponse action in plugin', function() {
 

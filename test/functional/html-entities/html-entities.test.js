@@ -1,10 +1,11 @@
-var should = require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/html-entities/.tmp';
+const mockDirname = './test/functional/html-entities/mocks';
 
 describe('Functional: html entities', function() {
 
@@ -39,7 +40,7 @@ describe('Functional: html entities', function() {
 		// /?v=2&amp;name=external-style.png should stay not decoded
 		nock('http://example.com/').get('/external-style.png?v=2&amp;name=external-style.png').reply(200, 'external-style.png');
 
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			maxDepth: 2,
@@ -52,7 +53,7 @@ describe('Functional: html entities', function() {
 
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			var indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
 			should(indexHtml).containEql('href="local/fonts.css');
 			fs.existsSync(testDirname + '/local/fonts.css').should.be.eql(true);
@@ -77,7 +78,7 @@ describe('Functional: html entities', function() {
 			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('index_1.html');
 
 			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
-			var styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();
+			const styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();
 
 			should(styleCss).containEql('url(\'external-style.png\')');
 			fs.existsSync(testDirname + '/local/external-style.png').should.be.eql(true);

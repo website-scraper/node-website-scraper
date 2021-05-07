@@ -1,10 +1,11 @@
-require('should');
-var nock = require('nock');
-var fs = require('fs-extra');
-var scrape = require('../../../index');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-var testDirname = __dirname + '/.tmp';
-var mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/resource-without-ext/.tmp';
+const mockDirname = './test/functional/resource-without-ext/mocks';
 
 describe('Functional resources without extensions', function() {
 
@@ -20,7 +21,7 @@ describe('Functional resources without extensions', function() {
 	});
 
 	it('should load resources without extensions with correct type and wrap with extensions', function () {
-		var options = {
+		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,

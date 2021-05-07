@@ -1,7 +1,7 @@
-const should = require('should');
-const sinon = require('sinon');
-const Resource = require('../../../lib/resource');
-const CssResourceHandler = require('../../../lib/resource-handler/css');
+import should from 'should';
+import sinon from 'sinon';
+import Resource from '../../../lib/resource.js';
+import CssResourceHandler from '../../../lib/resource-handler/css/index.js';
 
 describe('ResourceHandler: Css', () => {
 	it('should call downloadChildrenResources and set returned text to resource', () => {

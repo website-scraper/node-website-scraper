@@ -1,10 +1,11 @@
-require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const scrape = require('../../../index');
+import 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/update-missing-sources/.tmp';
+const mockDirname = './test/functional/update-missing-sources/mocks';
 
 class UpdateMissingResourceReferencePlugin {
 	apply (registerAction) {

@@ -3,11 +3,16 @@
   "version": "4.2.3",
   "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
-  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs",
+    "./defaultOptions": "./lib/config/defaults.js",
+    "./plugins": "./lib/plugins/index.js"
+  },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
     "test-e2e": "mocha --timeout 300000 ./test/e2e/*-test.js",
-    "eslint": "eslint lib/** index.js"
+    "eslint": "eslint lib/** index.mjs"
   },
   "repository": {
     "type": "git",
@@ -41,7 +46,7 @@
     "he": "^1.2.0",
     "lodash": "^4.17.21",
     "normalize-url": "^6.0.0",
-    "p-queue": "^6.6.0",
+    "p-queue": "^7.1.0",
     "request": "^2.88.2",
     "sanitize-filename": "^1.6.3",
     "srcset": "^3.0.0"
@@ -52,12 +57,11 @@
     "mocha": "^8.3.2",
     "nock": "^13.0.11",
     "nyc": "^15.1.0",
-    "proxyquire": "^2.1.3",
     "should": "^13.2.3",
     "sinon": "^10.0.1"
   },
   "files": [
-    "index.js",
+    "index.mjs",
     "lib"
   ],
   "engines": {

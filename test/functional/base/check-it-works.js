@@ -1,9 +1,10 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const scrape = require('../../../index');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import scrape from 'website-scraper';
 
-const testDirname = __dirname + '/.tmp';
+const testDirname = './test/functional/base/.tmp2';
 
 describe('Functional: check it works', function() {
 
@@ -16,23 +17,6 @@ describe('Functional: check it works', function() {
 		nock.cleanAll();
 		nock.enableNetConnect();
 		fs.removeSync(testDirname);
-	});
-
-	it('should work with callback', (done) => {
-		nock('http://example.com/').get('/').reply(200, 'TEST CALLBACK');
-
-		const options = {
-			urls: [ 'http://example.com/' ],
-			directory: testDirname
-		};
-
-		scrape(options, function(err, result) {
-			should(err).be.eql(null);
-			should(result[0].url).be.eql('http://example.com/');
-			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('TEST CALLBACK');
-			done();
-		});
 	});
 
 	it('should work with promise', () => {

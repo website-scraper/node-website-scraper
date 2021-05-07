@@ -1,12 +1,13 @@
-const should = require('should');
-const nock = require('nock');
-const fs = require('fs-extra');
-const cheerio = require('cheerio');
-const scrape = require('../../../index');
-const Resource = require('../../../lib/resource');
+import should from 'should';
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs-extra';
+import cheerio from 'cheerio';
+import scrape from 'website-scraper';
+import Resource from '../../../lib/resource.js';
 
-const testDirname = __dirname + '/.tmp';
-const mockDirname = __dirname + '/mocks';
+const testDirname = './test/functional/base/.tmp';
+const mockDirname = './test/functional/base/mocks';
 
 describe('Functional: base', function() {
 	const options = {

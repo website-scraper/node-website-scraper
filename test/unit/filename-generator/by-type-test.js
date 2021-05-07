@@ -1,9 +1,11 @@
-const _ = require('lodash');
-const should = require('should');
-require('../../utils/assertions');
-const sinon = require('sinon');
-const Resource = require('../../../lib/resource');
-const byTypeFilenameGenerator = require('../../../lib/filename-generator/by-type');
+import should from 'should';
+import '../../utils/assertions.js';
+
+import sinon from 'sinon';
+import _ from 'lodash';
+
+import Resource from '../../../lib/resource.js';
+import byTypeFilenameGenerator from '../../../lib/filename-generator/by-type.js';
 
 describe('FilenameGenerator: byType', () => {
 	it('should return resource filename', () => {
