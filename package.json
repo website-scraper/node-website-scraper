@@ -38,7 +38,6 @@
   },
   "homepage": "https://github.com/website-scraper/node-website-scraper",
   "dependencies": {
-    "bluebird": "^3.0.1",
     "cheerio": "~0.22.0",
     "css-url-parser": "^1.0.0",
     "debug": "^4.3.1",

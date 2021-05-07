@@ -1,6 +1,5 @@
 import should from 'should';
 import sinon from 'sinon';
-import Promise from 'bluebird';
 import path from 'path';
 import Resource from '../../../lib/resource.js';
 import { getUnixPath } from '../../../lib/utils/index.js';

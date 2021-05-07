@@ -1,5 +1,4 @@
 import 'should';
-import Promise from 'bluebird';
 import sinon from 'sinon';
 import Resource from '../../../lib/resource.js';
 import HtmlHandler from '../../../lib/resource-handler/html/index.js';
@@ -12,7 +11,7 @@ describe('ResourceHandler: Html', () => {
 	let downloadChildrenPaths, htmlHandler;
 
 	beforeEach(() => {
-		downloadChildrenPaths = sinon.stub().usingPromise(Promise).resolves();
+		downloadChildrenPaths = sinon.stub().resolves();
 	});
 
 	describe('constructor', () => {
