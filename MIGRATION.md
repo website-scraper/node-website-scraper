@@ -6,6 +6,9 @@
 
 Module is now pure ESM and cannot be `require`d from CommonJS module. [Read about ESM modules and how to migrate from CommonJS to ESM](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
 
+#### options.request
+If you're using [request object](https://github.com/website-scraper/node-website-scraper#request) to customize headers, query params, encoding, etc. - it may require some changes (howewer most of options remain the same). Please follow this [migration guide to got](https://github.com/sindresorhus/got/blob/main/documentation/migration-guides.md).
+
 #### defaults
 If you're using `scrape.defaults` now you need to receive them with
 ```javascript
