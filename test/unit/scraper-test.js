@@ -328,7 +328,7 @@ describe('Scraper', function () {
 
 		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
-			nock('http://second-url.com').get('/').reply(500);
+			nock('http://second-url.com').get('/').reply(404, 'NOT OK');
 
 			const s = new Scraper({
 				urls: [

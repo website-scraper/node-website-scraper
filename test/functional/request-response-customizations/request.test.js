@@ -27,7 +27,7 @@ describe('Functional: customize request options with plugin', function() {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			request: {
-				qs: {myParam: 122}
+				searchParams: {myParam: 122}
 			}
 		};
 
@@ -46,7 +46,7 @@ describe('Functional: customize request options with plugin', function() {
 				add('beforeRequest', ()=> {
 					return {
 						requestOptions:{
-							qs: {myParam: 122}
+							searchParams: {myParam: 122}
 						}
 					};
 				});
