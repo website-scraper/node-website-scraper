@@ -1,3 +1,5 @@
+# ⚠️ Beware: this documentation is for next major version 5. Most probably you need current version [4.x documentation](https://github.com/website-scraper/node-website-scraper/blob/4.x/README.md)
+
 [![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Build Status](https://travis-ci.com/website-scraper/node-website-scraper.svg?branch=master)](https://travis-ci.com/github/website-scraper/node-website-scraper)
