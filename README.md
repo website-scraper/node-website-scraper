@@ -53,7 +53,7 @@ scrape(options).then((result) => {});
 * [recursive](#recursive) - follow hyperlinks in html files
 * [maxRecursiveDepth](#maxrecursivedepth) - maximum depth for hyperlinks
 * [maxDepth](#maxdepth) - maximum depth for all dependencies
-* [request](#request) - custom options for [request](https://github.com/request/request)
+* [request](#request) - custom options for http module [got](https://github.com/sindresorhus/got#options)
 * [subdirectories](#subdirectories) - subdirectories for file extensions
 * [defaultFilename](#defaultfilename) - filename for index page
 * [prettifyUrls](#prettifyurls) - prettify urls
@@ -122,7 +122,7 @@ The difference between [maxRecursiveDepth](#maxRecursiveDepth) and [maxDepth](#m
   only html resources with depth 2 will be filtered out, last image will be downloaded
 
 #### request
-Object, custom options for [request](https://github.com/request/request#requestoptions-callback). Allows to set cookies, userAgent, encoding, etc.
+Object, custom options for http module [got](https://github.com/sindresorhus/got#options) which is used inside website-scraper. Allows to set retries, cookies, userAgent, encoding, etc.
 ```javascript
 // use same request options for all resources
 scrape({
@@ -301,20 +301,20 @@ Action beforeRequest is called before requesting resource. You can use it to cus
 
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
-* requestOptions - default options for [request](https://github.com/request/request#requestoptions-callback) module or options returned by previous beforeRequest action call
+* requestOptions - default options for http module [got](https://github.com/sindresorhus/got#options) or options returned by previous beforeRequest action call
 
-Should return object which includes custom options for [request](https://github.com/request/request#requestoptions-callback) module.
+Should return object which includes custom options for [got](https://github.com/sindresorhus/got#options) module.
 If multiple actions `beforeRequest` added - scraper will use `requestOptions` from last one.
 ```javascript
 // Add ?myParam=123 to querystring for resource with url 'http://example.com'
 registerAction('beforeRequest', async ({resource, requestOptions}) => {
 	if (resource.getUrl() === 'http://example.com') {
-		return {requestOptions: extend(requestOptions, {qs: {myParam: 123}})};
+		return {requestOptions: extend(requestOptions, {searchParams: {myParam: 123}})};
 	}
 	return {requestOptions};
 });
 
-// Server rejecting a scrape attempt, simply add in some synthetic delays
+// Add random delays between requests
 registerAction('beforeRequest', async ({resource, requestOptions}) => {
 	const time = Math.round(Math.random() * 10000);
 	await new Promise((resolve) => setTimeout(resolve, time));
@@ -326,7 +326,7 @@ registerAction('beforeRequest', async ({resource, requestOptions}) => {
 Action afterResponse is called after each response, allows to customize resource or reject its saving.
 
 Parameters - object which includes:
-* response - response object of [request](https://github.com/request/request) module
+* response - response object from http module [got](https://github.com/sindresorhus/got#response)
 
 Should return resolved `Promise` if resource should be saved or rejected with Error `Promise` if it should be skipped.
 Promise should be resolved with:

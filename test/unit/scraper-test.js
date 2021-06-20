@@ -24,22 +24,6 @@ describe('Scraper', function () {
 		fs.removeSync(testDirname);
 	});
 
-	describe('#errorCleanup', function() {
-		it('should throw error', function() {
-			const s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			return s.errorCleanup(new Error('everything was broken!')).then(function() {
-				should(true).be.eql(false);
-			}, function(err) {
-				err.should.be.instanceOf(Error);
-				err.message.should.be.eql('everything was broken!');
-			});
-		});
-	});
-
 	describe('#loadResource', function() {
 		it('should add different resource to the map', function() {
 			const s = new Scraper({
@@ -315,12 +299,9 @@ describe('Scraper', function () {
 
 			sinon.stub(s, 'load').rejects(new Error('Awful error'));
 
-			const errorCleanupSpy = sinon.spy(s, 'errorCleanup');
-
 			return s.scrape().then(function() {
 				should(true).be.eql(false);
 			}).catch(function(err) {
-				errorCleanupSpy.calledOnce.should.be.eql(true);
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('Awful error');
 			});
@@ -328,7 +309,7 @@ describe('Scraper', function () {
 
 		it('should return array of objects with url, filename and children', function() {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
-			nock('http://second-url.com').get('/').reply(500);
+			nock('http://second-url.com').get('/').reply(404, 'NOT OK');
 
 			const s = new Scraper({
 				urls: [
@@ -463,45 +444,24 @@ describe('Scraper', function () {
 			should(fs.readFileSync(filename).toString()).be.eql('some text');
 		});
 
-		it('should remove directory on error occurs if something was loaded', async () => {
-			nock('http://example.com').get('/').reply(200, 'OK');
+		it('should remove directory on error', async () => {
+			nock('http://example.com').get('/').reply(400);
 			const s = new Scraper({
 				urls: 'http://example.com',
-				directory: testDirname
+				directory: testDirname,
+				request: {
+					throwHttpErrors: true
+				},
+				ignoreErrors: false
 			});
 
-			fs.existsSync(testDirname).should.be.eql(false);
-
-			await s.scrape();
-
-			fs.existsSync(testDirname).should.be.eql(true);
-
 			try {
-				await s.errorCleanup(new Error('everything was broken!'));
+				await s.scrape();
 				should(true).be.eql(false);
 			} catch (err) {
 				should(err).be.instanceOf(Error);
-				should(err.message).be.eql('everything was broken!');
+				should(err.message).be.eql('Response code 400 (Bad Request)');
 				should(fs.existsSync(testDirname)).be.eql(false);
-			}
-		});
-
-		it('should not remove directory if error occurs and nothing was loaded', async () => {
-			const s = new Scraper({
-				urls: 'http://example.com',
-				directory: testDirname
-			});
-
-			fs.mkdirpSync(testDirname);
-			fs.existsSync(testDirname).should.be.eql(true);
-
-			try {
-				await s.errorCleanup(new Error('everything was broken!'));
-				should(true).be.eql(false);
-			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).be.eql('everything was broken!');
-				should(fs.existsSync(testDirname)).be.eql(true);
 			}
 		});
 

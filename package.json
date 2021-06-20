@@ -42,11 +42,11 @@
     "css-url-parser": "^1.0.0",
     "debug": "^4.3.1",
     "fs-extra": "^9.0.0",
+    "got": "^11.8.2",
     "he": "^1.2.0",
     "lodash": "^4.17.21",
     "normalize-url": "^6.0.1",
     "p-queue": "^7.1.0",
-    "request": "^2.88.2",
     "sanitize-filename": "^1.6.3",
     "srcset": "^3.0.0"
   },

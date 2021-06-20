@@ -119,11 +119,13 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.options.request.should.eql({
+			s.options.request.should.containEql({
+				throwHttpErrors: false,
 				encoding: 'binary',
-				strictSSL: false,
-				jar: true,
-				gzip: true
+				decompress: true,
+				https: {
+					rejectUnauthorized: false
+				}
 			});
 		});
 
@@ -132,6 +134,7 @@ describe('Scraper initialization', function () {
 				urls: urls,
 				directory: testDirname,
 				request: {
+					throwHttpErrors: true,
 					headers: {
 						'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
 					}
@@ -139,10 +142,12 @@ describe('Scraper initialization', function () {
 			});
 
 			s.options.request.should.eql({
+				throwHttpErrors: true,
 				encoding: 'binary',
-				strictSSL: false,
-				jar: true,
-				gzip: true,
+				decompress: true,
+				https: {
+					rejectUnauthorized: false
+				},
 				headers: {
 					'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1;'
 				}
@@ -158,11 +163,12 @@ describe('Scraper initialization', function () {
 				}
 			});
 
-			s.options.request.should.eql({
+			s.options.request.should.containEql({
 				encoding: 'another encoding',
-				strictSSL: false,
-				jar: true,
-				gzip: true,
+				decompress: true,
+				https: {
+					rejectUnauthorized: false
+				},
 			});
 		});
 	});
