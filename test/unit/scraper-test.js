@@ -11,21 +11,21 @@ import * as plugins from 'website-scraper/plugins';
 
 const testDirname = './test/unit/.scraper-test';
 
-describe('Scraper', function () {
+describe('Scraper', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(() => {
 		nock.cleanAll();
 		nock.enableNetConnect();
 		fs.removeSync(testDirname);
 	});
 
-	describe('#loadResource', function() {
-		it('should add different resource to the map', function() {
+	describe('#loadResource', () => {
+		it('should add different resource to the map', () => {
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
@@ -41,7 +41,7 @@ describe('Scraper', function () {
 			s.loadedResources.size.should.be.eql(3);
 		});
 
-		it('should not add the same resource twice', function() {
+		it('should not add the same resource twice', () => {
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
@@ -55,8 +55,8 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('#saveResource', function() {
-		it('should call handleError on error', function() {
+	describe('#saveResource', () => {
+		it('should call handleError on error', () => {
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
@@ -69,57 +69,81 @@ describe('Scraper', function () {
 			const r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
-			return s.saveResource(r).then(() => should(true).eql(false)).catch(function() {
+			return s.saveResource(r).then(() => should(true).eql(false)).catch(() => {
 				s.handleError.calledOnce.should.be.eql(true);
 				s.handleError.calledWith(dummyError).should.be.eql(true);
 			});
 		});
 	});
 
-	describe('#requestResource', function() {
+	describe('#requestResource', () => {
 
 		class GenerateFilenamePlugin {
-			apply(registerAction) {
-				registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }))
+			apply (registerAction) {
+				registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }));
 			}
 		}
 
-		describe('url filtering', function() {
-			it('should request the resource if the urlFilter returns true', function(){
+		describe('url filtering', () => {
+			it('should request the resource if the urlFilter returns true', async () =>{
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
 				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: function() { return true; },
+					urlFilter: () => { return true; },
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
 				const r = new Resource('http://example.com/a.png');
-				return s.requestResource(r).then(function(rr) {
-					rr.should.be.eql(r);
-					rr.getUrl().should.be.eql('http://example.com/a.png');
-					rr.getFilename().should.be.not.empty();
-					rr.getText().should.be.eql('OK');
-				});
+				r.getDepth = sinon.stub().returns(2);
+
+				const rr = await s.requestResource(r);
+
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com/a.png');
+				rr.getFilename().should.be.not.empty();
+				rr.getText().should.be.eql('OK');
 			});
 
-			it('should return promise resolved with null if the urlFilter returns false', function(){
+			it('should return null if the urlFilter returns false', async () =>{
 				const s = new Scraper({
 					urls: ['http://google.com'],
 					directory: testDirname,
-					urlFilter: function(){ return false; }
+					urlFilter: () =>{ return false; }
 				});
 
 				const r = new Resource('http://google.com/a.png');
-				return s.requestResource(r).then(function(rr) {
-					should.equal(rr, null);
+				r.getDepth = sinon.stub().returns(2);
+
+				const rr = await s.requestResource(r);
+				should.equal(rr, null);
+			});
+
+			it('should ignore urlFilter if resource depth=0', async () => {
+				nock('http://example.com').get('/').reply(200, 'OK');
+
+				const s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					urlFilter: () => false,
+					plugins: [ new GenerateFilenamePlugin() ]
 				});
+
+				const r = new Resource('http://example.com');
+				r.getDepth = sinon.stub().returns(0);
+
+				const rr = await s.requestResource(r);
+
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com');
+				rr.getFilename().should.be.not.empty();
+				rr.getText().should.be.eql('OK');
 			});
 		});
 
-		describe('depth filtering', function() {
-			it('should request the resource if the maxDepth option is not set', function(){
+		describe('depth filtering', () => {
+			it('should request the resource if the maxDepth option is not set', async () =>{
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
 				const s = new Scraper({
@@ -130,15 +154,16 @@ describe('Scraper', function () {
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(212);
-				return s.requestResource(r).then(function(rr) {
-					rr.should.be.eql(r);
-					rr.getUrl().should.be.eql('http://example.com/a.png');
-					rr.getFilename().should.be.not.empty();
-					rr.getText().should.be.eql('OK');
-				});
+
+				const rr = await s.requestResource(r);
+
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com/a.png');
+				rr.getFilename().should.be.not.empty();
+				rr.getText().should.be.eql('OK');
 			});
 
-			it('should request the resource if maxDepth is set and resource depth is less than maxDept', function(){
+			it('should request the resource if maxDepth is set and resource depth is less than maxDept', async () =>{
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
 				const s = new Scraper({
@@ -150,15 +175,16 @@ describe('Scraper', function () {
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(2);
-				return s.requestResource(r).then(function(rr) {
-					rr.should.be.eql(r);
-					rr.getUrl().should.be.eql('http://example.com/a.png');
-					rr.getFilename().should.be.not.empty();
-					rr.getText().should.be.eql('OK');
-				});
+
+				const rr = await s.requestResource(r);
+
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com/a.png');
+				rr.getFilename().should.be.not.empty();
+				rr.getText().should.be.eql('OK');
 			});
 
-			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', function(){
+			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', async () =>{
 				nock('http://example.com').get('/a.png').reply(200, 'OK');
 
 				const s = new Scraper({
@@ -170,15 +196,15 @@ describe('Scraper', function () {
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(3);
-				return s.requestResource(r).then(function(rr) {
-					rr.should.be.eql(r);
-					rr.getUrl().should.be.eql('http://example.com/a.png');
-					rr.getFilename().should.be.not.empty();
-					rr.getText().should.be.eql('OK');
-				});
+
+				const rr = await s.requestResource(r);
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com/a.png');
+				rr.getFilename().should.be.not.empty();
+				rr.getText().should.be.eql('OK');
 			});
 
-			it('should return null if maxDepth is set and resource depth is greater than maxDepth', function(){
+			it('should return null if maxDepth is set and resource depth is greater than maxDepth', async () =>{
 				const s = new Scraper({
 					urls: ['http://google.com'],
 					directory: testDirname,
@@ -187,40 +213,44 @@ describe('Scraper', function () {
 
 				const r = new Resource('http://google.com/a.png');
 				r.getDepth = sinon.stub().returns(4);
-				return s.requestResource(r).then(function(rr) {
-					should.equal(rr, null);
-				});
+
+				const rr = await s.requestResource(r);
+				should.equal(rr, null);
 			});
 		});
 
-		it('should call handleError on error', function() {
+		it('should call handleError on error', async () => {
 			const s = new Scraper({
 				urls: 'http://example.com',
-				directory: testDirname
+				directory: testDirname,
+				ignoreErrors: false
 			});
 			nock('http://example.com').get('/a.png').replyWithError('err');
 			sinon.stub(s, 'handleError').resolves();
 
 			const r = new Resource('http://example.com/a.png');
 
-			return s.requestResource(r).then(() => should(true).eql(false)).catch(function() {
+			try {
+				await s.requestResource(r);
+				should(true).eql(false);
+			} catch (err) {
 				s.handleError.calledOnce.should.be.eql(true);
-			});
+			}
 		});
 
-		it('should update resource data with data returned from request', () => {
+		it('should update resource data with data returned from request', async () => {
 			const metadata = {
 				solarSystemPlanets: [ 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune' ]
 			};
 
 			class GenerateFilenamePlugin {
-				apply(registerAction) {
+				apply (registerAction) {
 					registerAction('generateFilename', sinon.stub().returns({ filename: 'generated-filename' }));
 				}
 			}
 
 			class AddMetadataPlugin {
-				apply(registerAction) {
+				apply (registerAction) {
 					registerAction('afterResponse', sinon.stub().returns({body: 'test body', metadata}));
 				}
 			}
@@ -236,45 +266,44 @@ describe('Scraper', function () {
 			});
 
 			const r = new Resource('http://example.com');
+			await s.requestResource(r);
 
-			return s.requestResource(r).then(function() {
-				should(r.getText()).be.eql('test body');
-				should(r.getUrl()).be.eql('http://example.com');
-				should(r.getType()).be.eql('html');
-				should(r.getFilename()).be.eql('generated-filename');
-				should(r.metadata).be.eql(metadata);
-			});
-		})
+			should(r.getText()).be.eql('test body');
+			should(r.getUrl()).be.eql('http://example.com');
+			should(r.getType()).be.eql('html');
+			should(r.getFilename()).be.eql('generated-filename');
+			should(r.metadata).be.eql(metadata);
+		});
 	});
 
-	describe('#handleError', function() {
-		it('should ignore error and return resolved promise if ignoreErrors option is true', function() {
+	describe('#handleError', () => {
+		it('should ignore error and return resolved promise if ignoreErrors option is true', () => {
 			const s = new Scraper({
 				urls: ['http://example.com'],
 				directory: testDirname,
 				ignoreErrors: true
 			});
-			return s.handleError(new Error('Request failed!')).then(function() {
+			return s.handleError(new Error('Request failed!')).then(() => {
 				should(true).be.eql(true);
 			});
 		});
 
-		it('should return rejected promise if ignoreErrors option is false', function() {
+		it('should return rejected promise if ignoreErrors option is false', () => {
 			const s = new Scraper({
 				urls: ['http://example.com'],
 				directory: testDirname,
 				ignoreErrors: false
 			});
-			return s.handleError(new Error('Request failed!')).then(function() {
+			return s.handleError(new Error('Request failed!')).then(() => {
 				should(false).be.eql(true);
-			}).catch(function() {
+			}).catch(() => {
 				should(true).be.eql(true);
 			});
 		});
 	});
 
-	describe('#scrape', function() {
-		it('should call load', function() {
+	describe('#scrape', () => {
+		it('should call load', () => {
 			nock('http://example.com').get('/').reply(200, 'OK');
 
 			const s = new Scraper({
@@ -284,12 +313,12 @@ describe('Scraper', function () {
 
 			const loadSpy = sinon.spy(s, 'load');
 
-			return s.scrape().then(function() {
+			return s.scrape().then(() => {
 				loadSpy.calledOnce.should.be.eql(true);
 			});
 		});
 
-		it('should call errorCleanup on error', function() {
+		it('should call errorCleanup on error', () => {
 			nock('http://example.com').get('/').reply(200, 'OK');
 
 			const s = new Scraper({
@@ -299,15 +328,15 @@ describe('Scraper', function () {
 
 			sinon.stub(s, 'load').rejects(new Error('Awful error'));
 
-			return s.scrape().then(function() {
+			return s.scrape().then(() => {
 				should(true).be.eql(false);
-			}).catch(function(err) {
+			}).catch((err) => {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('Awful error');
 			});
 		});
 
-		it('should return array of objects with url, filename and children', function() {
+		it('should return array of objects with url, filename and children', () => {
 			nock('http://first-url.com').get('/').reply(200, 'OK');
 			nock('http://second-url.com').get('/').reply(404, 'NOT OK');
 
@@ -319,7 +348,7 @@ describe('Scraper', function () {
 				directory: testDirname
 			});
 
-			return s.scrape().then(function(res) {
+			return s.scrape().then((res) => {
 				res.should.be.instanceOf(Array);
 				res.should.have.length(2);
 				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
@@ -399,8 +428,8 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('export defaults', function() {
-		it('should export defaults', function() {
+	describe('export defaults', () => {
+		it('should export defaults', () => {
 			should(defaultOptions).be.have.properties([
 				'subdirectories', 'sources', 'defaultFilename', 'prettifyUrls',
 				'request', 'requestConcurrency', 'ignoreErrors', 'urlFilter',
@@ -409,8 +438,8 @@ describe('Scraper', function () {
 		});
 	});
 
-	describe('export plugins', function() {
-		it('should export default plugins', function() {
+	describe('export plugins', () => {
+		it('should export default plugins', () => {
 			should(plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
 			should(plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
 			should(plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
@@ -548,7 +577,7 @@ describe('Scraper', function () {
 				filenameGenerator: 'bySiteStructure'
 			});
 
-			const a = await s.scrape();
+			await s.scrape();
 
 			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameBySiteStructurePlugin);
 
