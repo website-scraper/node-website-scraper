@@ -1,4 +1,4 @@
-import 'should';
+import should from 'should';
 import sinon from 'sinon';
 import Resource from '../../../lib/resource.js';
 import HtmlHandler from '../../../lib/resource-handler/html/index.js';
@@ -267,7 +267,7 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
-	it('should use html entities for updated attributes', () => {
+	it('should use html entities for updated attributes', async () => {
 		const sources = [
 			{ selector: '[style]', attr: 'style' },
 		];
@@ -285,8 +285,9 @@ describe('ResourceHandler: Html', () => {
 		const resource = new Resource('http://example.com', 'index.html');
 		resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() => {
-			resource.getText().should.containEql('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
-		});
+		await htmlHandler.handle(resource);
+		const text = resource.getText();
+
+		should(text).containEql('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
 	});
 });

@@ -20,7 +20,7 @@ describe('Functional: check it works', function() {
 	});
 
 	it('should work with promise', () => {
-		nock('http://example.com/').get('/').reply(200, 'TEST PROMISES');
+		nock('http://example.com/').get('/').reply(200, '<html><head></head><body>TEST PROMISES</body></html>');
 
 		const options = {
 			urls: [ 'http://example.com/' ],
@@ -30,7 +30,7 @@ describe('Functional: check it works', function() {
 		return scrape(options).then((result) => {
 			should(result[0].url).be.eql('http://example.com/');
 			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('TEST PROMISES');
+			should(result[0].text).be.eql('<html><head></head><body>TEST PROMISES</body></html>');
 		});
 	});
 });

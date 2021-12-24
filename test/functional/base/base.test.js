@@ -102,7 +102,7 @@ describe('Functional: base', function() {
 			// all sources in index.html should be replaced with local paths
 			let $ = cheerio.load(fs.readFileSync(testDirname + '/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('css/index.css');
-			$('style').text().should.containEql('img/background.png');
+			$('style').html().should.containEql('img/background.png');
 			$('img').attr('src').should.be.eql('img/cat.jpg');
 			$('script').attr('src').should.be.eql('js/script.min.js');
 
@@ -130,7 +130,7 @@ describe('Functional: base', function() {
 			// all sources in about.html should be replaced with already loaded local resources
 			$ = cheerio.load(fs.readFileSync(testDirname + '/about.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('css/index.css');
-			$('style').text().should.containEql('img/background.png');
+			$('style').html().should.containEql('img/background.png');
 			$('img').attr('src').should.be.eql('img/cat.jpg');
 			$('script').attr('src').should.be.eql('js/script.min.js');
 
@@ -177,7 +177,7 @@ describe('Functional: base', function() {
 			// all sources in index.html should be replaced with local paths
 			let $ = cheerio.load(fs.readFileSync(testDirname + '/example.com/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('index.css');
-			$('style').text().should.containEql('background.png');
+			$('style').html().should.containEql('background.png');
 			$('img').attr('src').should.be.eql('cat.jpg');
 			$('script').attr('src').should.be.eql('script.min.js');
 
@@ -201,7 +201,7 @@ describe('Functional: base', function() {
 			// all sources in about.html should be replaced with already loaded local resources
 			$ = cheerio.load(fs.readFileSync(testDirname + '/example.com/about/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('../index.css');
-			$('style').text().should.containEql('../background.png');
+			$('style').html().should.containEql('../background.png');
 			$('img').attr('src').should.be.eql('../cat.jpg');
 			$('script').attr('src').should.be.eql('../script.min.js');
 

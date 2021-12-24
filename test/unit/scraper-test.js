@@ -460,7 +460,7 @@ describe('Scraper', () => {
 		});
 
 		it('should save resource to FS', async () => {
-			nock('http://example.com').get('/').reply(200, 'some text');
+			nock('http://example.com').get('/').reply(200, '<html><head></head><body>some text</body></html>');
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
@@ -470,7 +470,7 @@ describe('Scraper', () => {
 
 			const filename = path.join(testDirname, 'index.html');
 			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('some text');
+			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should remove directory on error', async () => {
@@ -553,7 +553,10 @@ describe('Scraper', () => {
 
 	describe('default generateFilename plugins', () => {
 		it('should use byType plugin if filenameGenerator option is set', async () => {
-			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			nock('http://example.com').get('/').reply(200,
+				'<html><head></head><body>some text</body></html>',
+				{'content-type': 'text/html'}
+			);
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname,
@@ -566,11 +569,11 @@ describe('Scraper', () => {
 
 			const filename = path.join(testDirname, 'index.html');
 			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('some text');
+			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should use bySiteStructure plugin if filenameGenerator option is set', async () => {
-			nock('http://example.com').get('/').reply(200, 'some text', {'content-type': 'text/html'});
+			nock('http://example.com').get('/').reply(200, '<html><head></head><body>some text</body></html>', {'content-type': 'text/html'});
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname,
@@ -583,7 +586,7 @@ describe('Scraper', () => {
 
 			const filename = path.join(testDirname, 'example.com/index.html');
 			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('some text');
+			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should ignore filenameGenerator option if function passed', async () => {

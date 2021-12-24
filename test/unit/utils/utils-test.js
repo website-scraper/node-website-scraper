@@ -4,7 +4,7 @@ import {
 	isUrl, getUrl, getUnixPath, getFilenameFromUrl,
 	getFilepathFromUrl, getHashFromUrl, getRelativePath,
 	shortenFilename, prettifyFilename,
-	isUriSchemaSupported, decodeHtmlEntities, urlsEqual,
+	isUriSchemaSupported, urlsEqual,
 	normalizeUrl
 } from '../../../lib/utils/index.js';
 
@@ -216,19 +216,6 @@ describe('Utils', function () {
 
 		it('should return true for relative paths', function() {
 			should(isUriSchemaSupported('index.html')).be.eql(true);
-		});
-	});
-
-	describe('#decodeHtmlEntities', function() {
-		it('should return empty string if not string passed', function() {
-			should(decodeHtmlEntities(null)).be.eql('');
-			should(decodeHtmlEntities({})).be.eql('');
-			should(decodeHtmlEntities([])).be.eql('');
-			should(decodeHtmlEntities()).be.eql('');
-		});
-
-		it('should return decoded text if string passed', function() {
-			should(decodeHtmlEntities('?a=1&amp;v=2')).be.eql('?a=1&v=2');
 		});
 	});
 
