@@ -34,7 +34,10 @@ describe('Functional: html entities', function() {
 		// /?a=1&amp;b=2 => /?a=1&b=2
 		nock('http://example.com/').get('/img.png?a=1&b=2').reply(200, 'img.png');
 		// /test?b=2&amp;c=3&amp;d=4 => /test?b=2&c=3&d=4
-		nock('http://example.com/').get('/?b=2&c=3&d=4').reply(200, 'index_1.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/?b=2&c=3&d=4').reply(200,
+			'<html><head></head><body>index_1.html</body></html>',
+			{'content-type': 'text/html'}
+		);
 
 		// in style.css
 		// /?v=2&amp;name=external-style.png should stay not decoded
@@ -60,7 +63,7 @@ describe('Functional: html entities', function() {
 			should(fs.readFileSync(testDirname + '/local/fonts.css').toString()).be.eql('fonts.css');
 
 			// single quote (') replaced with &#x27; in attribute
-			should(indexHtml).containEql('background: url(&#x27;local/style-attr.png&#x27;)');
+			should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
 			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
 			should(fs.readFileSync(testDirname + '/local/style-attr.png').toString()).be.eql('style-attr.png');
 
@@ -75,7 +78,7 @@ describe('Functional: html entities', function() {
 
 			should(indexHtml).containEql('href="index_1.html"');
 			fs.existsSync(testDirname + '/index_1.html').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('index_1.html');
+			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('<html><head></head><body>index_1.html</body></html>');
 
 			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
 			const styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();

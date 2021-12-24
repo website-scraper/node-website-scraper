@@ -25,7 +25,7 @@ describe('Functional redirects', function() {
 	it('should follow redirects and save resource once if it has different urls', function() {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 		// true page - ok
-		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 1');
+		nock('http://example.com/').get('/true-page.html').reply(200, '<html><head></head><body>true page 1</body></html>');
 		// duplicating page - redirect to true page
 		nock('http://example.com/').get('/duplicating-page.html').reply(302, '', {'Location': 'http://example.com/true-page.html'});
 		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 2');
@@ -59,7 +59,7 @@ describe('Functional redirects', function() {
 			fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="true-page.html">3</a>');
 
 			// true-page.html should have body from 1st response
-			fs.readFileSync(testDirname + '/true-page.html').toString().should.be.eql('true page 1');
+			fs.readFileSync(testDirname + '/true-page.html').toString().should.be.eql('<html><head></head><body>true page 1</body></html>');
 		});
 	});
 
