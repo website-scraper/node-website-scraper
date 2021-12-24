@@ -88,4 +88,24 @@ describe('Functional: html entities', function() {
 			should(fs.readFileSync(testDirname + '/local/external-style.png').toString()).be.eql('external-style.png');
 		});
 	});
+
+	it('should generate correct quotes which don\'t break html markup (see #355)', async () => {
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/quotes.html');
+		const options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			ignoreErrors: false
+		};
+
+		await scrape(options);
+
+		fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+		/*
+			<div data-test='[{"breakpoint": 1200,"slidesToShow": 3}]'></div>
+			becomes
+			<div data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"></div>
+		 */
+		should(indexHtml).containEql('data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"');
+	});
 });
