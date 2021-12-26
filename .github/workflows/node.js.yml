@@ -18,7 +18,7 @@ jobs:
           - 12
           - 14
           - 16
-          - latest
+          - 17
         os:
           - ubuntu-latest
           - macos-latest
@@ -35,7 +35,7 @@ jobs:
       - run: npm run eslint
         if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
       - name: Coveralls
-        if: ${{ matrix.node-version == '16' }}
+        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
