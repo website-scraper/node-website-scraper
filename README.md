@@ -5,7 +5,6 @@
 [![Node.js CI](https://github.com/website-scraper/node-website-scraper/actions/workflows/node.js.yml/badge.svg)](https://github.com/website-scraper/node-website-scraper)
 [![Test Coverage](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/coverage.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper/coverage)
 [![Coverage Status](https://coveralls.io/repos/github/website-scraper/node-website-scraper/badge.svg?branch=master)](https://coveralls.io/github/website-scraper/node-website-scraper?branch=master)
-[![Gitter](https://badges.gitter.im/website-scraper/node-website-scraper.svg)](https://gitter.im/website-scraper/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 # website-scraper
