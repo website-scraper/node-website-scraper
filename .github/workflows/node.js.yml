@@ -5,6 +5,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '13 2 * * *'
 
 jobs:
   test:
@@ -22,7 +24,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
+      - run: npm i
       - run: npm test
       - name: Coveralls
         if: ${{ matrix.node-version == '16.x' }}
