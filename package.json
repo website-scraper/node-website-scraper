@@ -47,7 +47,7 @@
     "normalize-url": "^7.0.2",
     "p-queue": "^7.1.0",
     "sanitize-filename": "^1.6.3",
-    "srcset": "^3.0.0"
+    "srcset": "^5.0.0"
   },
   "devDependencies": {
     "c8": "^7.7.2",
