@@ -10,7 +10,7 @@
     "./plugins": "./lib/plugins/index.js"
   },
   "scripts": {
-    "test": "c8 --all --reporter=text --reporter=lcov mocha --recursive --timeout 7000 ./test/unit/ ./test/functional && npm run eslint",
+    "test": "c8 --all --reporter=text --reporter=lcov mocha --recursive --timeout 7000 ./test/unit/ ./test/functional",
     "test-e2e": "mocha --timeout 300000 ./test/e2e/*-test.js",
     "eslint": "eslint lib/** index.mjs"
   },

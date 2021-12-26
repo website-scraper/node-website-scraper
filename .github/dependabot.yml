@@ -2,5 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    assignees:
+      - "s0ph1e"
+    open-pull-requests-limit: 10
     schedule:
       interval: "weekly"
