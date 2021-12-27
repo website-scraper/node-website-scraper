@@ -1,5 +1,3 @@
-# ⚠️ Beware: this documentation is for next major version 5. Most probably you need current version [4.x documentation](https://github.com/website-scraper/node-website-scraper/blob/4.x/README.md)
-
 [![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Node.js CI](https://github.com/website-scraper/node-website-scraper/actions/workflows/node.js.yml/badge.svg)](https://github.com/website-scraper/node-website-scraper)
@@ -21,7 +19,7 @@ Try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://githu
 This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
 
 ## Requirements
-* nodejs version >= 14
+* nodejs version >= 14.14
 * website-scraper v5 is pure ESM (it doesn't work with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
 
 ## Installation

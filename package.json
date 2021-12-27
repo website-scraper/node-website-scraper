@@ -1,6 +1,6 @@
 {
   "name": "website-scraper",
-  "version": "4.2.3",
+  "version": "5.0.0",
   "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
   "type": "module",
@@ -62,6 +62,6 @@
     "lib"
   ],
   "engines": {
-    "node": ">=14"
+    "node": ">=14.14"
   }
 }
