@@ -6,7 +6,6 @@ import sinon from 'sinon';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/callbacks/.tmp';
-const mockDirname = './test/functional/base/mocks';
 
 describe('Functional: onResourceSaved and onResourceError callbacks in plugin', () => {
 
