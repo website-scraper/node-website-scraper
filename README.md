@@ -1,12 +1,8 @@
-# ⚠️ Beware: this documentation is for next major version 5. Most probably you need current version [4.x documentation](https://github.com/website-scraper/node-website-scraper/blob/4.x/README.md)
-
 [![Version](https://img.shields.io/npm/v/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Downloads](https://img.shields.io/npm/dm/website-scraper.svg?style=flat)](https://www.npmjs.org/package/website-scraper)
 [![Node.js CI](https://github.com/website-scraper/node-website-scraper/actions/workflows/node.js.yml/badge.svg)](https://github.com/website-scraper/node-website-scraper)
-[![Build status](https://ci.appveyor.com/api/projects/status/s7jxui1ngxlbgiav/branch/master?svg=true)](https://ci.appveyor.com/project/s0ph1e/node-website-scraper/branch/master)
 [![Test Coverage](https://codeclimate.com/github/website-scraper/node-website-scraper/badges/coverage.svg)](https://codeclimate.com/github/website-scraper/node-website-scraper/coverage)
-[![Dependency Status](https://david-dm.org/website-scraper/node-website-scraper.svg?style=flat)](https://david-dm.org/website-scraper/node-website-scraper)
-[![Gitter](https://badges.gitter.im/website-scraper/node-website-scraper.svg)](https://gitter.im/website-scraper/node-website-scraper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Coverage Status](https://coveralls.io/repos/github/website-scraper/node-website-scraper/badge.svg?branch=master)](https://coveralls.io/github/website-scraper/node-website-scraper?branch=master)
 
 
 # website-scraper
@@ -23,7 +19,7 @@ Try it in [demo app](https://scraper.nepochataya.pp.ua/) ([source](https://githu
 This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
 
 ## Requirements
-* nodejs version >= 12.17.0
+* nodejs version >= 14.14
 * website-scraper v5 is pure ESM (it doesn't work with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
 
 ## Installation

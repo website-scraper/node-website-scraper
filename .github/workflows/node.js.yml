@@ -5,16 +5,25 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '13 2 * * *'
 
 jobs:
   test:
-
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [12.x, 14.x, 15.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version:
+          - 14
+          - 16
+          - 17
+        os:
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - node-version: 16
+            os: macos-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -22,10 +31,20 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
+      - run: npm i
       - run: npm test
-      - name: Coveralls 
-        if: ${{ matrix.node-version == '14.x' }}
+      - run: npm run eslint
+        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
+      - name: Coveralls
+        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish codeclimate code coverage
+        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
+        uses: paambaati/codeclimate-action@v3.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageLocations: |
+            ${{github.workspace}}/coverage/lcov.info:lcov

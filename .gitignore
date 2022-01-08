@@ -1,6 +1,7 @@
 .idea
 .DS_Store
 node_modules
+package-lock.json
 npm-debug.log
 coverage
 test/e2e/results

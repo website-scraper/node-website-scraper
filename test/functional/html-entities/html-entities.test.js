@@ -34,7 +34,10 @@ describe('Functional: html entities', function() {
 		// /?a=1&amp;b=2 => /?a=1&b=2
 		nock('http://example.com/').get('/img.png?a=1&b=2').reply(200, 'img.png');
 		// /test?b=2&amp;c=3&amp;d=4 => /test?b=2&c=3&d=4
-		nock('http://example.com/').get('/?b=2&c=3&d=4').reply(200, 'index_1.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/?b=2&c=3&d=4').reply(200,
+			'<html><head></head><body>index_1.html</body></html>',
+			{'content-type': 'text/html'}
+		);
 
 		// in style.css
 		// /?v=2&amp;name=external-style.png should stay not decoded
@@ -60,7 +63,7 @@ describe('Functional: html entities', function() {
 			should(fs.readFileSync(testDirname + '/local/fonts.css').toString()).be.eql('fonts.css');
 
 			// single quote (') replaced with &#x27; in attribute
-			should(indexHtml).containEql('background: url(&#x27;local/style-attr.png&#x27;)');
+			should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
 			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
 			should(fs.readFileSync(testDirname + '/local/style-attr.png').toString()).be.eql('style-attr.png');
 
@@ -75,7 +78,7 @@ describe('Functional: html entities', function() {
 
 			should(indexHtml).containEql('href="index_1.html"');
 			fs.existsSync(testDirname + '/index_1.html').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('index_1.html');
+			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('<html><head></head><body>index_1.html</body></html>');
 
 			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
 			const styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();
@@ -84,5 +87,25 @@ describe('Functional: html entities', function() {
 			fs.existsSync(testDirname + '/local/external-style.png').should.be.eql(true);
 			should(fs.readFileSync(testDirname + '/local/external-style.png').toString()).be.eql('external-style.png');
 		});
+	});
+
+	it('should generate correct quotes which don\'t break html markup (see #355)', async () => {
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/quotes.html');
+		const options = {
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			ignoreErrors: false
+		};
+
+		await scrape(options);
+
+		fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+		/*
+			<div data-test='[{"breakpoint": 1200,"slidesToShow": 3}]'></div>
+			becomes
+			<div data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"></div>
+		 */
+		should(indexHtml).containEql('data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"');
 	});
 });
