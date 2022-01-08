@@ -51,15 +51,15 @@ describe('Functional: base', function() {
 		nock('http://blog.example.com/').get('/').replyWithFile(200, mockDirname + '/blog.html', {'content-type': 'text/html'});
 
 		// mock sources for index.html
-		nock('http://example.com/').get('/index.css').replyWithFile(200, mockDirname + '/index.css');
+		nock('http://example.com/').get('/index.css').replyWithFile(200, mockDirname + '/index.css', {'content-type': 'text/css'});
 		nock('http://example.com/').get('/background.png').reply(200, 'OK');
 		nock('http://example.com/').get('/cat.jpg').reply(200, 'OK');
 		nock('http://example.com/').get('/script.min.js').reply(200, 'OK');
 
 		// mock sources for index.css
-		nock('http://example.com/').get('/files/index-import-1.css').reply(200, 'OK');
-		nock('http://example.com/').get('/files/index-import-2.css').replyWithFile(200, mockDirname + '/index-import-2.css');
-		nock('http://example.com/').get('/files/index-import-3.css').reply(200, 'OK');
+		nock('http://example.com/').get('/files/index-import-1.css').reply(200, 'OK', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/files/index-import-2.css').replyWithFile(200, mockDirname + '/index-import-2.css', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/files/index-import-3.css').reply(200, 'OK', {'content-type': 'text/css'});
 		nock('http://example.com/').get('/files/index-image-1.png').reply(200, 'OK');
 		nock('http://example.com/').get('/files/index-image-2.png').reply(200, 'OK');
 

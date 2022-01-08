@@ -34,10 +34,10 @@ describe('Functional circular dependencies', function() {
 			]
 		};
 
-		nock('http://example.com/').get('/index.html').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/about.html').replyWithFile(200, mockDirname + '/about.html');
-		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css');
-		nock('http://example.com/').get('/style2.css').replyWithFile(200, mockDirname + '/style2.css');
+		nock('http://example.com/').get('/index.html').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/about.html').replyWithFile(200, mockDirname + '/about.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/style2.css').replyWithFile(200, mockDirname + '/style2.css', {'content-type': 'text/css'});
 
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);

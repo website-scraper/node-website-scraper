@@ -21,8 +21,8 @@ describe('Functional: html entities', function() {
 	});
 
 	it('should decode all html-entities found in html files and not encode entities from css file', function() {
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
 
 		// in index.html
 		// /fonts?family=Myriad&amp;v=2 => /fonts?family=Myriad&v=2

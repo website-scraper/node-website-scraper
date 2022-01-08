@@ -21,11 +21,11 @@ describe('Functional: css handling', function() {
 	});
 
 	it('should correctly handle css files, style tags and style attributes and ignore css-like text inside common html tags', function() {
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
-		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
 
-		nock('http://example.com/').get('/style-import-1.css').reply(200, 'style-import-1.css');
-		nock('http://example.com/').get('/style-import-2.css').reply(200, 'style-import-2.css');
+		nock('http://example.com/').get('/style-import-1.css').reply(200, 'style-import-1.css', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/style-import-2.css').reply(200, 'style-import-2.css', {'content-type': 'text/css'});
 		nock('http://example.com/').get('/style-tag.png').reply(200, 'style-tag.png');
 		nock('http://example.com/').get('/style-attr.png').reply(200, 'style-attr.png');
 		nock('http://example.com/').get('/css-like-text-in-html.png').reply(200, 'css-like-text-in-html.png');

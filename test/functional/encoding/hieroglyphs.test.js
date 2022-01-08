@@ -33,7 +33,9 @@ describe('Functional: Korean characters are properly encoded/decoded', function(
 	it('should save the page in the same data as it was originally', () => {
 		return scrape(options).then(function(result) {
 			const scrapedIndex = fs.readFileSync(testDirname + '/index.html').toString();
-			scrapedIndex.should.be.containEql('<div id="special-characters-test">저는 7년 동안 한국에서 살았어요. Слава Україні!</div>');
+			scrapedIndex.should.be.containEql('<div id="special-characters-korean">저는 7년 동안 한국에서 살았어요.</div>');
+			scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Слава Україні!</div>');
+			scrapedIndex.should.be.containEql('<div id="special-characters-chinese">加入网站</div>');
 		});
 	});
 });
