@@ -103,7 +103,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.eql('OK');
+				rr.getText().should.be.not.empty();
 			});
 
 			it('should return null if the urlFilter returns false', async () =>{
@@ -138,7 +138,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.eql('OK');
+				rr.getText().should.be.not.empty();
 			});
 		});
 
@@ -160,7 +160,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.eql('OK');
+				rr.getText().should.be.not.empty();
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', async () =>{
@@ -181,7 +181,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.eql('OK');
+				rr.getText().should.be.not.empty();
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', async () =>{
@@ -201,7 +201,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.eql('OK');
+				rr.getText().should.be.not.empty();
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', async () =>{
