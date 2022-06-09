@@ -4,10 +4,6 @@ Thank you for considering contributing to Website Scraper! 🎉👍
 
 We love contributions from everyone. :heart:
 
-### Get in touch
-* Report bugs, suggest features, ask usage questions or view the source code on [Github](https://github.com/website-scraper/node-website-scraper)
-* Discuss topics on [Gitter](https://gitter.im/website-scraper/node-website-scraper)
-
 ### Issues
 If you've found a bug or have a new feature to suggest - let us know.
 
