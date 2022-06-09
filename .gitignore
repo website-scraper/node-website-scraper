@@ -5,3 +5,4 @@ package-lock.json
 npm-debug.log
 coverage
 test/e2e/results
+.nyc-output

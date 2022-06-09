@@ -23,16 +23,16 @@ describe('Functional redirects', function() {
 	});
 
 	it('should follow redirects and save resource once if it has different urls', function() {
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
 		// true page - ok
-		nock('http://example.com/').get('/true-page.html').reply(200, '<html><head></head><body>true page 1</body></html>');
+		nock('http://example.com/').get('/true-page.html').reply(200, '<html><head></head><body>true page 1</body></html>', {'content-type': 'text/html'});
 		// duplicating page - redirect to true page
 		nock('http://example.com/').get('/duplicating-page.html').reply(302, '', {'Location': 'http://example.com/true-page.html'});
 		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 2');
 		// duplicating site - redirect to duplicating page, then redirect to true page
 		nock('http://duplicating.another-site.com/').get('/').reply(302, '', {'Location': 'http://example.com/duplicating-page.html'});
 		nock('http://example.com/').get('/duplicating-page.html').reply(302, '', {'Location': 'http://example.com/true-page.html'});
-		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 3');
+		nock('http://example.com/').get('/true-page.html').reply(200, 'true page 3', {'content-type': 'text/html'});
 
 		const options = {
 			urls: [ 'http://example.com/' ],
@@ -79,11 +79,11 @@ describe('Functional redirects', function() {
 			]
 		};
 
-		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/relative-resources-index.html');
+		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/relative-resources-index.html', {'content-type': 'text/html'});
 		nock('http://example.com/').get('/about').reply(301, '', {'Location': 'http://example.com/about/'});
 		nock('http://example.com/').get('/about/').replyWithFile(200, mockDirname + '/relative-resources-about.html', {'content-type': 'text/html'});
-		nock('http://example.com/').get('/style.css').reply(200, 'style.css');
-		nock('http://example.com/').get('/about/style.css').reply(200, 'about/style.css');
+		nock('http://example.com/').get('/style.css').reply(200, 'style.css', {'content-type': 'text/css'});
+		nock('http://example.com/').get('/about/style.css').reply(200, 'about/style.css', {'content-type': 'text/css'});
 
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
