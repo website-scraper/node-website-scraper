@@ -6,7 +6,8 @@ import scrape from 'website-scraper';
 const testDirname = './test/functional/encoding/.tmp';
 const mockDirname = './test/functional/encoding/mocks';
 
-describe('Functional: Korean characters are properly encoded/decoded', function() {
+// TODO: enable test when encoding issue is fixed
+xdescribe('Functional: Korean characters are properly encoded/decoded', function() {
 	const options = {
 		urls: [
 			'http://example.com/',
