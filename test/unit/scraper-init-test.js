@@ -121,7 +121,7 @@ describe('Scraper initialization', function () {
 
 			s.options.request.should.containEql({
 				throwHttpErrors: false,
-				encoding: 'binary',
+				responseType: 'buffer',
 				decompress: true,
 				https: {
 					rejectUnauthorized: false
@@ -143,7 +143,7 @@ describe('Scraper initialization', function () {
 
 			s.options.request.should.eql({
 				throwHttpErrors: true,
-				encoding: 'binary',
+				responseType: 'buffer',
 				decompress: true,
 				https: {
 					rejectUnauthorized: false
