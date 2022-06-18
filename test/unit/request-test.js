@@ -66,12 +66,14 @@ describe('request', () => {
 			nock(url).get('/').reply(200, 'TEST BODY');
 			const handlerStub = sinon.stub().resolves({
 				body: 'a',
-				metadata: 'b'
+				metadata: 'b',
+				encoding: 'utf8'
 			});
 
 			return request.get({url, afterResponse: handlerStub}).then((data) => {
 				should(data.body).be.eql('a');
 				should(data.metadata).be.eql('b');
+				should(data.encoding).be.eql('utf8');
 			});
 		});
 
@@ -85,6 +87,7 @@ describe('request', () => {
 			return request.get({url, afterResponse: handlerStub}).then((data) => {
 				should(data.body).be.eql('a');
 				should(data.metadata).be.eql(null);
+				should(data.encoding).be.eql('binary');
 			});
 		});
 
@@ -124,6 +127,7 @@ describe('request', () => {
 			data.url.should.be.eql('http://www.google.com/');
 			data.body.should.be.eql('Hello from Google!');
 			data.mimeType.should.be.eql('text/html');
+			data.encoding.should.be.eql('utf8');
 		});
 	});
 
@@ -135,6 +139,7 @@ describe('request', () => {
 			data.should.have.properties(['url', 'body', 'mimeType']);
 			data.url.should.be.eql('http://www.google.com/');
 			data.body.should.be.eql('Hello from Google!');
+			data.encoding.should.be.eql('binary');
 			should(data.mimeType).be.eql(null);
 		});
 	});
