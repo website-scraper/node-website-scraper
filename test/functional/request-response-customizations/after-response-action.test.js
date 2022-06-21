@@ -1,26 +1,26 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/req-res-customizations-after-response/.tmp';
 const mockDirname = './test/functional/req-res-customizations-after-response/mocks';
 
-describe('Functional: afterResponse action in plugin', function() {
+describe('Functional: afterResponse action in plugin', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should skip downloading resource if afterResponse returns null', function() {
+	it('should skip downloading resource if afterResponse returns null', async () => {
 		nock('http://example.com/').get('/1.html').reply(200, 'content of 1.html');
 		nock('http://example.com/').get('/2.html').reply(404);
 
@@ -36,7 +36,7 @@ describe('Functional: afterResponse action in plugin', function() {
 								headers: response.headers,
 								someOtherData: [ 1, 2, 3 ]
 							}
-						}
+						};
 					}
 				});
 			}
@@ -53,15 +53,15 @@ describe('Functional: afterResponse action in plugin', function() {
 			]
 		};
 
-		return scrape(options).then(function(result) {
-			should(result[0]).have.properties({ url: 'http://example.com/1.html', filename: '1.html', saved: true });
-			should(result[1]).have.properties({ url: 'http://example.com/2.html', filename: '2.html', saved: false });
+		const result = await scrape(options);
+		
+		should(result[0]).have.properties({ url: 'http://example.com/1.html', filename: '1.html', saved: true });
+		should(result[1]).have.properties({ url: 'http://example.com/2.html', filename: '2.html', saved: false });
 
-			fs.existsSync(testDirname + '/1.html').should.be.eql(true);
-			const indexHtml = fs.readFileSync(testDirname + '/1.html').toString();
-			should(indexHtml).containEql('content of 1.html');
+		await `${testDirname}/1.html`.should.fileExists(true);
+		const indexHtml = await fs.readFile(testDirname + '/1.html', { encoding: 'binary' });
+		should(indexHtml).containEql('content of 1.html');
 
-			fs.existsSync(testDirname + '/2.html').should.be.eql(false);
-		});
+		await `${testDirname}/2.html`.should.fileExists(false);
 	});
 });

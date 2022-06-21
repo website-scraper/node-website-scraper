@@ -1,26 +1,26 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/html-entities/.tmp';
 const mockDirname = './test/functional/html-entities/mocks';
 
-describe('Functional: html entities', function() {
+describe('Functional: html entities', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should decode all html-entities found in html files and not encode entities from css file', function() {
+	it('should decode all html-entities found in html files and not encode entities from css file', async () => {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
 		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
 
@@ -54,39 +54,38 @@ describe('Functional: html entities', function() {
 			ignoreErrors: false
 		};
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+		await scrape(options);
+		await `${testDirname}/index.html`.should.fileExists(true);
+		const indexHtml = await fs.readFile(testDirname + '/index.html', { encoding: 'binary'});
 
-			should(indexHtml).containEql('href="local/fonts.css');
-			fs.existsSync(testDirname + '/local/fonts.css').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/fonts.css').toString()).be.eql('fonts.css');
+		should(indexHtml).containEql('href="local/fonts.css');
+		await `${testDirname}/local/fonts.css`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/local/fonts.css', { encoding: 'binary'})).be.eql('fonts.css');
 
-			// single quote (') replaced with &#x27; in attribute
-			should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
-			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/style-attr.png').toString()).be.eql('style-attr.png');
+		// single quote (') replaced with &#x27; in attribute
+		should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
+		await `${testDirname}/local/style-attr.png`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/local/style-attr.png', { encoding: 'binary'})).be.eql('style-attr.png');
 
-			// double quote (") replaced with &quot; in attribute
-			should(indexHtml).containEql('background: url(&quot;local/style-attr2.png&quot;)');
-			fs.existsSync(testDirname + '/local/style-attr2.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/style-attr2.png').toString()).be.eql('style-attr2.png');
+		// double quote (") replaced with &quot; in attribute
+		should(indexHtml).containEql('background: url(&quot;local/style-attr2.png&quot;)');
+		await `${testDirname}/local/style-attr2.png`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/local/style-attr2.png', { encoding: 'binary'})).be.eql('style-attr2.png');
 
-			should(indexHtml).containEql('img src="local/img.png');
-			fs.existsSync(testDirname + '/local/img.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/img.png').toString()).be.eql('img.png');
+		should(indexHtml).containEql('img src="local/img.png');
+		await `${testDirname}/local/img.png`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/local/img.png', { encoding: 'binary'})).be.eql('img.png');
 
-			should(indexHtml).containEql('href="index_1.html"');
-			fs.existsSync(testDirname + '/index_1.html').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('<html><head></head><body>index_1.html</body></html>');
+		should(indexHtml).containEql('href="index_1.html"');
+		await `${testDirname}/index_1.html`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/index_1.html', { encoding: 'binary'})).be.eql('<html><head></head><body>index_1.html</body></html>');
 
-			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
-			const styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();
+		await `${testDirname}/local/style.css`.should.fileExists(true);
+		const styleCss = await fs.readFile(testDirname + '/local/style.css', { encoding: 'binary'});
 
-			should(styleCss).containEql('url(\'external-style.png\')');
-			fs.existsSync(testDirname + '/local/external-style.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/external-style.png').toString()).be.eql('external-style.png');
-		});
+		should(styleCss).containEql('url(\'external-style.png\')');
+		await `${testDirname}/local/external-style.png`.should.fileExists(true);
+		should(await fs.readFile(testDirname + '/local/external-style.png', { encoding: 'binary'})).be.eql('external-style.png');
 	});
 
 	it('should generate correct quotes which don\'t break html markup (see #355)', async () => {
@@ -99,8 +98,8 @@ describe('Functional: html entities', function() {
 
 		await scrape(options);
 
-		fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-		const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+		await `${testDirname}/index.html`.should.fileExists(true);
+		const indexHtml = await fs.readFile(testDirname + '/index.html', { encoding: 'binary'});
 		/*
 			<div data-test='[{"breakpoint": 1200,"slidesToShow": 3}]'></div>
 			becomes

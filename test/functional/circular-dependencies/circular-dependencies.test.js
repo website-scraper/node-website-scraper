@@ -1,26 +1,26 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/circular-dependencies/.tmp';
 const mockDirname = './test/functional/circular-dependencies/mocks';
 
-describe('Functional circular dependencies', function() {
+describe('Functional circular dependencies', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should correctly load files with circular dependency', function() {
+	it('should correctly load files with circular dependency', async () => {
 		const options = {
 			urls: [
 				{ url: 'http://example.com/index.html', filename: 'index.html'},
@@ -39,12 +39,12 @@ describe('Functional circular dependencies', function() {
 		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
 		nock('http://example.com/').get('/style2.css').replyWithFile(200, mockDirname + '/style2.css', {'content-type': 'text/css'});
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/style.css').should.be.eql(true);
-			fs.existsSync(testDirname + '/style2.css').should.be.eql(true);
-		});
+		await scrape(options);
+
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/about.html`.should.fileExists(true);
+		await `${testDirname}/style.css`.should.fileExists(true);
+		await `${testDirname}/style2.css`.should.fileExists(true);
 	});
 
 });

@@ -1,26 +1,26 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/resource-without-ext/.tmp';
 const mockDirname = './test/functional/resource-without-ext/mocks';
 
-describe('Functional resources without extensions', function() {
+describe('Functional resources without extensions', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should load resources without extensions with correct type and wrap with extensions', function () {
+	it('should load resources without extensions with correct type and wrap with extensions', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -52,19 +52,19 @@ describe('Functional resources without extensions', function() {
 		nock('http://google.com').get('/').replyWithFile(200, mockDirname + '/google.html');
 		nock('http://google.com').get('/google.png').reply(200, 'OK');
 
-		return scrape(options).then(function() {
-			// should load css file and fonts from css file
-			fs.existsSync(testDirname + '/css.css').should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
-			fs.existsSync(testDirname + '/UyBMtLsHKBKXelqf4x7VRQ.woff2').should.be.eql(true);
-			fs.existsSync(testDirname + '/1YwB1sO8YE1Lyjf12WNiUA.woff2').should.be.eql(true);
+		await scrape(options);
 
-			// should load html file and its sources from anchor
-			fs.existsSync(testDirname + '/index_1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/google.png').should.be.eql(true);
+		// should load css file and fonts from css file
+		(await fs.stat(testDirname + '/css.css')).isFile().should.be.eql(true); // http://fonts.googleapis.com/css?family=Lato
+		(await fs.stat(testDirname + '/UyBMtLsHKBKXelqf4x7VRQ.woff2')).isFile().should.be.eql(true);
+		(await fs.stat(testDirname + '/1YwB1sO8YE1Lyjf12WNiUA.woff2')).isFile().should.be.eql(true);
 
-			// should load html file and its sources from iframe
-			fs.existsSync(testDirname + '/iframe.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/cat.png').should.be.eql(true);
-		});
+		// should load html file and its sources from anchor
+		(await fs.stat(testDirname + '/index_1.html')).isFile().should.be.eql(true);
+		(await fs.stat(testDirname + '/google.png')).isFile().should.be.eql(true);
+
+		// should load html file and its sources from iframe
+		(await fs.stat(testDirname + '/iframe.html')).isFile().should.be.eql(true);
+		(await fs.stat(testDirname + '/cat.png')).isFile().should.be.eql(true);
 	});
 });

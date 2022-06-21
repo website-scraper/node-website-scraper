@@ -430,7 +430,7 @@ If multiple actions `saveResource` added - resource will be saved to multiple st
 ```javascript
 registerAction('saveResource', async ({resource}) => {
   const filename = resource.getFilename();
-  const text = resource.getText();
+  const text = await resource.getText();
   await saveItSomewhere(filename, text);
 });
 ```

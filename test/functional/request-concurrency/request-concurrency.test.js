@@ -1,16 +1,16 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/request-concurrency/.tmp';
 const mockDirname = './test/functional/request-concurrency/mocks';
 
-describe('Functional concurrent requests', function() {
+describe('Functional concurrent requests', () => {
 	let maxConcurrentRequests, currentConcurrentRequests;
 
-	beforeEach(function () {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 
@@ -54,10 +54,10 @@ describe('Functional concurrent requests', function() {
 		return scrape(options);
 	});
 
-	afterEach(function () {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
 	it('should have maximum concurrent requests == requestConcurrency option', () => {

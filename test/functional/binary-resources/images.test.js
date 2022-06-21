@@ -1,8 +1,8 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
-import cheerio from 'cheerio';
+import fs from 'fs/promises';
+import * as cheerio from 'cheerio';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/binary-resources/.tmp';
@@ -26,10 +26,10 @@ describe('Functional: images', () => {
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, });
 	});
 
 	beforeEach(() => {
@@ -45,23 +45,25 @@ describe('Functional: images', () => {
 		await scrape(options);
 
 		// should create directory and subdirectories
-		fs.existsSync(testDirname).should.be.eql(true);
-		fs.existsSync(testDirname + '/img').should.be.eql(true);
+		await `${testDirname}`.should.dirExists(true);
+		await `${testDirname}/img`.should.dirExists(true);
 
 		// should contain all sources found in index.html
-		fs.existsSync(testDirname + '/img/test-image.png').should.be.eql(true);
-		fs.existsSync(testDirname + '/img/test-image.jpg').should.be.eql(true);
+		await `${testDirname}/img/test-image.png`.should.fileExists(true);
+		await `${testDirname}/img/test-image.jpg`.should.fileExists(true);
 
 		// all sources in index.html should be replaced with local paths
-		let $ = cheerio.load(fs.readFileSync(testDirname + '/index.html').toString());
+		await `${testDirname}/index.html`.should.fileExists(true);
+		const indexHtml = await fs.readFile(`${testDirname}/index.html`, { encoding: 'binary'});
+		let $ = cheerio.load(indexHtml);
 		$('img.png').attr('src').should.be.eql('img/test-image.png');
 		$('img.jpg').attr('src').should.be.eql('img/test-image.jpg');
 
 		// content of downloaded images should equal original images
-		const originalPng = fs.readFileSync(mockDirname + '/test-image.png');
-		const originalJpg = fs.readFileSync(mockDirname + '/test-image.jpg');
-		const resultPng = fs.readFileSync(testDirname + '/img/test-image.png');
-		const resultJpg = fs.readFileSync(testDirname + '/img/test-image.jpg');
+		const originalPng = await fs.readFile(mockDirname + '/test-image.png', { encoding: 'binary' });
+		const originalJpg = await fs.readFile(mockDirname + '/test-image.jpg', { encoding: 'binary' });
+		const resultPng = await fs.readFile(testDirname + '/img/test-image.png', { encoding: 'binary' });
+		const resultJpg = await fs.readFile(testDirname + '/img/test-image.jpg', { encoding: 'binary' });
 
 		should(resultPng).be.eql(originalPng);
 		should(resultJpg).be.eql(originalJpg);
