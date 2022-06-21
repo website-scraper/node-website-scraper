@@ -57,6 +57,7 @@ scrape(options).then((result) => {});
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
+* [tempMode](#tempMode) - How to store data temporarily during processing
 * [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
 
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using 
@@ -199,6 +200,13 @@ scrape({
 #### requestConcurrency
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
+#### tempMode
+
+How to store temporary data when processing
+
+* `memory` - Data is store in memory in its raw format (default).
+* `memory-compressed` - Data is stored in memory but compressed using zlib. This is more memory efficient at the expense of CPU time spend compressing and decompressing.
+* `fs` / `filesystem` - Data is stored in temporary files on the filesystem. This is the most memory efficient but it is strongly recommended to only use this mode with a solid state drive.
 
 #### plugins
 
