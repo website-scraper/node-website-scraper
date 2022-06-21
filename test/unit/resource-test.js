@@ -2,6 +2,8 @@ import 'should';
 import Resource from '../../lib/resource.js';
 import fs from 'fs/promises';
 import '../utils/assertions.js';
+import path from 'path';
+import os from 'os';
 
 describe('Resource', () => {
 	describe('#createChild',  () => {
@@ -61,14 +63,11 @@ describe('Resource', () => {
 			(await resource.getText()).should.eql(testString2);
 		});
 
-		it('fs mode', async () => {
-			const resource = new Resource('http://example.com', 'index.html', 'fs');
-			resource.setEncoding('utf8');
-
-			resource.tmpDir.should.not.eql(undefined);
+		it('filesystem mode', async () => {
+			const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'website-scraper-'));
 
 			try {
-				const resource = new Resource('http://example.com', 'index.html', 'fs');
+				const resource = new Resource('http://example.com', 'index.html', 'filesystem', tmpDir);
 				resource.setEncoding('utf8');
 
 				await resource.setText(testString1);
@@ -77,7 +76,7 @@ describe('Resource', () => {
 				await resource.setText(testString2);
 				(await resource.getText()).should.eql(testString2);
 			} finally {
-				await fs.rm(resource.tmpDir, { recursive: true, force: true });
+				await fs.rm(tmpDir, { recursive: true, force: true });
 			}
 		});
 	});
