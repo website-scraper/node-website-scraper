@@ -6,7 +6,7 @@ import path from 'path';
 import os from 'os';
 
 describe('Resource', () => {
-	describe('#createChild',  () => {
+	describe('#createChild', () => {
 		it('should return Resource', () => {
 			const parent = new Resource('http://example.com');
 			const child = parent.createChild('http://google.com');
@@ -64,7 +64,7 @@ describe('Resource', () => {
 		});
 
 		it('filesystem mode', async () => {
-			const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'website-scraper-'));
+			const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'website-scraper-'));
 
 			try {
 				const resource = new Resource('http://example.com', 'index.html', 'filesystem', tmpDir);

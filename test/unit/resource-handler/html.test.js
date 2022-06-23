@@ -194,8 +194,54 @@ describe('ResourceHandler: Html', () => {
 		const resource = new Resource('http://example.com', 'index.html');
 		await resource.setText(html);
 
-		await htmlHandler.handle(resource)
+		await htmlHandler.handle(resource);
 		htmlHandler.downloadChildrenPaths.called.should.be.eql(false);
+	});
+
+	it('should allow custom container classes', async () => {
+		class TestJsonClass {
+			constructor (text) {
+				this.text = text || '';
+				this.paths = [];
+		
+				if (this.text) {
+					this.paths = JSON.parse(this.text);
+				}
+			}
+		
+			getPaths () {
+				return this.paths;
+			}
+		
+			updateText (pathsToUpdate) {
+				this.paths = this.paths.map((oldPath) => {
+					const toUpdate = pathsToUpdate.find((x) => x.oldPath === oldPath);
+
+					return toUpdate ? toUpdate.newPath : oldPath;
+				});
+		
+				return JSON.stringify(this.paths);
+			}
+		}
+
+		const sources = [{ selector: 'div', attr: 'data-json', containerClass: TestJsonClass }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
+
+		const html = `
+			<html lang="en">
+			<head></head>
+			<body><div data-json='${JSON.stringify(['foo/bar.jpg', 'foo/baz.jpg'])}'></body>
+			</html>
+		`;
+
+		const resource = new Resource('http://example.com', 'index.html');
+		await resource.setText(html);
+
+		await htmlHandler.handle(resource);
+
+		htmlHandler.downloadChildrenPaths.called.should.be.eql(true);
+		htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(TestJsonClass);
+		htmlHandler.downloadChildrenPaths.args[0][0].paths.should.eql(['foo/bar.jpg', 'foo/baz.jpg']);
 	});
 
 	it('should use correct path containers based on tag', async () => {

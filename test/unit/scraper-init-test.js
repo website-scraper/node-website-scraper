@@ -8,9 +8,9 @@ import defaultOptions from 'website-scraper/defaultOptions';
 const testDirname = './test/unit/.scraper-init-test';
 const urls = [ 'http://example.com' ];
 
-describe('Scraper initialization', function () {
-	describe('defaultFilename', function() {
-		it('should use default defaultFilename if no defaultFilename were passed', function () {
+describe('Scraper initialization', () => {
+	describe('defaultFilename', () => {
+		it('should use default defaultFilename if no defaultFilename were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
@@ -19,7 +19,7 @@ describe('Scraper initialization', function () {
 			s.options.defaultFilename.should.equalFileSystemPath(defaultOptions.defaultFilename);
 		});
 
-		it('should use defaultFilename sources if defaultFilename were passed', function () {
+		it('should use defaultFilename sources if defaultFilename were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -30,8 +30,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('sources', function() {
-		it('should use default sources if no sources were passed', function () {
+	describe('sources', () => {
+		it('should use default sources if no sources were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
@@ -41,7 +41,7 @@ describe('Scraper initialization', function () {
 			s.options.sources.length.should.be.greaterThan(0);
 		});
 
-		it('should use passed sources if sources were passed', function () {
+		it('should use passed sources if sources were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -51,7 +51,7 @@ describe('Scraper initialization', function () {
 			s.options.sources.should.eql([ { selector: 'img', attr: 'src' } ]);
 		});
 
-		it('should extend sources if recursive flag is set', function() {
+		it('should extend sources if recursive flag is set', () => {
 			const s = new Scraper({
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
@@ -67,8 +67,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('subdirectories', function () {
-		it('should use default subdirectories if no subdirectories were passed', function () {
+	describe('subdirectories', () => {
+		it('should use default subdirectories if no subdirectories were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
@@ -78,7 +78,7 @@ describe('Scraper initialization', function () {
 			s.options.subdirectories.length.should.be.greaterThan(0);
 		});
 
-		it('should convert extensions to lower case', function () {
+		it('should convert extensions to lower case', () => {
 
 			const s = new Scraper({
 				urls: urls,
@@ -91,7 +91,7 @@ describe('Scraper initialization', function () {
 			s.options.subdirectories[0].extensions.should.eql(['.txt']);
 		});
 
-		it('should use passed subdirectories if subdirectories were passed', function () {
+		it('should use passed subdirectories if subdirectories were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -101,7 +101,7 @@ describe('Scraper initialization', function () {
 			s.options.subdirectories.should.eql([ { directory: 'js', extensions: ['.js'] } ]);
 		});
 
-		it('should use null if null was passed', function () {
+		it('should use null if null was passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -112,8 +112,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('request', function () {
-		it('should use default request if no request were passed', function () {
+	describe('request', () => {
+		it('should use default request if no request were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname
@@ -129,7 +129,7 @@ describe('Scraper initialization', function () {
 			});
 		});
 
-		it('should merge default and passed objects if request were passed', function () {
+		it('should merge default and passed objects if request were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -154,7 +154,7 @@ describe('Scraper initialization', function () {
 			});
 		});
 
-		it('should override existing properties if request were passed', function () {
+		it('should override existing properties if request were passed', () => {
 			const s = new Scraper({
 				urls: urls,
 				directory: testDirname,
@@ -173,8 +173,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('resourceHandler', function () {
-		it('should create resourceHandler with correct params', function() {
+	describe('resourceHandler', () => {
+		it('should create resourceHandler with correct params', () => {
 			const options = {
 				urls: { url: 'http://first-url.com' },
 				directory: testDirname,
@@ -187,8 +187,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('urls', function () {
-		it('should create an Array of urls if string was passed', function() {
+	describe('urls', () => {
+		it('should create an Array of urls if string was passed', () => {
 			const s = new Scraper({
 				urls: 'http://not-array-url.com',
 				directory: testDirname
@@ -199,8 +199,8 @@ describe('Scraper initialization', function () {
 		});
 	});
 
-	describe('resources', function () {
-		it('should create Resource object for each url', function() {
+	describe('resources', () => {
+		it('should create Resource object for each url', () => {
 			const s = new Scraper({
 				urls: [
 					'http://first-url.com',
@@ -219,7 +219,7 @@ describe('Scraper initialization', function () {
 			s.resources[2].url.should.be.eql('http://third-url.com');
 		});
 
-		it('should use urls filename', function() {
+		it('should use urls filename', () => {
 			const s = new Scraper({
 				urls: { url: 'http://first-url.com', filename: 'first.html' },
 				directory: testDirname
@@ -227,7 +227,7 @@ describe('Scraper initialization', function () {
 			s.resources[0].getFilename().should.equalFileSystemPath('first.html');
 		});
 
-		it('should use default filename if no url filename was provided', function() {
+		it('should use default filename if no url filename was provided', () => {
 			const s = new Scraper({
 				urls: { url: 'http://first-url.com' },
 				defaultFilename: 'default.html',
