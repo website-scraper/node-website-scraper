@@ -340,7 +340,6 @@ Promise should be resolved with:
   * `body` (response body, string)
   * `encoding` (`binary` or `utf8`) used to save the file, binary used by default.
   * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
-* a binary `string`. This is advised against because of the binary assumption being made can foul up saving of `utf8` responses to the filesystem. 
 
 If multiple actions `afterResponse` added - scraper will use result from last one.
 ```javascript

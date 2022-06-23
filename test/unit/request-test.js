@@ -49,7 +49,7 @@ describe('request', () => {
 	it('should call afterResponse with correct params', () => {
 		const url = 'http://example.com';
 		const scope = nock(url).get('/').reply(200, 'TEST BODY');
-		let handlerStub = sinon.stub().resolves('');
+		let handlerStub = sinon.stub().resolves({ body: '' });
 
 		return request.get({url, afterResponse: handlerStub}).then(() => {
 			scope.isDone().should.be.eql(true);
@@ -94,7 +94,7 @@ describe('request', () => {
 		it('should transform string result', () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
-			const handlerStub = sinon.stub().resolves('test body');
+			const handlerStub = sinon.stub().resolves({ body: 'test body' });
 
 			return request.get({url, afterResponse: handlerStub}).then((data) => {
 				should(data.body).be.eql('test body');
@@ -268,11 +268,15 @@ describe('transformResult', () => {
 	});
 
 	it('should handle raw string input', () => {
-		const result = request.transformResult('SOME BODY');
+		try {
+			request.transformResult('SOME BODY');
 
-		should(result).have.property('body', 'SOME BODY');
-		should(result).have.property('encoding', 'binary');
-		should(result).have.property('metadata', null);
+			// We shouldn't get here.
+			should(true).eql(false);
+		} catch (e) {
+			should(e).be.instanceOf(Error);
+			should(e.message).eql('afterResponse handler returned a string, expected object');
+		}
 	});
 
 	it('should handle null input', () => {
