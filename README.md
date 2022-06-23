@@ -326,8 +326,12 @@ Parameters - object which includes:
 
 Should return resolved `Promise` if resource should be saved or rejected with Error `Promise` if it should be skipped.
 Promise should be resolved with:
-* `string` which contains response body
-* or object with properties `body` (response body, string) and `metadata` - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
+* the `response` object with the `body` modified in place as necessary.
+* or object with properties 
+  * `body` (response body, string)
+  * `encoding` (`binary` or `utf8`) used to save the file, binary used by default.
+  * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
+* a binary `string`. This is advised against because of the binary assumption being made can foul up saving of `utf8` responses to the filesystem. 
 
 If multiple actions `afterResponse` added - scraper will use result from last one.
 ```javascript
@@ -342,7 +346,8 @@ registerAction('afterResponse', ({response}) => {
 			metadata: {
 				headers: response.headers,
 				someOtherData: [ 1, 2, 3 ]
-			}
+			},
+      encoding: 'utf8'
 		}
 	}
 });

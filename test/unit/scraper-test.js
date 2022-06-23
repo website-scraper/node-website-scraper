@@ -251,7 +251,7 @@ describe('Scraper', () => {
 
 			class AddMetadataPlugin {
 				apply (registerAction) {
-					registerAction('afterResponse', sinon.stub().returns({body: 'test body', metadata}));
+					registerAction('afterResponse', sinon.stub().returns({body: 'test body', metadata, encoding: 'utf8'}));
 				}
 			}
 
@@ -272,6 +272,7 @@ describe('Scraper', () => {
 			should(r.getUrl()).be.eql('http://example.com');
 			should(r.getType()).be.eql('html');
 			should(r.getFilename()).be.eql('generated-filename');
+			should(r.getEncoding()).be.eql('utf8');
 			should(r.metadata).be.eql(metadata);
 		});
 	});
