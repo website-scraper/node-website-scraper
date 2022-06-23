@@ -6,7 +6,7 @@ import scrape from 'website-scraper';
 const testDirname = './test/functional/encoding/.tmp';
 const mockDirname = './test/functional/encoding/mocks';
 
-describe('Functional: Korean characters are properly encoded/decoded', () => {
+describe('Functional: UTF8 characters are properly encoded/decoded', () => {
 	const options = {
 		urls: [
 			'http://example.com/',
@@ -37,5 +37,6 @@ describe('Functional: Korean characters are properly encoded/decoded', () => {
 		scrapedIndex.should.be.containEql('<div id="special-characters-korean">저는 7년 동안 한국에서 살았어요.</div>');
 		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Слава Україні!</div>');
 		scrapedIndex.should.be.containEql('<div id="special-characters-chinese">加入网站</div>');
+		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Обладнання та ПЗ</div>');
 	});
 });
