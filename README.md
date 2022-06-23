@@ -85,15 +85,44 @@ How to download website to existing directory and why it's not supported by defa
 
 #### sources
 Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources. Scraper uses cheerio to select html elements so `selector` can be any [selector that cheerio supports](https://github.com/cheeriojs/cheerio#selectors).
+
+You can also specify custom `containerClass`', these are responsible for readying and writing from attributes. For example if you want to read JSON from an attribute...
+
 ```javascript
+class JsonContainerClass {
+  constructor (text) {
+    this.text = text || '';
+    this.paths = [];
+
+    if (this.text) {
+      this.paths = JSON.parse(this.text);
+    }
+  }
+
+  getPaths () {
+    return this.paths;
+  }
+
+  updateText (pathsToUpdate) {
+    this.paths = this.paths.map((oldPath) => {
+      const toUpdate = pathsToUpdate.find((x) => x.oldPath === oldPath);
+
+      return toUpdate ? toUpdate.newPath : oldPath;
+    });
+
+    return JSON.stringify(this.paths);
+  }
+}
+
 // Downloading images, css files and scripts
 scrape({
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save',
   sources: [
-    {selector: 'img', attr: 'src'},
-    {selector: 'link[rel="stylesheet"]', attr: 'href'},
-    {selector: 'script', attr: 'src'}
+    { selector: 'img', attr: 'src' },
+    { selector: 'link[rel="stylesheet"]', attr: 'href' },
+    { selector: 'script', attr: 'src' },
+    { selector: 'div', attr: 'data-json', containerClass: JsonContainerClass }
   ]
 });
 ```
