@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import '../utils/assertions.js';
 import path from 'path';
 import os from 'os';
+import should from 'should';
 
 describe('Resource', () => {
 	describe('#createChild', () => {
@@ -57,7 +58,8 @@ describe('Resource', () => {
 
 			await resource.setText(testString1);
 			(await resource.getText()).should.eql(testString1);
-			(await resource._memoryRead()).should.not.eql(testString1);
+			(resource.text).should.not.eql(testString1);
+			should(resource.text).instanceof(Buffer);
 
 			await resource.setText(testString2);
 			(await resource.getText()).should.eql(testString2);
