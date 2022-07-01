@@ -195,6 +195,69 @@ describe('get encoding', () => {
 
 		should(result).be.eql('utf8');
 	});
+
+	describe('html body encoding', () => {
+		const body = '<html><head><meta charset="utf-8"></head></html>';
+
+		it('should extract encoding from string', () => {
+			const result = request.getEncoding({
+				headers: {
+					'content-type': 'text/html'
+				},
+				body
+			});
+
+			should(result).be.eql('utf-8');
+		});
+
+		it('should extract encoding from buffer', () => {
+			const result = request.getEncoding({
+				headers: {
+					'content-type': 'text/html'
+				},
+				body: Buffer.from(body)
+			});
+
+			should(result).be.eql('utf-8');
+		});
+
+		it('should not break with malformed html', () => {
+			const result = request.getEncoding({
+				headers: {
+					'content-type': 'text/html'
+				},
+				body: 'THIS IS NOT HTML <'
+			});
+
+			should(result).be.eql('binary');
+		});
+	});
+
+	describe('css body encoding', () => {
+		const body = '@charset "UTF-8"';
+
+		it('should extract encoding from string', () => {
+			const result = request.getEncoding({
+				headers: {
+					'content-type': 'text/css'
+				},
+				body
+			});
+
+			should(result).be.eql('utf-8');
+		});
+
+		it('should extract encoding from buffer', () => {
+			const result = request.getEncoding({
+				headers: {
+					'content-type': 'text/css'
+				},
+				body: Buffer.from(body)
+			});
+
+			should(result).be.eql('utf-8');
+		});
+	});
 });
 
 describe('transformResult', () => {
