@@ -1,22 +1,22 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/base/.tmp2';
 
-describe('Functional: check it works', function() {
+describe('Functional: check it works', () => {
 
-	beforeEach(function () {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function () {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
 	it('should work with promise', () => {

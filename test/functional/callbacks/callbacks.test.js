@@ -1,7 +1,7 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import sinon from 'sinon';
 import scrape from 'website-scraper';
 
@@ -14,10 +14,10 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
 	it('should call onResourceSaved callback and onResourceError callback if ignoreErrors = true', function() {

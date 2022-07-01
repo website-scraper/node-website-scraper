@@ -1,7 +1,7 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/max-depth/.tmp';
@@ -14,13 +14,13 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should filter out all resources by depth > maxDepth', () => {
+	it('should filter out all resources by depth > maxDepth', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -47,25 +47,25 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 		nock('http://example.com/').get('/img-depth3.jpg').reply(200, 'img-depth3.jpg');
 		nock('http://example.com/').get('/script-depth3.js').reply(200, 'script-depth3.js');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		await scrape(options);
 
-			fs.existsSync(testDirname + '/depth1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/img-depth1.jpg').should.be.eql(true);
-			fs.existsSync(testDirname + '/script-depth1.js').should.be.eql(true);
+		await `${testDirname}/index.html`.should.fileExists(true);
 
-			fs.existsSync(testDirname + '/depth2.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/img-depth2.jpg').should.be.eql(true);
-			fs.existsSync(testDirname + '/script-depth2.js').should.be.eql(true);
+		await `${testDirname}/depth1.html`.should.fileExists(true);
+		await `${testDirname}/img-depth1.jpg`.should.fileExists(true);
+		await `${testDirname}/script-depth1.js`.should.fileExists(true);
 
-			fs.existsSync(testDirname + '/depth3.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/img-depth3.jpg').should.be.eql(false);
-			fs.existsSync(testDirname + '/script-depth3.js').should.be.eql(false);
-		});
+		await `${testDirname}/depth2.html`.should.fileExists(false);
+		await `${testDirname}/img-depth2.jpg`.should.fileExists(false);
+		await `${testDirname}/script-depth2.js`.should.fileExists(false);
+
+		await `${testDirname}/depth3.html`.should.fileExists(false);
+		await `${testDirname}/img-depth3.jpg`.should.fileExists(false);
+		await `${testDirname}/script-depth3.js`.should.fileExists(false);
 	});
 
 
-	it('should filter out only anchors by depth > maxRecursiveDepth', () => {
+	it('should filter out only anchors by depth > maxRecursiveDepth', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -92,26 +92,26 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 		nock('http://example.com/').get('/img-depth3.jpg').reply(200, 'img-depth3.jpg');
 		nock('http://example.com/').get('/script-depth3.js').reply(200, 'script-depth3.js');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		await scrape(options);
 
-			fs.existsSync(testDirname + '/depth1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/img-depth1.jpg').should.be.eql(true);
-			fs.existsSync(testDirname + '/script-depth1.js').should.be.eql(true);
+		await `${testDirname}/index.html`.should.fileExists(true);
 
-			fs.existsSync(testDirname + '/depth2.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/img-depth2.jpg').should.be.eql(true);
-			fs.existsSync(testDirname + '/script-depth2.js').should.be.eql(true);
+		await `${testDirname}/depth1.html`.should.fileExists(true);
+		await `${testDirname}/img-depth1.jpg`.should.fileExists(true);
+		await `${testDirname}/script-depth1.js`.should.fileExists(true);
 
-			fs.existsSync(testDirname + '/depth3.html').should.be.eql(false);
-			// img-depth3.jpg and script-depth3.js - dependencies of depth2.html
-			// they should be loaded because maxRecursiveDepth applies only to <a href=''>
-			fs.existsSync(testDirname + '/img-depth3.jpg').should.be.eql(true);
-			fs.existsSync(testDirname + '/script-depth3.js').should.be.eql(true);
-		});
+		await `${testDirname}/depth2.html`.should.fileExists(true);
+		await `${testDirname}/img-depth2.jpg`.should.fileExists(true);
+		await `${testDirname}/script-depth2.js`.should.fileExists(true);
+
+		await `${testDirname}/depth3.html`.should.fileExists(true);
+		// img-depth3.jpg and script-depth3.js - dependencies of depth2.html
+		// they should be loaded because maxRecursiveDepth applies only to <a href=''>
+		await `${testDirname}/img-depth3.jpg`.should.fileExists(true);
+		await `${testDirname}/script-depth3.js`.should.fileExists(true);
 	});
 
-	it('should correctly save same resource with different depth and maxRecursiveDepth', () => {
+	it('should correctly save same resource with different depth and maxRecursiveDepth', async () => {
 		/*
 		pageA -> pageB
 		pageA -> pageC
@@ -144,19 +144,19 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 		nock('http://example.com/').get('/pageB.html').reply(200, pageB, {'Content-Type': 'text/html'});
 		nock('http://example.com/').get('/pageC.html').reply(200, 'pageC', {'Content-Type': 'text/html'});
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/pageA.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/pageB.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/pageC.html').should.be.eql(true);
+		await scrape(options);
 
-			const pageASaved = fs.readFileSync(testDirname + '/pageA.html').toString();
-			pageASaved.should.containEql('<a href="pageB.html"');
-			pageASaved.should.containEql('<a href="pageC.html"');
+		await `${testDirname}/pageA.html`.should.fileExists(true);
+		await `${testDirname}/pageB.html`.should.fileExists(true);
+		await `${testDirname}/pageC.html`.should.fileExists(true);
 
-			const pageBSaved = fs.readFileSync(testDirname + '/pageB.html').toString();
-			// todo: should we change reference here because pageC was already downloaded?
-			pageBSaved.should.containEql('<a href="/pageC.html"'); // reference to pageC was not changed here because it > maxRecursiveDepth
-		});
+		const pageASaved = await fs.readFile(testDirname + '/pageA.html', { encoding: 'binary' });
+		pageASaved.should.containEql('<a href="pageB.html"');
+		pageASaved.should.containEql('<a href="pageC.html"');
+
+		const pageBSaved = await fs.readFile(testDirname + '/pageB.html', { encoding: 'binary' });
+		// todo: should we change reference here because pageC was already downloaded?
+		pageBSaved.should.containEql('<a href="/pageC.html"'); // reference to pageC was not changed here because it > maxRecursiveDepth
 	});
 
 });

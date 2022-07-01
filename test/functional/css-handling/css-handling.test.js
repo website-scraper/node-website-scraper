@@ -1,26 +1,26 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/css-handling/.tmp';
 const mockDirname = './test/functional/css-handling/mocks';
 
-describe('Functional: css handling', function() {
+describe('Functional: css handling', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should correctly handle css files, style tags and style attributes and ignore css-like text inside common html tags', function() {
+	it('should correctly handle css files, style tags and style attributes and ignore css-like text inside common html tags', async () => {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html', {'content-type': 'text/html'});
 		nock('http://example.com/').get('/style.css').replyWithFile(200, mockDirname + '/style.css', {'content-type': 'text/css'});
 
@@ -40,21 +40,21 @@ describe('Functional: css handling', function() {
 			]
 		};
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/style-import-1.css').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/style-import-2.css').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/style-tag.png').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
-			fs.existsSync(testDirname + '/local/css-like-text-in-html.png').should.be.eql(false);
+		await scrape(options);
 
-			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/local/style.css`.should.fileExists(true);
+		await `${testDirname}/local/style-import-1.css`.should.fileExists(true);
+		await `${testDirname}/local/style-import-2.css`.should.fileExists(true);
+		await `${testDirname}/local/style-tag.png`.should.fileExists(true);
+		await `${testDirname}/local/style-attr.png`.should.fileExists(true);
+		await `${testDirname}/local/css-like-text-in-html.png`.should.fileExists(false);
 
-			should(indexHtml).containEql('local/style-tag.png');
-			should(indexHtml).containEql('local/style-attr.png');
+		const indexHtml = await fs.readFile(testDirname + '/index.html', { encoding: 'binary' });
 
-			should(indexHtml).containEql('background: url(\'css-like-text-in-html.png\')');
-		});
+		should(indexHtml).containEql('local/style-tag.png');
+		should(indexHtml).containEql('local/style-attr.png');
+
+		should(indexHtml).containEql('background: url(\'css-like-text-in-html.png\')');
 	});
 });

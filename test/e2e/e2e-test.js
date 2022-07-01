@@ -1,20 +1,20 @@
 import 'should';
 import scrape from 'website-scraper';
-import fs from 'fs-extra';
 import _ from 'lodash';
+import fs from 'fs/promises';
 
-import { readFile } from 'fs/promises';
-const urls = JSON.parse(await readFile(new URL('./urls.json', import.meta.url)));
-const options = JSON.parse(await readFile(new URL('./options.json', import.meta.url)));
+const urls = JSON.parse(await fs.readFile(new URL('./urls.json', import.meta.url)));
+const options = JSON.parse(await fs.readFile(new URL('./options.json', import.meta.url)));
 
 const resultDirname = './test/e2e/results';
 
 describe('E2E', function() {
-	before(function() {
-		fs.emptyDirSync(resultDirname);
+	before(async () => {
+		await fs.rm(resultDirname, { recursive: true, force: true });
+		await fs.mkdir(resultDirname, { recursive: true });
 	});
 
-	after(function() {
+	after(() => {
 		console.log('Scraping completed. Go to ' + resultDirname + ' to check results');
 	});
 

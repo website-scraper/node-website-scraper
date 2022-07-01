@@ -1,7 +1,7 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import sinon from 'sinon';
 import scrape from 'website-scraper';
 
@@ -15,10 +15,10 @@ describe('Functional: plugin for saving resources', () => {
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
 	let saveResourceStub, handleErrorStub, saveResourcePlugin;
@@ -28,16 +28,16 @@ describe('Functional: plugin for saving resources', () => {
 		handleErrorStub = sinon.stub().resolves();
 
 		class SaveResourcePlugin {
-			apply(registerAction) {
+			apply (registerAction) {
 				registerAction('saveResource', saveResourceStub);
-				registerAction('error', handleErrorStub)
+				registerAction('error', handleErrorStub);
 			}
 		}
 
 		saveResourcePlugin = new SaveResourcePlugin();
 	});
 
-	it('should use passed resourceSaver when saving resource', function() {
+	it('should use passed resourceSaver when saving resource', () => {
 		nock('http://example.com/').get('/').reply(200, 'OK');
 
 		const options = {
@@ -46,13 +46,13 @@ describe('Functional: plugin for saving resources', () => {
 			plugins: [ saveResourcePlugin ]
 		};
 
-		return scrape(options).catch(function() {
+		return scrape(options).catch(() => {
 			should(saveResourceStub.calledOnce).be.eql(true);
 			should(saveResourceStub.args[0][0].resource.url).be.eql('http://example.com/');
 		});
 	});
 
-	it('should use passed resourceSaver on error', function() {
+	it('should use passed resourceSaver on error', () => {
 		nock('http://example.com/').get('/').replyWithError('SCRAPER AWFUL ERROR');
 
 		const options = {
@@ -62,7 +62,7 @@ describe('Functional: plugin for saving resources', () => {
 			ignoreErrors: false
 		};
 
-		return scrape(options).catch(function() {
+		return scrape(options).catch(() => {
 			should(handleErrorStub.calledOnce).be.eql(true);
 			should(handleErrorStub.args[0][0].error.message).be.eql('SCRAPER AWFUL ERROR');
 		});

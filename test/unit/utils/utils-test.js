@@ -5,19 +5,21 @@ import {
 	getFilepathFromUrl, getHashFromUrl, getRelativePath,
 	shortenFilename, prettifyFilename,
 	isUriSchemaSupported, urlsEqual,
-	normalizeUrl
+	normalizeUrl,
+	exists
 } from '../../../lib/utils/index.js';
+import { fileURLToPath } from 'url';
 
-describe('Utils', function () {
-	describe('#isUrl(url)', function () {
-		it('should return true if url starts with "http[s]://"', function () {
+describe('Utils', () => {
+	describe('#isUrl(url)', () => {
+		it('should return true if url starts with "http[s]://"', () => {
 			isUrl('http://google.com').should.be.true();
 			isUrl('https://github.com').should.be.true();
 		});
-		it('should return true if url starts with "//"', function () {
+		it('should return true if url starts with "//"', () => {
 			isUrl('//www.youtube.com').should.be.true();
 		});
-		it('should return false if url starts neither with "http[s]://" nor "//"', function () {
+		it('should return false if url starts neither with "http[s]://" nor "//"', () => {
 			isUrl('http//www.youtube.com').should.be.false();
 			isUrl('http:/www.youtube.com').should.be.false();
 			isUrl('htt://www.youtube.com').should.be.false();
@@ -26,33 +28,33 @@ describe('Utils', function () {
 		});
 	});
 
-	describe('#getUrl(url, path)', function () {
-		it('should return url + path if path is not url', function () {
+	describe('#getUrl(url, path)', () => {
+		it('should return url + path if path is not url', () => {
 			getUrl('http://google.com', '/path').should.be.equal('http://google.com/path');
 			getUrl('http://google.com/qwe/qwe/qwe', '/path').should.be.equal('http://google.com/path');
 			getUrl('http://google.com?kjrdrgek=dmskl', '/path').should.be.equal('http://google.com/path');
 		});
-		it('should return path if it is url', function () {
+		it('should return path if it is url', () => {
 			getUrl('http://google.com', 'http://my.site.com/').should.be.equal('http://my.site.com/');
 			getUrl('http://google.com/qwe/qwe/qwe', '//my.site.com').should.be.equal('http://my.site.com/');
 		});
-		it('should use the protocol from the url, if the path is a protocol-less url', function () {
+		it('should use the protocol from the url, if the path is a protocol-less url', () => {
 			getUrl('http://my.site.com', '//cdn.com/library.js').should.be.equal('http://cdn.com/library.js');
 			getUrl('https://my.site.com', '//cdn.com/library.js').should.be.equal('https://cdn.com/library.js');
 		});
 	});
 
-	describe('#getUnixPath(path)', function () {
-		it('should convert to unix format for windows', function () {
+	describe('#getUnixPath(path)', () => {
+		it('should convert to unix format for windows', () => {
 			getUnixPath('D:\\Projects\\node-website-scraper').should.be.equal('D:/Projects/node-website-scraper');
 		});
-		it('should return unconverted path for unix', function () {
+		it('should return unconverted path for unix', () => {
 			getUnixPath('/home/sophia/projects/node-website-scraper').should.be.equal('/home/sophia/projects/node-website-scraper');
 		});
 	});
 
-	describe('#getFilenameFromUrl(url)', function () {
-		it('should return last path item as filename & trim all after first ? or #', function () {
+	describe('#getFilenameFromUrl(url)', () => {
+		it('should return last path item as filename & trim all after first ? or #', () => {
 			getFilenameFromUrl('http://example.com/index.html').should.equal('index.html');
 			getFilenameFromUrl('http://example.com/p/a/t/h/index.html').should.equal('index.html');
 			getFilenameFromUrl('http://example.com/index.html?12').should.equal('index.html');
@@ -62,16 +64,16 @@ describe('Utils', function () {
 			getFilenameFromUrl('http://example.com/#index.html').should.equal('');
 			getFilenameFromUrl('http://example.com/').should.equal('');
 		});
-		it('should return unconverted filename if there are no ?,#', function () {
+		it('should return unconverted filename if there are no ?,#', () => {
 			getFilenameFromUrl('index.html').should.equal('index.html');
 		});
-		it('should decode escaped chars', function () {
+		it('should decode escaped chars', () => {
 			getFilenameFromUrl('https://example.co/logo-mobile%20(1).svg?q=650').should.equal('logo-mobile (1).svg');
 		});
 	});
 
-	describe('#getFilepathFromUrl', function () {
-		it('should return empty sting if url has no pathname', function() {
+	describe('#getFilepathFromUrl', () => {
+		it('should return empty sting if url has no pathname', () => {
 			getFilepathFromUrl('http://example.com').should.equal('');
 			getFilepathFromUrl('http://example.com/').should.equal('');
 			getFilepathFromUrl('http://example.com?').should.equal('');
@@ -79,21 +81,21 @@ describe('Utils', function () {
 			getFilepathFromUrl('http://example.com#').should.equal('');
 			getFilepathFromUrl('http://example.com#test').should.equal('');
 		});
-		it('should return path if url has pathname', function() {
+		it('should return path if url has pathname', () => {
 			getFilepathFromUrl('http://example.com/some/path').should.equal('some/path');
 		});
-		it('should return path including filename if url has pathname', function() {
+		it('should return path including filename if url has pathname', () => {
 			getFilepathFromUrl('http://example.com/some/path/file.js').should.equal('some/path/file.js');
 		});
-		it('should not contain trailing slash', function() {
+		it('should not contain trailing slash', () => {
 			getFilepathFromUrl('http://example.com/some/path/').should.equal('some/path');
 			getFilepathFromUrl('http://example.com/some/path/file.css/').should.equal('some/path/file.css');
 		});
-		it('should normalize slashes', function() {
+		it('should normalize slashes', () => {
 			getFilepathFromUrl('http://example.com///some//path').should.equal('some/path');
 			getFilepathFromUrl('http://example.com//////////file.css/').should.equal('file.css');
 		});
-		it('should decode escaped chars', function () {
+		it('should decode escaped chars', () => {
 			getFilepathFromUrl('https://example.co/logo/logo-mobile%20(1).svg?q=650').should.equal('logo/logo-mobile (1).svg');
 		});
 		it('should return path as is if url is malformed', () => {
@@ -101,38 +103,38 @@ describe('Utils', function () {
 		});
 	});
 
-	describe('#getHashFromUrl', function () {
-		it('should return hash from url', function () {
+	describe('#getHashFromUrl', () => {
+		it('should return hash from url', () => {
 			getHashFromUrl('#').should.be.equal('#');
 			getHashFromUrl('#hash').should.be.equal('#hash');
 			getHashFromUrl('page.html#hash').should.be.equal('#hash');
 			getHashFromUrl('http://example.com/page.html#hash').should.be.equal('#hash');
 		});
 
-		it('should return empty string if url doesn\'t contain hash', function () {
+		it('should return empty string if url doesn\'t contain hash', () => {
 			getHashFromUrl('').should.be.equal('');
 			getHashFromUrl('page.html?a=b').should.be.equal('');
 			getHashFromUrl('http://example.com/page.html?a=b').should.be.equal('');
 		});
 	});
 
-	describe('#getRelativePath', function () {
-		it('should return relative path', function () {
+	describe('#getRelativePath', () => {
+		it('should return relative path', () => {
 			getRelativePath('css/1.css', 'img/1.png').should.be.equal('../img/1.png');
 			getRelativePath('index.html', 'img/1.png').should.be.equal('img/1.png');
 			getRelativePath('css/1.css', 'css/2.css').should.be.equal('2.css');
 		});
-		it('should escape path components with encodeURIComponent', function () {
+		it('should escape path components with encodeURIComponent', () => {
 			getRelativePath('index.html', 'a/css?family=Open+Sans:300,400,600,700&lang=en').should.be.equal('a/css%3Ffamily%3DOpen%2BSans%3A300%2C400%2C600%2C700%26lang%3Den');
 		});
-		it('should also escape [\'()]', function () {
+		it('should also escape [\'()]', () => {
 			getRelativePath('index.html', '\'single quote for html attrs\'').should.be.equal('%27single%20quote%20for%20html%20attrs%27');
 			getRelativePath('index.html', '(parenthesizes for css url)').should.be.equal('%28parenthesizes%20for%20css%20url%29');
 		});
 	});
 
-	describe('#shortenFilename', function() {
-		it('should leave file with length < 255 as is', function() {
+	describe('#shortenFilename', () => {
+		it('should leave file with length < 255 as is', () => {
 			var f1 = _.repeat('a', 25);
 			should(f1.length).be.eql(25);
 			should(shortenFilename(f1)).be.eql(f1);
@@ -142,33 +144,33 @@ describe('Utils', function () {
 			should(shortenFilename(f2)).be.eql(f2);
 		});
 
-		it('should shorten file with length = 255', function() {
+		it('should shorten file with length = 255', () => {
 			var f1 = _.repeat('a', 255);
 			should(f1.length).be.eql(255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 		});
 
-		it('should shorten file with length > 255', function() {
+		it('should shorten file with length > 255', () => {
 			var f1 = _.repeat('a', 1255);
 			should(f1.length).be.eql(1255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 		});
 
-		it('should shorten file with length = 255 and keep extension', function() {
+		it('should shorten file with length = 255 and keep extension', () => {
 			var f1 = _.repeat('a', 251) + '.txt';
 			should(f1.length).be.eql(255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 			should(shortenFilename(f1).split('.')[1]).be.eql('txt');
 		});
 
-		it('should shorten file with length > 255 and keep extension', function() {
+		it('should shorten file with length > 255 and keep extension', () => {
 			var f1 = _.repeat('a', 1251) + '.txt';
 			should(f1.length).be.eql(1255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 			should(shortenFilename(f1).split('.')[1]).be.eql('txt');
 		});
 
-		it('should shorten file with length > 255 to have basename length 20 chars', function() {
+		it('should shorten file with length > 255 to have basename length 20 chars', () => {
 			var f1 = _.repeat('a', 500);
 			should(f1.length).be.eql(500);
 			should(shortenFilename(f1).split('.')[0].length).be.eql(20);
@@ -193,34 +195,34 @@ describe('Utils', function () {
 		});
 	});
 
-	describe('#isUriSchemaSupported', function() {
-		it('should return false for mailto:', function() {
+	describe('#isUriSchemaSupported', () => {
+		it('should return false for mailto:', () => {
 			should(isUriSchemaSupported('mailto:test@test.com')).be.eql(false);
 		});
 
-		it('should return false for javascript:', function() {
+		it('should return false for javascript:', () => {
 			should(isUriSchemaSupported('javascript:alert("Hi!")')).be.eql(false);
 		});
 
-		it('should return false for skype:', function() {
+		it('should return false for skype:', () => {
 			should(isUriSchemaSupported('skype:skype_name?action')).be.eql(false);
 		});
 
-		it('should return true for http:', function() {
+		it('should return true for http:', () => {
 			should(isUriSchemaSupported('http://example.com')).be.eql(true);
 		});
 
-		it('should return true for https:', function() {
+		it('should return true for https:', () => {
 			should(isUriSchemaSupported('https://example.com')).be.eql(true);
 		});
 
-		it('should return true for relative paths', function() {
+		it('should return true for relative paths', () => {
 			should(isUriSchemaSupported('index.html')).be.eql(true);
 		});
 	});
 
 	describe('#urlsEqual', () => {
-		it('should return false for /path and /path/', function() {
+		it('should return false for /path and /path/', () => {
 			should(urlsEqual('http://example.com/path', 'http://example.com/path/')).be.eql(false);
 		});
 	});
@@ -229,6 +231,16 @@ describe('Utils', function () {
 		it('should return original url if it is malformed', () => {
 			const malformedUrl = 'http://example.com/%%IMAGEURL%%/bar1q2blitz.png';
 			should(normalizeUrl(malformedUrl)).be.eql(malformedUrl);
+		});
+	});
+
+	describe('#exists', () => {
+		it('current test file should exists', async () => {
+			should(await exists(fileURLToPath(import.meta.url))).be.true();
+		});
+
+		it('random jibberish shouldn\'t exist', async () => {
+			should(await exists('/wfneiwfueifnw.djf')).be.false();
 		});
 	});
 });

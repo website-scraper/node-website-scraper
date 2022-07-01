@@ -70,7 +70,7 @@ describe('ResourceHandler: Html', () => {
 			htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		});
 
-		it('should remove base tag from text and update resource url for absolute href', () => {
+		it('should remove base tag from text and update resource url for absolute href', async () => {
 			const html = `
 				<html lang="en">
 				<head>
@@ -80,15 +80,14 @@ describe('ResourceHandler: Html', () => {
 				</html>
 			`;
 			const resource = new Resource('http://example.com', 'index.html');
-			resource.setText(html);
+			await resource.setText(html);
 
-			return htmlHandler.handle(resource).then(() =>{
-				resource.getUrl().should.be.eql('http://some-other-domain.com/src');
-				resource.getText().should.not.containEql('<base');
-			});
+			const handledResource = await htmlHandler.handle(resource);
+			handledResource.getUrl().should.be.eql('http://some-other-domain.com/src');
+			(await handledResource.getText()).should.not.containEql('<base');
 		});
 
-		it('should remove base tag from text and update resource url for relative href', () => {
+		it('should remove base tag from text and update resource url for relative href', async () => {
 			const html = `
 				<html lang="en">
 				<head>
@@ -98,15 +97,14 @@ describe('ResourceHandler: Html', () => {
 				</html>
 			`;
 			const resource = new Resource('http://example.com', 'index.html');
-			resource.setText(html);
+			await resource.setText(html);
 
-			return htmlHandler.handle(resource).then(() => {
-				resource.getUrl().should.be.eql('http://example.com/src');
-				resource.getText().should.not.containEql('<base');
-			});
+			const handledResource = await htmlHandler.handle(resource);
+			handledResource.getUrl().should.be.eql('http://example.com/src');
+			(await handledResource.getText()).should.not.containEql('<base');
 		});
 
-		it('should not remove base tag if it doesn\'t have href attribute', () => {
+		it('should not remove base tag if it doesn\'t have href attribute', async () => {
 			const html = `
 				<html lang="en">
 				<head>
@@ -116,16 +114,15 @@ describe('ResourceHandler: Html', () => {
 				</html>
 			`;
 			const resource = new Resource('http://example.com', 'index.html');
-			resource.setText(html);
+			await resource.setText(html);
 
-			return htmlHandler.handle(resource).then(() => {
-				resource.getUrl().should.be.eql('http://example.com');
-				resource.getText().should.containEql('<base target="_blank">');
-			});
+			const handledResource = await htmlHandler.handle(resource);
+			handledResource.getUrl().should.be.eql('http://example.com');
+			(await handledResource.getText()).should.containEql('<base target="_blank">');
 		});
 	});
 
-	it('should not encode text to html entities', () => {
+	it('should not encode text to html entities', async () => {
 		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		const html = `
 			<html>
@@ -136,14 +133,13 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() => {
-			resource.getText().should.containEql('Этот текст не должен быть преобразован в html entities');
-		});
+		const handledResource = await htmlHandler.handle(resource);
+		(await handledResource.getText()).should.containEql('Этот текст не должен быть преобразован в html entities');
 	});
 
-	it('should not update attribute names to lowercase', () => {
+	it('should not update attribute names to lowercase', async () => {
 		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		const html = `
 			<html>
@@ -156,14 +152,13 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() => {
-			resource.getText().should.containEql('viewBox="0 0 100 100"');
-		});
+		const handledResource = await htmlHandler.handle(resource);
+		(await handledResource.getText()).should.containEql('viewBox="0 0 100 100"');
 	});
 
-	it('should call downloadChildrenResources for each source', () => {
+	it('should call downloadChildrenResources for each source', async () => {
 		const sources = [{ selector: 'img', attr: 'src' }];
 		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
@@ -179,14 +174,13 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
-		});
+		await htmlHandler.handle(resource);
+		htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
 	});
 
-	it('should not call downloadChildrenResources if source attr is empty', () =>{
+	it('should not call downloadChildrenResources if source attr is empty', async () =>{
 		const sources = [{ selector: 'img', attr: 'src' }];
 		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
 
@@ -198,14 +192,59 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.downloadChildrenPaths.called.should.be.eql(false);
-		});
+		await htmlHandler.handle(resource);
+		htmlHandler.downloadChildrenPaths.called.should.be.eql(false);
 	});
 
-	it('should use correct path containers based on tag', () => {
+	it('should allow custom container classes', async () => {
+		class TestJsonClass {
+			constructor (text) {
+				this.text = text || '';
+				this.paths = [];
+		
+				if (this.text) {
+					this.paths = JSON.parse(this.text);
+				}
+			}
+		
+			getPaths () {
+				return this.paths;
+			}
+		
+			updateText (pathsToUpdate) {
+				this.paths = this.paths.map((oldPath) => {
+					const toUpdate = pathsToUpdate.find((x) => x.oldPath === oldPath);
+
+					return toUpdate ? toUpdate.newPath : oldPath;
+				});
+		
+				return JSON.stringify(this.paths);
+			}
+		}
+
+		const sources = [{ selector: 'div', attr: 'data-json', containerClass: TestJsonClass }];
+		htmlHandler = new HtmlHandler({sources}, {downloadChildrenPaths});
+
+		const html = `
+			<html lang="en">
+			<head></head>
+			<body><div data-json='${JSON.stringify(['foo/bar.jpg', 'foo/baz.jpg'])}'></body>
+			</html>
+		`;
+
+		const resource = new Resource('http://example.com', 'index.html');
+		await resource.setText(html);
+
+		await htmlHandler.handle(resource);
+
+		htmlHandler.downloadChildrenPaths.called.should.be.eql(true);
+		htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(TestJsonClass);
+		htmlHandler.downloadChildrenPaths.args[0][0].paths.should.eql(['foo/bar.jpg', 'foo/baz.jpg']);
+	});
+
+	it('should use correct path containers based on tag', async () => {
 		const sources = [
 			{ selector: 'img', attr: 'src' },
 			{ selector: 'img', attr: 'srcset' },
@@ -225,17 +264,16 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		return htmlHandler.handle(resource).then(() =>{
-			htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
-			htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
-			htmlHandler.downloadChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
-			htmlHandler.downloadChildrenPaths.args[2][0].should.be.instanceOf(CssText);
-		});
+		await htmlHandler.handle(resource);
+		htmlHandler.downloadChildrenPaths.calledThrice.should.be.eql(true);
+		htmlHandler.downloadChildrenPaths.args[0][0].should.be.instanceOf(HtmlCommonTag);
+		htmlHandler.downloadChildrenPaths.args[1][0].should.be.instanceOf(HtmlImgSrcsetTag);
+		htmlHandler.downloadChildrenPaths.args[2][0].should.be.instanceOf(CssText);
 	});
 
-	it('should remove SRI check for loaded resources', () => {
+	it('should remove SRI check for loaded resources', async () => {
 		const sources = [
 			{ selector: 'script', attr: 'src'}
 		];
@@ -253,18 +291,19 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
 		// before handle should contain both integrity checks
-		resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
-		resource.getText().should.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
+		(await resource.getText()).should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+		(await resource.getText()).should.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 
-		return htmlHandler.handle(resource).then(() => {
-			// after handle should contain integrity check for styles
-			// but not contain integrity check for script because it was loaded
-			resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
-			resource.getText().should.not.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
-		});
+
+
+		const handledResource = await htmlHandler.handle(resource);
+		// after handle should contain integrity check for styles
+		// but not contain integrity check for script because it was loaded
+		(await handledResource.getText()).should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+		(await handledResource.getText()).should.not.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 	});
 
 	it('should use html entities for updated attributes', async () => {
@@ -283,10 +322,10 @@ describe('ResourceHandler: Html', () => {
 		`;
 
 		const resource = new Resource('http://example.com', 'index.html');
-		resource.setText(html);
+		await resource.setText(html);
 
-		await htmlHandler.handle(resource);
-		const text = resource.getText();
+		const handledResource = await htmlHandler.handle(resource);
+		const text = await handledResource.getText();
 
 		should(text).containEql('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
 	});

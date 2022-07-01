@@ -57,6 +57,8 @@ scrape(options).then((result) => {});
 * [urlFilter](#urlfilter) - skip some urls
 * [filenameGenerator](#filenamegenerator) - generate filename for downloaded resource
 * [requestConcurrency](#requestconcurrency) - set maximum concurrent requests
+* [tempMode](#tempMode) - How to store data temporarily during processing
+* [tempDir](#tempMode) - The directory to use to store temp files when `tempMode === fs`
 * [plugins](#plugins) - plugins, allow to customize filenames, request options, response handling, saving to storage, etc.
 
 Default options you can find in [lib/config/defaults.js](https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js) or get them using 
@@ -83,15 +85,44 @@ How to download website to existing directory and why it's not supported by defa
 
 #### sources
 Array of objects to download, specifies selectors and attribute values to select files for downloading. By default scraper tries to download all possible resources. Scraper uses cheerio to select html elements so `selector` can be any [selector that cheerio supports](https://github.com/cheeriojs/cheerio#selectors).
+
+You can also specify custom `containerClass`', these are responsible for readying and writing from attributes. For example if you want to read JSON from an attribute...
+
 ```javascript
+class JsonContainerClass {
+  constructor (text) {
+    this.text = text || '';
+    this.paths = [];
+
+    if (this.text) {
+      this.paths = JSON.parse(this.text);
+    }
+  }
+
+  getPaths () {
+    return this.paths;
+  }
+
+  updateText (pathsToUpdate) {
+    this.paths = this.paths.map((oldPath) => {
+      const toUpdate = pathsToUpdate.find((x) => x.oldPath === oldPath);
+
+      return toUpdate ? toUpdate.newPath : oldPath;
+    });
+
+    return JSON.stringify(this.paths);
+  }
+}
+
 // Downloading images, css files and scripts
 scrape({
   urls: ['http://nodejs.org/'],
   directory: '/path/to/save',
   sources: [
-    {selector: 'img', attr: 'src'},
-    {selector: 'link[rel="stylesheet"]', attr: 'href'},
-    {selector: 'script', attr: 'src'}
+    { selector: 'img', attr: 'src' },
+    { selector: 'link[rel="stylesheet"]', attr: 'href' },
+    { selector: 'script', attr: 'src' },
+    { selector: 'div', attr: 'data-json', containerClass: JsonContainerClass }
   ]
 });
 ```
@@ -199,6 +230,13 @@ scrape({
 #### requestConcurrency
 Number, maximum amount of concurrent requests. Defaults to `Infinity`.
 
+#### tempMode
+
+How to store temporary data when processing
+
+* `memory` - Data is store in memory in its raw format (default).
+* `memory-compressed` - Data is stored in memory but compressed using zlib. This is more memory efficient at the expense of CPU time spend compressing and decompressing.
+* `filesystem` - Data is stored in temporary files on the filesystem. This is the most memory efficient but it is strongly recommended to only use this mode with a solid state drive.
 
 #### plugins
 
@@ -331,7 +369,6 @@ Promise should be resolved with:
   * `body` (response body, string)
   * `encoding` (`binary` or `utf8`) used to save the file, binary used by default.
   * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
-* a binary `string`. This is advised against because of the binary assumption being made can foul up saving of `utf8` responses to the filesystem. 
 
 If multiple actions `afterResponse` added - scraper will use result from last one.
 ```javascript
@@ -430,7 +467,7 @@ If multiple actions `saveResource` added - resource will be saved to multiple st
 ```javascript
 registerAction('saveResource', async ({resource}) => {
   const filename = resource.getFilename();
-  const text = resource.getText();
+  const text = await resource.getText();
   await saveItSomewhere(filename, text);
 });
 ```

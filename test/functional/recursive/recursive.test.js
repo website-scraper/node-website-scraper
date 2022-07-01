@@ -1,26 +1,26 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/recursive/.tmp';
 const mockDirname = './test/functional/recursive/mocks';
 
-describe('Functional recursive downloading', function() {
+describe('Functional recursive downloading', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should follow anchors if recursive flag is set', function () {
+	it('should follow anchors if recursive flag is set', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -37,20 +37,20 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		await scrape(options);
 
-			// index.html anchors loaded
-			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
+		await `${testDirname}/index.html`.should.fileExists(true);
 
-			// about.html anchors loaded
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
-		});
+		// index.html anchors loaded (depth 1)
+		await `${testDirname}/about.html`.should.fileExists(true);
+
+		// about.html anchors loaded (depth 2)
+		await `${testDirname}/link1.html`.should.fileExists(true);
+		await `${testDirname}/link2.html`.should.fileExists(true);
+		await `${testDirname}/link3.html`.should.fileExists(true);
 	});
 
-	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', function () {
+	it('should follow anchors with depth <= maxDepth if recursive flag and maxDepth are set', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -74,24 +74,24 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link1-1.html').reply(200, 'content 1-1');
 		nock('http://example.com/').get('/link1-2.html').reply(200, 'content 1-2');
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		await scrape(options);
 
-			// index.html anchors loaded (depth 1)
-			fs.existsSync(testDirname + '/about.html').should.be.eql(true);
+		await `${testDirname}/index.html`.should.fileExists(true);
 
-			// about.html anchors loaded (depth 2)
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/link2.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/link3.html').should.be.eql(true);
+		// index.html anchors loaded (depth 1)
+		await `${testDirname}/about.html`.should.fileExists(true);
 
-			// link1.html anchors NOT loaded (depth 3)
-			fs.existsSync(testDirname + '/link1-1.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/link1-2.html').should.be.eql(false);
-		});
+		// about.html anchors loaded (depth 2)
+		await `${testDirname}/link1.html`.should.fileExists(true);
+		await `${testDirname}/link2.html`.should.fileExists(true);
+		await `${testDirname}/link3.html`.should.fileExists(true);
+
+		// link1.html anchors NOT loaded (depth 3)
+		await `${testDirname}/link1-1.html`.should.fileExists(false);
+		await `${testDirname}/link1-2.html`.should.fileExists(false);
 	});
 
-	it('should not follow anchors if recursive flag is not set', function () {
+	it('should not follow anchors if recursive flag is not set', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -107,16 +107,15 @@ describe('Functional recursive downloading', function() {
 		nock('http://example.com/').get('/link2.html').reply(200, 'content 2');
 		nock('http://example.com/').get('/link3.html').reply(200, 'content 3');
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+		await scrape(options);
+		await `${testDirname}/index.html`.should.fileExists(true);
 
-			// index.html anchors loaded
-			fs.existsSync(testDirname + '/about.html').should.be.eql(false);
+		// index.html anchors NOT loaded (depth 1)
+		await `${testDirname}/about.html`.should.fileExists(false);
 
-			// about.html anchors loaded
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/link2.html').should.be.eql(false);
-			fs.existsSync(testDirname + '/link3.html').should.be.eql(false);
-		});
+		// about.html anchors NOT loaded (depth 2)
+		await `${testDirname}/link1.html`.should.fileExists(false);
+		await `${testDirname}/link2.html`.should.fileExists(false);
+		await `${testDirname}/link3.html`.should.fileExists(false);
 	});
 });

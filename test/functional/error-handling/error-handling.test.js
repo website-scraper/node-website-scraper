@@ -1,7 +1,7 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import sinon from 'sinon';
 import scrape from 'website-scraper';
 import Scraper from '../../../lib/scraper.js';
@@ -9,7 +9,7 @@ import Scraper from '../../../lib/scraper.js';
 const testDirname = './test/functional/error-handling/.tmp';
 const mockDirname = './test/functional/error-handling/mocks';
 
-describe('Functional error handling', function() {
+describe('Functional error handling', () => {
 	const options = {
 		urls: [ 'http://example.com/' ],
 		directory: testDirname,
@@ -19,7 +19,7 @@ describe('Functional error handling', function() {
 		sources: []
 	};
 
-	beforeEach(function () {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 
@@ -32,16 +32,16 @@ describe('Functional error handling', function() {
 		nock('http://example.com/').get('/page6.html').delay(600).reply(200, 'ok');
 	});
 
-	afterEach(function () {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	describe('FS Error', function () {
+	describe('FS Error', () => {
 		let saveResourceStub, handleErrorStub, failingFsPlugin;
 
-		beforeEach(function() {
+		beforeEach(() => {
 			saveResourceStub = sinon.stub().resolves().onCall(2).rejects(new Error('FS FAILED!'));
 			handleErrorStub = sinon.stub().resolves();
 
@@ -55,7 +55,7 @@ describe('Functional error handling', function() {
 			failingFsPlugin = new FailingFSPlugin();
 		});
 
-		it('should remove directory and immediately reject on fs error if ignoreErrors is false', function () {
+		it('should remove directory and immediately reject on fs error if ignoreErrors is false', () => {
 			const scraperOptions = {
 				...options,
 				ignoreErrors: false,
@@ -64,7 +64,7 @@ describe('Functional error handling', function() {
 				]
 			};
 
-			return scrape(scraperOptions).then(function() {
+			return scrape(scraperOptions).then(() => {
 				should(true).be.eql(false);
 			}).catch(function (err) {
 				should(err.message).be.eql('FS FAILED!');
@@ -73,7 +73,7 @@ describe('Functional error handling', function() {
 			});
 		});
 
-		it('should ignore fs error if ignoreErrors is true', function () {
+		it('should ignore fs error if ignoreErrors is true', () => {
 			const scraperOptions = {
 				...options,
 				ignoreErrors: true,
@@ -82,18 +82,18 @@ describe('Functional error handling', function() {
 				]
 			};
 
-			return scrape(scraperOptions).then(function() {
+			return scrape(scraperOptions).then(() => {
 				should(saveResourceStub.callCount).be.eql(7);
 				should(handleErrorStub.callCount).be.eql(0);
 			});
 		});
 	});
 
-	describe('Resource Handler Error', function () {
+	describe('Resource Handler Error', () => {
 		let scraper;
 		let handleResourceStub;
 
-		beforeEach(function() {
+		beforeEach(() => {
 			scraper = new Scraper(options);
 			const originalHandleResource = scraper.resourceHandler.handleResource;
 			let callCount = 0;
@@ -109,25 +109,25 @@ describe('Functional error handling', function() {
 			handleResourceStub.restore();
 		})
 
-		it('should remove directory and immediately reject on resource handler error if ignoreErrors is false', function () {
+		it('should remove directory and immediately reject on resource handler error if ignoreErrors is false', async () => {
 			scraper.options.ignoreErrors = false;
 
-			return scraper.scrape().then(function() {
+			try {
+				await scraper.scrape();
 				should(true).be.eql(false);
-			}).catch(function (err) {
-				fs.existsSync(testDirname).should.be.eql(false);
+			} catch (err) {
+				await testDirname.should.dirExists(false);
 				should(err.message).be.eql('RESOURCE HANDLER FAILED!');
 				should(handleResourceStub.callCount).be.eql(4);
-			});
+			}
 		});
 
-		it('should ignore resource handler error if ignoreErrors is true', function () {
+		it('should ignore resource handler error if ignoreErrors is true', async () => {
 			scraper.options.ignoreErrors = true;
 
-			return scraper.scrape().then(function() {
-				should(handleResourceStub.callCount).be.eql(7);
-				fs.existsSync(testDirname).should.be.eql(true);
-			});
+			await scraper.scrape();
+			should(handleResourceStub.callCount).be.eql(7);
+			await testDirname.should.dirExists(true);
 		});
 	});
 });

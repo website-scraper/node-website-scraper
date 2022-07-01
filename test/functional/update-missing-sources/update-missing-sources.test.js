@@ -1,7 +1,7 @@
 import 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/update-missing-sources/.tmp';
@@ -27,18 +27,18 @@ class UpdateMissingResourceReferencePlugin {
 
 describe('Functional: update missing sources', () => {
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should not update missing sources by default', () => {
+	it('should not update missing sources by default', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -49,17 +49,16 @@ describe('Functional: update missing sources', () => {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 		nock('http://example.com/').get('/missing-img.png').replyWithError('COULDN\'T DOWNLOAD IMAGE');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-img.png').should.be.eql(false);
+		await scrape(options);
 
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/missing-img.png`.should.fileExists(false);
 
-			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="/missing-img.png"');
-		});
+		const indexBody = (await fs.readFile(testDirname + '/index.html')).toString();
+		indexBody.should.containEql('<img src="/missing-img.png"');
 	});
 
-	it('should update missing sources if missing resource plugin added', () => {
+	it('should update missing sources if missing resource plugin added', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -72,24 +71,23 @@ describe('Functional: update missing sources', () => {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 		nock('http://example.com/').get('/missing-img.png').replyWithError('COULDN\'T DOWNLOAD IMAGE');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-img.png').should.be.eql(false);
+		await scrape(options);
 
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/missing-img.png`.should.fileExists(false);
 
-			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
-		});
+		const indexBody = (await fs.readFile(testDirname + '/index.html')).toString();
+		indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
 	});
 
-	it('should update missing sources when source was rejected by urlFilter', () => {
+	it('should update missing sources when source was rejected by urlFilter', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
 			subdirectories: null,
 			sources: [{ selector: 'img', attr: 'src' }],
 			plugins: [ new UpdateMissingResourceReferencePlugin() ],
-			urlFilter: function (url) {
+			urlFilter: (url) => {
 				return url.indexOf('/missing-img.png') === -1;
 			}
 		};
@@ -97,17 +95,16 @@ describe('Functional: update missing sources', () => {
 		nock('http://example.com/').get('/').replyWithFile(200, mockDirname + '/index.html');
 		nock('http://example.com/').get('/missing-img.png').reply(200, 'ok');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-img.png').should.be.eql(false);
+		await scrape(options);
 
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/missing-img.png`.should.fileExists(false);
 
-			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
-		});
+		const indexBody = (await fs.readFile(testDirname + '/index.html')).toString();
+		indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
 	});
 
-	it('should update missing sources when source was rejected by maxRecursiveDepth', () => {
+	it('should update missing sources when source was rejected by maxRecursiveDepth', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -123,18 +120,17 @@ describe('Functional: update missing sources', () => {
 		nock('http://example.com/').get('/link1.html').replyWithFile(200, mockDirname + '/link1.html');
 		nock('http://example.com/').get('/missing-link.html').reply(200, 'ok');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/link1.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/missing-link.html').should.be.eql(false);
+		await scrape(options);
 
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/link1.html`.should.fileExists(true);
+		await `${testDirname}/missing-link.html`.should.fileExists(false);
 
-			const link = fs.readFileSync(testDirname + '/link1.html').toString();
-			link.should.containEql('<a href="http://example.com/missing-link.html"');
-		});
+		const indexBody = (await fs.readFile(testDirname + '/link1.html')).toString();
+		indexBody.should.containEql('<a href="http://example.com/missing-link.html"');
 	});
 
-	it('should update missing sources if one of pathContainers path was failed', () => {
+	it('should update missing sources if one of pathContainers path was failed', async () => {
 		const options = {
 			urls: [ 'http://example.com/' ],
 			directory: testDirname,
@@ -149,18 +145,17 @@ describe('Functional: update missing sources', () => {
 		nock('http://example.com/').get('/b.png').replyWithError('Failed!');
 		nock('http://example.com/').get('/c.png').reply(200, 'ok');
 
-		return scrape(options).then(() => {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			fs.existsSync(testDirname + '/a.png').should.be.eql(true);
-			fs.existsSync(testDirname + '/b.png').should.be.eql(false);
-			fs.existsSync(testDirname + '/c.png').should.be.eql(true);
+		await scrape(options);
 
+		await `${testDirname}/index.html`.should.fileExists(true);
+		await `${testDirname}/a.png`.should.fileExists(true);
+		await `${testDirname}/b.png`.should.fileExists(false);
+		await `${testDirname}/c.png`.should.fileExists(true);
 
-			const index = fs.readFileSync(testDirname + '/index.html').toString();
-			index.should.containEql(`.a { background: url('a.png') }`);
-			index.should.containEql(`.b { background: url('http://example.com/b.png') }`);
-			index.should.containEql(`.c { background: url('c.png') }`);
-		});
+		const index = (await fs.readFile(testDirname + '/index.html', { encoding: 'binary' }));
+		index.should.containEql(`.a { background: url('a.png') }`);
+		index.should.containEql(`.b { background: url('http://example.com/b.png') }`);
+		index.should.containEql(`.c { background: url('c.png') }`);
 	});
 });
 

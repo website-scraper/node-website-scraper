@@ -1,10 +1,11 @@
 import should from 'should';
 import sinon from 'sinon';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import path from 'path';
 import Scraper from '../../lib/scraper.js';
 import Resource from '../../lib/resource.js';
+import '../utils/assertions.js';
 
 import defaultOptions from 'website-scraper/defaultOptions';
 import * as plugins from 'website-scraper/plugins';
@@ -18,10 +19,10 @@ describe('Scraper', () => {
 		nock.disableNetConnect();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
 	describe('#loadResource', () => {
@@ -56,7 +57,7 @@ describe('Scraper', () => {
 	});
 
 	describe('#saveResource', () => {
-		it('should call handleError on error', () => {
+		it('should call handleError on error', async () => {
 			const s = new Scraper({
 				urls: 'http://example.com',
 				directory: testDirname
@@ -67,7 +68,7 @@ describe('Scraper', () => {
 			sinon.stub(s, 'handleError').resolves();
 
 			const r = new Resource('http://example.com/a.png', 'a.png');
-			r.setText('some text');
+			await r.setText('some text');
 
 			return s.saveResource(r).then(() => should(true).eql(false)).catch(() => {
 				s.handleError.calledOnce.should.be.eql(true);
@@ -103,7 +104,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				(await rr.getText()).should.be.not.empty();
 			});
 
 			it('should return null if the urlFilter returns false', async () =>{
@@ -138,7 +139,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				(await rr.getText()).should.be.not.empty();
 			});
 		});
 
@@ -160,7 +161,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				(await rr.getText()).should.be.not.empty();
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', async () =>{
@@ -181,7 +182,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				(await rr.getText()).should.be.not.empty();
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', async () =>{
@@ -201,7 +202,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				(await rr.getText()).should.be.not.empty();
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', async () =>{
@@ -268,7 +269,7 @@ describe('Scraper', () => {
 			const r = new Resource('http://example.com');
 			await s.requestResource(r);
 
-			should(r.getText()).be.eql('test body');
+			should((await r.getText())).be.eql('test body');
 			should(r.getUrl()).be.eql('http://example.com');
 			should(r.getType()).be.eql('html');
 			should(r.getFilename()).be.eql('generated-filename');
@@ -457,7 +458,7 @@ describe('Scraper', () => {
 
 			await s.scrape();
 
-			should(fs.existsSync(testDirname)).be.eql(true);
+			await testDirname.should.dirExists(true);
 		});
 
 		it('should save resource to FS', async () => {
@@ -470,8 +471,8 @@ describe('Scraper', () => {
 			await s.scrape();
 
 			const filename = path.join(testDirname, 'index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			await filename.should.fileExists(true);
+			should(await fs.readFile(filename, { encoding: 'binary' })).be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should remove directory on error', async () => {
@@ -491,7 +492,8 @@ describe('Scraper', () => {
 			} catch (err) {
 				should(err).be.instanceOf(Error);
 				should(err.message).be.eql('Response code 400 (Bad Request)');
-				should(fs.existsSync(testDirname)).be.eql(false);
+
+				await testDirname.should.dirExists(false);
 			}
 		});
 
@@ -538,7 +540,8 @@ describe('Scraper', () => {
 
 		it('should return error if existing directory passed', async () => {
 			try {
-				fs.mkdirpSync(testDirname);
+				await fs.mkdir(testDirname, { recursive: true });
+
 				const s = new Scraper({
 					urls: 'http://example.com',
 					directory: testDirname
@@ -569,8 +572,10 @@ describe('Scraper', () => {
 			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameByTypePlugin);
 
 			const filename = path.join(testDirname, 'index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			await filename.should.fileExists(true);
+
+			const index = await fs.readFile(filename, { encoding: 'binary'});
+			index.should.be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should use bySiteStructure plugin if filenameGenerator option is set', async () => {
@@ -586,8 +591,10 @@ describe('Scraper', () => {
 			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameBySiteStructurePlugin);
 
 			const filename = path.join(testDirname, 'example.com/index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			await filename.should.fileExists(true);
+
+			const index = await fs.readFile(filename, { encoding: 'binary'});
+			index.should.be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should ignore filenameGenerator option if function passed', async () => {

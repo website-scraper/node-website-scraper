@@ -1,26 +1,26 @@
 import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/req-res-customizations-request/.tmp';
 const mockDirname = './test/functional/req-res-customizations-request/mocks';
 
-describe('Functional: customize request options with plugin', function() {
+describe('Functional: customize request options with plugin', () => {
 
-	beforeEach(function() {
+	beforeEach(() => {
 		nock.cleanAll();
 		nock.disableNetConnect();
 	});
 
-	afterEach(function() {
+	afterEach(async () => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		await fs.rm(testDirname, { recursive: true, force: true });
 	});
 
-	it('should use options from request property if no beforeRequest actions', function() {
+	it('should use options from request property if no beforeRequest actions', async () => {
 		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
 
 		const options = {
@@ -31,18 +31,18 @@ describe('Functional: customize request options with plugin', function() {
 			}
 		};
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
-			should(indexHtml).containEql('response for url with query');
-		});
+		await scrape(options);
+
+		(await fs.stat(testDirname + '/index.html')).isFile().should.be.eql(true);
+		const indexHtml = await fs.readFile(testDirname + '/index.html', { encoding: 'binary'});
+		should(indexHtml).containEql('response for url with query');
 	});
 
-	it('should use options returned by beforeRequest action', function() {
+	it('should use options returned by beforeRequest action', async () => {
 		nock('http://example.com/').get('/').query({myParam: 122}).reply(200, 'response for url with query');
 
 		class CustomRequestOptions {
-			apply(add) {
+			apply (add) {
 				add('beforeRequest', ()=> {
 					return {
 						requestOptions:{
@@ -61,10 +61,10 @@ describe('Functional: customize request options with plugin', function() {
 			]
 		};
 
-		return scrape(options).then(function() {
-			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
-			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
-			should(indexHtml).containEql('response for url with query');
-		});
+		await scrape(options);
+
+		(await fs.stat(testDirname + '/index.html')).isFile().should.be.eql(true);
+		const indexHtml = await fs.readFile(testDirname + '/index.html', { encoding: 'binary' });
+		indexHtml.should.containEql('response for url with query');
 	});
 });
