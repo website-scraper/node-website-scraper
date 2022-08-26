@@ -125,6 +125,28 @@ describe('ResourceHandler: Html', () => {
 		});
 	});
 
+	describe('<meta> tag', () => {
+		beforeEach(() => {
+			htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
+		});
+
+		it('should change encoding of resouce if html contains <meta> with charset attr', async () => {
+			const html = `
+				<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+				</head>
+				<body></body> 
+				</html>
+			`;
+			const resource = new Resource('http://example.com', 'index.html');
+			resource.setText(html);
+
+			await htmlHandler.handle(resource);
+			should(resource.getEncoding()).eql('utf8');
+		});
+	});
+
 	it('should not encode text to html entities', () => {
 		htmlHandler = new HtmlHandler({ sources: [] }, {downloadChildrenPaths});
 		const html = `
