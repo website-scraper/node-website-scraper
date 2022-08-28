@@ -26,7 +26,7 @@ describe('ResourceHandler: Css', () => {
 
 		return cssHandler.handle(originalResource).then((updatedResource) => {
 			should(updatedResource).be.equal(originalResource);
-			should(updatedResource.getEncoding()).be.eql('utf-8');
+			should(updatedResource.getEncoding()).be.eql('utf8');
 		});
 	});
 });
