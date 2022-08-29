@@ -5,7 +5,7 @@ import {
 	getFilepathFromUrl, getHashFromUrl, getRelativePath,
 	shortenFilename, prettifyFilename,
 	isUriSchemaSupported, urlsEqual,
-	normalizeUrl
+	normalizeUrl, getCharsetFromCss
 } from '../../../lib/utils/index.js';
 
 describe('Utils', function () {
@@ -229,6 +229,30 @@ describe('Utils', function () {
 		it('should return original url if it is malformed', () => {
 			const malformedUrl = 'http://example.com/%%IMAGEURL%%/bar1q2blitz.png';
 			should(normalizeUrl(malformedUrl)).be.eql(malformedUrl);
+		});
+	});
+
+	describe('#getCharsetFromCss', () => {
+		it('should return charset from the beginning of css (inside double quotes)', () => {
+			const cssText = '@charset "UTF-8"; ';
+			should(getCharsetFromCss(cssText)).be.eql('utf-8');
+		});
+
+		it('should return charset from the beginning of css (inside single quotes)', () => {
+			const cssText = `@charset 'UTF-8'; `;
+			should(getCharsetFromCss(cssText)).be.eql('utf-8');
+		});
+
+		it('should return null if no charset', () => {
+			const cssText = `h1 {color: red};`;
+			should(getCharsetFromCss(cssText)).be.eql(null);
+		});
+
+		it('should return null if charset is not valid', () => {
+			should(getCharsetFromCss('@charset  "UTF-8"; ')).be.eql(null);
+			should(getCharsetFromCss('  @charset  "UTF-8"; ')).be.eql(null);
+			should(getCharsetFromCss('@charset UTF-8;')).be.eql(null);
+			should(getCharsetFromCss('h1 {color: red}; @charset "UTF-8";')).be.eql(null);
 		});
 	});
 });
