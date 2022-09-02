@@ -21,7 +21,7 @@ describe('ResourceHandler', function() {
 			resHandler.options.should.containEql({
 				prettifyUrls: 'a',
 				defaultFilename: 'test',
-				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]
+				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]	
 			});
 			resHandler.options.should.not.containEql({
 				a: 1,
