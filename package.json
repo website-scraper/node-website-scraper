@@ -6,8 +6,7 @@
   "type": "module",
   "exports": {
     ".": "./index.mjs",
-    "./defaultOptions": "./lib/config/defaults.js",
-    "./plugins": "./lib/plugins/index.js"
+    "./defaultOptions": "./lib/config/defaults.js"
   },
   "scripts": {
     "test": "c8 --all --reporter=text --reporter=lcov mocha --recursive --timeout 7000 ./test/unit/ ./test/functional",
