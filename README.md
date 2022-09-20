@@ -220,7 +220,7 @@ Plugins allow to extend scraper behaviour
     * [getReference](#getreference)
 
 ##### Built-in plugins
-Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory.
+Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory. Thease plugins are intended for internal use but can be coppied if the behaviour of the plugins needs to be extended / changed.
 
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
