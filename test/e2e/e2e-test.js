@@ -1,7 +1,6 @@
 import 'should';
 import scrape from 'website-scraper';
 import fs from 'fs-extra';
-import _ from 'lodash';
 
 import { readFile } from 'fs/promises';
 const urls = JSON.parse(await readFile(new URL('./urls.json', import.meta.url)));
@@ -21,7 +20,7 @@ describe('E2E', function() {
 	urls.forEach(function(url) {
 		describe(url, function() {
 			it('should be successfully scraped with byType filename generator', function() {
-				const scraperOptions = _.clone(options);
+				const scraperOptions = { ...options };
 				const hostname = new URL(url).hostname;
 				scraperOptions.directory = resultDirname + '/' + hostname + '-byType';
 				scraperOptions.urls = [ { url: url, filename: 'index.html' } ];
@@ -32,7 +31,7 @@ describe('E2E', function() {
 			});
 
 			it('should be successfully scraped with bySiteStructure filename generator', function() {
-				const scraperOptions = _.clone(options);
+				const scraperOptions = { ...options };
 				const hostname = new URL(url).hostname;
 				scraperOptions.directory = resultDirname + '/' + hostname + '-bySiteStructure';
 				scraperOptions.urls = [ { url: url } ];

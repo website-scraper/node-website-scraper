@@ -2,8 +2,6 @@ import should from 'should';
 import '../../utils/assertions.js';
 
 import sinon from 'sinon';
-import _ from 'lodash';
-
 import Resource from '../../../lib/resource.js';
 import bySiteStructureFilenameGenerator from '../../../lib/filename-generator/by-site-structure.js';
 
@@ -74,18 +72,19 @@ describe('FilenameGenerator: bySiteStructure', () => {
 	});
 
 	it('should shorten filename', () => {
-		const resourceFilename = _.repeat('1', 1000) + '.png';
+		const resourceFilename = new Array(1000).fill('a').join('') + '.png';
 		const r = new Resource('http://example.com/' + resourceFilename);
 		const filename = bySiteStructureFilenameGenerator(r, options);
 		should(filename.length).be.lessThan(255);
 	});
 
 	it('should shorten filename if resource is html without ext and default name is too long', () => {
-		const defaultFilename = _.repeat('1', 1000) + '.html';
+		const defaultFilename = new Array(1000).fill('a').join('') + '.html';
 		const r = new Resource('http://example.com/path');
 		r.isHtml = sinon.stub().returns(true);
 		const filepath = bySiteStructureFilenameGenerator(r, { defaultFilename: defaultFilename });
-		const filename = _.last(filepath.split('/'));
+		const filenameParts = filepath.split('/');
+		const filename = filenameParts[filenameParts.length - 1];
 		should(filename.length).be.lessThan(255);
 	});
 

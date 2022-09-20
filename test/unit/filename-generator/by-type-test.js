@@ -2,8 +2,6 @@ import should from 'should';
 import '../../utils/assertions.js';
 
 import sinon from 'sinon';
-import _ from 'lodash';
-
 import Resource from '../../../lib/resource.js';
 import byTypeFilenameGenerator from '../../../lib/filename-generator/by-type.js';
 
@@ -111,14 +109,14 @@ describe('FilenameGenerator: byType', () => {
 	});
 
 	it('should shorten filename', () => {
-		const resourceFilename = _.repeat('a', 1000) + '.png';
+		const resourceFilename = new Array(1000).fill('a').join('') + '.png';
 		const r = new Resource('http://example.com/a.png', resourceFilename);
 		const filename = byTypeFilenameGenerator(r, {}, []);
 		should(filename.length).be.lessThan(255);
 	});
 
 	it('should return different short filename if first short filename is occupied', () => {
-		const resourceFilename = _.repeat('a', 1000) + '.png';
+		const resourceFilename = new Array(1000).fill('a').join('') + '.png';
 
 		const r1 = new Resource('http://first-example.com/a.png', resourceFilename);
 		const r2 = new Resource('http://second-example.com/a.png', resourceFilename);

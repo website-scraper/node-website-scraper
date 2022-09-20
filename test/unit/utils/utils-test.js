@@ -133,47 +133,47 @@ describe('Utils', function () {
 
 	describe('#shortenFilename', function() {
 		it('should leave file with length < 255 as is', function() {
-			var f1 = _.repeat('a', 25);
+			var f1 = new Array(25).fill('a').join('');
 			should(f1.length).be.eql(25);
 			should(shortenFilename(f1)).be.eql(f1);
 
-			var f2 = _.repeat('a', 25) + '.txt';
+			var f2 = new Array(25).fill('a').join('') + '.txt';
 			should(f2.length).be.eql(29);
 			should(shortenFilename(f2)).be.eql(f2);
 		});
 
 		it('should shorten file with length = 255', function() {
-			var f1 = _.repeat('a', 255);
+			var f1 = new Array(255).fill('a').join('');
 			should(f1.length).be.eql(255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 		});
 
 		it('should shorten file with length > 255', function() {
-			var f1 = _.repeat('a', 1255);
+			var f1 = new Array(1255).fill('a').join('');
 			should(f1.length).be.eql(1255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 		});
 
 		it('should shorten file with length = 255 and keep extension', function() {
-			var f1 = _.repeat('a', 251) + '.txt';
+			var f1 = new Array(251).fill('a').join('') + '.txt';
 			should(f1.length).be.eql(255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 			should(shortenFilename(f1).split('.')[1]).be.eql('txt');
 		});
 
 		it('should shorten file with length > 255 and keep extension', function() {
-			var f1 = _.repeat('a', 1251) + '.txt';
+			var f1 = new Array(1251).fill('a').join('') + '.txt';
 			should(f1.length).be.eql(1255);
 			should(shortenFilename(f1).length).be.lessThan(255);
 			should(shortenFilename(f1).split('.')[1]).be.eql('txt');
 		});
 
 		it('should shorten file with length > 255 to have basename length 20 chars', function() {
-			var f1 = _.repeat('a', 500);
+			var f1 = new Array(500).fill('a').join('');
 			should(f1.length).be.eql(500);
 			should(shortenFilename(f1).split('.')[0].length).be.eql(20);
 
-			var f2 = _.repeat('a', 500) + '.txt';
+			var f2 = new Array(500).fill('a').join('') + '.txt';
 			should(f2.length).be.eql(504);
 			should(shortenFilename(f2).split('.')[0].length).be.eql(20);
 		});

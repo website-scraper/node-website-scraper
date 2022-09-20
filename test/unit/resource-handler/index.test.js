@@ -15,13 +15,17 @@ describe('ResourceHandler', function() {
 				prettifyUrls: 'a',
 				maxDepth: 'b',
 				defaultFilename: 'test',
-				sources: 'dummy sources'
+				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]
 			};
 			const resHandler = new ResourceHandler(options);
-			resHandler.options.should.eql({
+			resHandler.options.should.containEql({
 				prettifyUrls: 'a',
 				defaultFilename: 'test',
-				sources: 'dummy sources'
+				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]	
+			});
+			resHandler.options.should.not.containEql({
+				a: 1,
+				b: 2
 			});
 		});
 		it('should set requestResource', function () {
