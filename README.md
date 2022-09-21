@@ -220,10 +220,7 @@ Plugins allow to extend scraper behaviour
     * [getReference](#getreference)
 
 ##### Built-in plugins
-Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](https://github.com/website-scraper/node-website-scraper/tree/master/lib/plugins) directory or get them using 
-```javascript
-import * as plugins from 'website-scraper/plugins';
-```
+Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory. Thease plugins are intended for internal use but can be coppied if the behaviour of the plugins needs to be extended / changed.
 
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
@@ -231,7 +228,6 @@ import * as plugins from 'website-scraper/plugins';
 * [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
 
 ##### Create plugin
-**Note:** before creating new plugins consider using/extending/contributing to [existing plugins](#existing-plugins).
 
 Plugin is object with `.apply` method, can be used to change scraper behavior.
 

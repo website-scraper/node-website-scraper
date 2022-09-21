@@ -5,9 +5,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import Scraper from '../../lib/scraper.js';
 import Resource from '../../lib/resource.js';
+import * as plugins from '../../lib/plugins/index.js';
 
 import defaultOptions from 'website-scraper/defaultOptions';
-import * as plugins from 'website-scraper/plugins';
+
 
 const testDirname = './test/unit/.scraper-test';
 
