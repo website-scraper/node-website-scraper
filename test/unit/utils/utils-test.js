@@ -1,5 +1,4 @@
 import should from 'should';
-import _ from 'lodash';
 import {
 	isUrl, getUrl, getUnixPath, getFilenameFromUrl,
 	getFilepathFromUrl, getHashFromUrl, getRelativePath,
