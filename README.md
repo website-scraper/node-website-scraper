@@ -14,7 +14,7 @@ Download website to local directory (including all css, images, js, etc.)
 
 Try it using [demo app](https://github.com/website-scraper/demo)
 
-**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) or [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom).
+**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
 
 This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
 
@@ -224,7 +224,6 @@ Scraper has built-in plugins which are used by default if not overwritten with c
 
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
-* [website-scraper-phantom](https://github.com/website-scraper/node-website-scraper-phantom) - download dynamic (rendered with js) websites using phantomJS
 * [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
 
 ##### Create plugin
