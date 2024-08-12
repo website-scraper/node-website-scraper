@@ -37,7 +37,7 @@ jobs:
         if: ${{ matrix.node-version == '20' && matrix.os == 'ubuntu-latest' }}
       - name: Coveralls
         if: ${{ matrix.node-version == '20' && matrix.os == 'ubuntu-latest' }}
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish codeclimate code coverage
