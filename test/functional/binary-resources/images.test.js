@@ -2,7 +2,7 @@ import should from 'should';
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/binary-resources/.tmp';
