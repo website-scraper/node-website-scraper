@@ -9,12 +9,9 @@
 
 [Options](#usage) | [Plugins](#plugins) | [Log and debug](#log-and-debug) | [Frequently Asked Questions](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
 
+Download the website to the local directory (including all css, images, js, etc.)
 
-Download website to local directory (including all css, images, js, etc.)
-
-Try it using [demo app](https://github.com/website-scraper/demo)
-
-**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download dynamic website take a look on [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
+**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download a dynamic website take a look at [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
 
 This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
 
@@ -314,47 +311,44 @@ registerAction('beforeRequest', async ({resource, requestOptions}) => {
 ```
 
 ##### afterResponse
-Action afterResponse is called after each response, allows to customize resource or reject its saving.
+Action afterResponse is called after each response, it allows to customize resource or reject its saving.
 
 Parameters - object which includes:
 * response - response object from http module [got](https://github.com/sindresorhus/got#response)
 
-Should return resolved `Promise` if resource should be saved or rejected with Error `Promise` if it should be skipped.
-Promise should be resolved with:
-* the `response` object with the `body` modified in place as necessary.
-* or object with properties 
-  * `body` (response body, string)
-  * `encoding` (`binary` or `utf8`) used to save the file, binary used by default.
-  * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for result.
-* a binary `string`. This is advised against because of the binary assumption being made can foul up saving of `utf8` responses to the filesystem. 
+Return resolved `Promise` with:
+  * object if the resource should be saved, object should contain next properties:
+    * `body` (string, required)
+    * `encoding` (`binary` or `utf8`) is used to save the file, binary is used by default.
+    * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for the result
+  * or null if the resource should be skipped
 
-If multiple actions `afterResponse` added - scraper will use result from last one.
+If multiple actions `afterResponse` are added - the scraper will use the result from the last one.
 ```javascript
-// Do not save resources which responded with 404 not found status code
+// Do not save resources that responded with 404 not found status code
 registerAction('afterResponse', ({response}) => {
 	if (response.statusCode === 404) {
-			return null;
+		return null;
 	} else {
-		// if you don't need metadata - you can just return Promise.resolve(response.body)
 		return {
 			body: response.body,
+                        encoding: 'utf8',
 			metadata: {
 				headers: response.headers,
 				someOtherData: [ 1, 2, 3 ]
-			},
-      encoding: 'utf8'
+			}
 		}
 	}
 });
 ```
 
 ##### onResourceSaved
-Action onResourceSaved is called each time after resource is saved (to file system or other storage with 'saveResource' action).
+Action onResourceSaved is called each time after a resource is saved (to file system or other storage with 'saveResource' action).
 
 Parameters- object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
-Scraper ignores result returned from this action and does not wait until it is resolved
+Scraper ignores the result returned from this action and does not wait until it is resolved
 ```javascript
 registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
 ```
@@ -438,7 +432,7 @@ Array of [Resource](https://github.com/website-scraper/node-website-scraper/blob
 
 ## Log and debug
 This module uses [debug](https://github.com/visionmedia/debug) to log events. To enable logs you should use environment variable `DEBUG`.
-Next command will log everything from website-scraper
+The next command will log everything from website-scraper
 ```bash
 export DEBUG=website-scraper*; node app.js
 ```
