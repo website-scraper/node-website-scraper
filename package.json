@@ -41,7 +41,7 @@
     "css-url-parser": "^1.0.0",
     "debug": "^4.3.1",
     "fs-extra": "^11.1.0",
-    "got": "^13.0.0",
+    "got": "^14.4.2",
     "normalize-url": "^8.0.0",
     "p-queue": "^8.0.0",
     "sanitize-filename": "^1.6.3",
