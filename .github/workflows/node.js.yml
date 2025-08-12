@@ -42,7 +42,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish Qlty code coverage
         if: ${{ matrix.node-version == '22' && matrix.os == 'ubuntu-latest' }}
-        uses: qltysh/qlty-action/coverage@v1
+        uses: qltysh/qlty-action/coverage@v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: coverage/lcov.info
