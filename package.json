@@ -43,7 +43,7 @@
     "fs-extra": "^11.1.0",
     "got": "^14.4.7",
     "normalize-url": "^8.0.0",
-    "p-queue": "^8.0.0",
+    "p-queue": "^9.0.0",
     "sanitize-filename": "^1.6.3",
     "srcset": "^5.0.0"
   },
