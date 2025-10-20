@@ -17,12 +17,13 @@ jobs:
         node-version:
           - 20
           - 22
+          - 24
           - current
         os:
           - ubuntu-latest
           - windows-latest
         include:
-          - node-version: 22
+          - node-version: 24
             os: macos-latest
 
     steps:
@@ -34,14 +35,14 @@ jobs:
       - run: npm i
       - run: npm test
       - run: npm run eslint
-        if: ${{ matrix.node-version == '22' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.node-version == '24' && matrix.os == 'ubuntu-latest' }}
       - name: Coveralls
-        if: ${{ matrix.node-version == '22' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.node-version == '24' && matrix.os == 'ubuntu-latest' }}
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish Qlty code coverage
-        if: ${{ matrix.node-version == '22' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.node-version == '24' && matrix.os == 'ubuntu-latest' }}
         uses: qltysh/qlty-action/coverage@v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
