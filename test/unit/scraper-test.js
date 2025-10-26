@@ -491,7 +491,7 @@ describe('Scraper', () => {
 				should(true).be.eql(false);
 			} catch (err) {
 				should(err).be.instanceOf(Error);
-				should(err.message).be.eql('Response code 400 (Bad Request)');
+				should(err.code).be.eql('ERR_NON_2XX_3XX_RESPONSE');
 				should(fs.existsSync(testDirname)).be.eql(false);
 			}
 		});
