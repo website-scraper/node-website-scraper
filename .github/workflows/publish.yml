@@ -1,0 +1,84 @@
+name: Create a tag and publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        type: choice
+        required: true
+        default: 'minor'
+        options:
+          - patch
+          - minor
+          - major
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+      dry-run:
+        description: 'Run in "dry run" mode'
+        type: boolean
+        default: false
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          # Required to allow push to master without the checks/PR
+          token: ${{ secrets.GH_PUSH_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verifying provenance attestations
+        run: npm audit signatures
+
+      - name: Run tests
+        run: npm test
+
+      - name: Bump version and create tag
+        id: bump-version
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          TAG=$(npm version ${{ github.event.inputs.bump }} -m "Release %s")
+          echo "Created tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Push changes to master
+        if: ${{ !inputs.dry-run }}
+        run: |
+          git push origin master --follow-tags
+
+      - name: Publish to npm
+        env:
+          DRY_RUN_FLAG: ${{ inputs.dry-run && '--dry-run' || '' }}
+        run: npm publish --provenance --access=public $DRY_RUN_FLAG
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry-run }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump-version.outputs.tag }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
