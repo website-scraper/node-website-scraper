@@ -78,16 +78,16 @@ jobs:
           echo "Created tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Push changes to master
-        if: ${{ !inputs.dryRun }}
-        run: |
-          git push origin master --follow-tags
-
       - name: Publish to npm
         env:
           DRY_RUN_FLAG: ${{ inputs.dryRun && '--dry-run' || '' }}
           TAG_FLAG: ${{ startsWith(inputs.bump, 'pre') && format('--tag {0}', inputs.npmPreTag) || ''}}
         run: npm publish --provenance --access=public $DRY_RUN_FLAG $TAG_FLAG
+
+      - name: Push changes to master
+        if: ${{ !inputs.dryRun }}
+        run: |
+          git push origin master --follow-tags
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
