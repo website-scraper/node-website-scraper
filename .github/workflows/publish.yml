@@ -16,7 +16,16 @@ on:
           - preminor
           - prepatch
           - prerelease
-      dry-run:
+      preid:
+        description: 'Prerelease identifier (see "npm version") for pre* bumps'
+        type: string
+        required: false
+      npmPreTag:
+        description: 'NPM tag used for all pre* bumps'
+        type: string
+        default: 'next'
+        required: false
+      dryRun:
         description: 'Run in "dry run" mode'
         type: boolean
         default: false
@@ -49,6 +58,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: List of installed dependencies
+        run: npm ls -a
+
       - name: Verifying provenance attestations
         run: npm audit signatures
 
@@ -57,25 +69,28 @@ jobs:
 
       - name: Bump version and create tag
         id: bump-version
+        env:
+          PREID_FLAG: ${{ startsWith(inputs.bump, 'pre') && inputs.preid && format('--preid {0}', inputs.preid) || '' }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          TAG=$(npm version ${{ github.event.inputs.bump }} -m "Release %s")
+          TAG=$(npm version ${{ github.event.inputs.bump }} $PREID_FLAG -m "Release %s")
           echo "Created tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Push changes to master
-        if: ${{ !inputs.dry-run }}
+        if: ${{ !inputs.dryRun }}
         run: |
           git push origin master --follow-tags
 
       - name: Publish to npm
         env:
-          DRY_RUN_FLAG: ${{ inputs.dry-run && '--dry-run' || '' }}
-        run: npm publish --provenance --access=public $DRY_RUN_FLAG
+          DRY_RUN_FLAG: ${{ inputs.dryRun && '--dry-run' || '' }}
+          TAG_FLAG: ${{ startsWith(inputs.bump, 'pre') && format('--tag {0}', inputs.npmPreTag) || ''}}
+        run: npm publish --provenance --access=public $DRY_RUN_FLAG $TAG_FLAG
 
       - name: Create GitHub Release
-        if: ${{ !inputs.dry-run }}
+        if: ${{ !inputs.dryRun }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.bump-version.outputs.tag }}
