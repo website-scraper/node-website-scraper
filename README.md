@@ -13,7 +13,11 @@ Download the website to the local directory (including all css, images, js, etc.
 
 **Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download a dynamic website take a look at [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
 
-This module is an Open Source Software maintained by one developer in free time. If you want to thank the author of this module you can use [GitHub Sponsors](https://github.com/sponsors/s0ph1e) or [Patreon](https://www.patreon.com/s0ph1e).
+## Sponsors
+Maintenance of this project is made possible by all the [contributors](https://github.com/website-scraper/node-website-scraper/graphs/contributors) and [sponsors](https://github.com/sponsors/s0ph1e).
+If you'd like to sponsor this project and have your avatar or company logo appear below [click here](https://github.com/sponsors/s0ph1e). 💖
+
+<!-- sponsors --><!-- sponsors -->
 
 ## Requirements
 * nodejs version >= 20.18.1
