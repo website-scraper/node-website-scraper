@@ -91,7 +91,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
         with:
           tag_name: ${{ steps.bump-version.outputs.tag }}
           generate_release_notes: true
