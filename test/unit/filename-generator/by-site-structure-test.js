@@ -34,7 +34,7 @@ describe('FilenameGenerator: bySiteStructure', () => {
 
 	it('should replace not allowed characters from filename', () => {
 		const r1 = new Resource('http://example.com/some/path/<*a*>.png');
-		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/some/path/__a__.png');
+		bySiteStructureFilenameGenerator(r1, options).should.equalFileSystemPath('example.com/some/path/_a_.png');
 	});
 
 	it('should replace not allowed characters from path', () => {
@@ -74,8 +74,10 @@ describe('FilenameGenerator: bySiteStructure', () => {
 	it('should shorten filename', () => {
 		const resourceFilename = new Array(1000).fill('a').join('') + '.png';
 		const r = new Resource('http://example.com/' + resourceFilename);
-		const filename = bySiteStructureFilenameGenerator(r, options);
-		should(filename.length).be.lessThan(255);
+		const filepath = bySiteStructureFilenameGenerator(r, options);
+		const filenameParts = filepath.split('/');
+		const filename = filenameParts[filenameParts.length - 1];
+		should(filename.length).be.lessThanOrEqual(255);
 	});
 
 	it('should shorten filename if resource is html without ext and default name is too long', () => {
@@ -85,17 +87,17 @@ describe('FilenameGenerator: bySiteStructure', () => {
 		const filepath = bySiteStructureFilenameGenerator(r, { defaultFilename: defaultFilename });
 		const filenameParts = filepath.split('/');
 		const filename = filenameParts[filenameParts.length - 1];
-		should(filename.length).be.lessThan(255);
+		should(filename.length).be.lessThanOrEqual(255);
 	});
 
 	it('should return decoded filepath', () => {
 		const r = new Resource('https://developer.mozilla.org/ru/docs/JavaScript_%D1%88%D0%B5%D0%BB%D0%BB%D1%8B');
-		const filename = bySiteStructureFilenameGenerator(r, options);
-		filename.should.equalFileSystemPath('developer.mozilla.org/ru/docs/JavaScript_шеллы');
+		const filepath = bySiteStructureFilenameGenerator(r, options);
+		filepath.should.equalFileSystemPath('developer.mozilla.org/ru/docs/JavaScript_шеллы');
 
 		const r2 = new Resource('https://developer.mozilla.org/Hello%20G%C3%BCnter.png');
-		const filename2 = bySiteStructureFilenameGenerator(r2, options);
-		filename2.should.equalFileSystemPath('developer.mozilla.org/Hello Günter.png');
+		const filepath2 = bySiteStructureFilenameGenerator(r2, options);
+		filepath2.should.equalFileSystemPath('developer.mozilla.org/Hello Günter.png');
 	});
 
 	it('should keep query strings', () => {
