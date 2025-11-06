@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -63,7 +65,7 @@ describe('Functional: images', () => {
 		const resultPng = fs.readFileSync(testDirname + '/img/test-image.png');
 		const resultJpg = fs.readFileSync(testDirname + '/img/test-image.jpg');
 
-		should(resultPng).be.eql(originalPng);
-		should(resultJpg).be.eql(originalJpg);
+		resultPng.should.be.eql(originalPng);
+		resultJpg.should.be.eql(originalJpg);
 	});
 });

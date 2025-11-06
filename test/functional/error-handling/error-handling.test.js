@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -65,11 +67,11 @@ describe('Functional error handling', function() {
 			};
 
 			return scrape(scraperOptions).then(function() {
-				should(true).be.eql(false);
+				false.should.be.true;
 			}).catch(function (err) {
-				should(err.message).be.eql('FS FAILED!');
-				should(saveResourceStub.callCount).be.eql(3);
-				should(handleErrorStub.callCount).be.eql(1);
+				err.message.should.be.eql('FS FAILED!');
+				saveResourceStub.callCount.should.be.eql(3);
+				handleErrorStub.callCount.should.be.eql(1);
 			});
 		});
 
@@ -83,8 +85,8 @@ describe('Functional error handling', function() {
 			};
 
 			return scrape(scraperOptions).then(function() {
-				should(saveResourceStub.callCount).be.eql(7);
-				should(handleErrorStub.callCount).be.eql(0);
+				saveResourceStub.callCount.should.be.eql(7);
+				handleErrorStub.callCount.should.be.eql(0);
 			});
 		});
 	});
@@ -113,11 +115,11 @@ describe('Functional error handling', function() {
 			scraper.options.ignoreErrors = false;
 
 			return scraper.scrape().then(function() {
-				should(true).be.eql(false);
+				false.should.be.true;
 			}).catch(function (err) {
 				fs.existsSync(testDirname).should.be.eql(false);
-				should(err.message).be.eql('RESOURCE HANDLER FAILED!');
-				should(handleResourceStub.callCount).be.eql(4);
+				err.message.should.be.eql('RESOURCE HANDLER FAILED!');
+				handleResourceStub.callCount.should.be.eql(4);
 			});
 		});
 
@@ -125,7 +127,7 @@ describe('Functional error handling', function() {
 			scraper.options.ignoreErrors = true;
 
 			return scraper.scrape().then(function() {
-				should(handleResourceStub.callCount).be.eql(7);
+				handleResourceStub.callCount.should.be.eql(7);
 				fs.existsSync(testDirname).should.be.eql(true);
 			});
 		});

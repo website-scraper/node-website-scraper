@@ -1,4 +1,5 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
 import sinon from 'sinon';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -70,7 +71,7 @@ describe('Scraper', () => {
 			const r = new Resource('http://example.com/a.png', 'a.png');
 			r.setText('some text');
 
-			return s.saveResource(r).then(() => should(true).eql(false)).catch(() => {
+			return s.saveResource(r).then(() => false.should.be.true).catch(() => {
 				s.handleError.calledOnce.should.be.eql(true);
 				s.handleError.calledWith(dummyError).should.be.eql(true);
 			});
@@ -103,8 +104,9 @@ describe('Scraper', () => {
 
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
-				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				rr.getFilename().should.not.be.empty;
+				rr.getText().should.be.a.string;
+				rr.getText().should.not.be.empty;
 			});
 
 			it('should return null if the urlFilter returns false', async () =>{
@@ -118,7 +120,7 @@ describe('Scraper', () => {
 				r.getDepth = sinon.stub().returns(2);
 
 				const rr = await s.requestResource(r);
-				should.equal(rr, null);
+				(rr === null).should.be.true;
 			});
 
 			it('should ignore urlFilter if resource depth=0', async () => {
@@ -138,8 +140,9 @@ describe('Scraper', () => {
 
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com');
-				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				rr.getFilename().should.not.be.empty;
+				rr.getText().should.be.a.string;
+				rr.getText().should.not.be.empty;
 			});
 		});
 
@@ -160,8 +163,9 @@ describe('Scraper', () => {
 
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
-				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				rr.getFilename().should.not.be.empty;
+				rr.getText().should.be.a.string;
+				rr.getText().should.not.be.empty;
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', async () =>{
@@ -181,8 +185,9 @@ describe('Scraper', () => {
 
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
-				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				rr.getFilename().should.not.be.empty;
+				rr.getText().should.be.a.string;
+				rr.getText().should.not.be.empty;
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', async () =>{
@@ -201,8 +206,9 @@ describe('Scraper', () => {
 				const rr = await s.requestResource(r);
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
-				rr.getFilename().should.be.not.empty();
-				rr.getText().should.be.not.empty();
+				rr.getFilename().should.not.be.empty;
+				rr.getText().should.be.a.string;
+				rr.getText().should.not.be.empty;
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', async () =>{
@@ -216,7 +222,7 @@ describe('Scraper', () => {
 				r.getDepth = sinon.stub().returns(4);
 
 				const rr = await s.requestResource(r);
-				should.equal(rr, null);
+				(rr === null).should.be.true;
 			});
 		});
 
@@ -233,7 +239,7 @@ describe('Scraper', () => {
 
 			try {
 				await s.requestResource(r);
-				should(true).eql(false);
+				false.should.be.true;
 			} catch (err) {
 				s.handleError.calledOnce.should.be.eql(true);
 			}
@@ -269,12 +275,12 @@ describe('Scraper', () => {
 			const r = new Resource('http://example.com');
 			await s.requestResource(r);
 
-			should(r.getText()).be.eql('test body');
-			should(r.getUrl()).be.eql('http://example.com');
-			should(r.getType()).be.eql('html');
-			should(r.getFilename()).be.eql('generated-filename');
-			should(r.getEncoding()).be.eql('utf8');
-			should(r.metadata).be.eql(metadata);
+			r.getText().should.be.eql('test body');
+			r.getUrl().should.be.eql('http://example.com');
+			r.getType().should.be.eql('html');
+			r.getFilename().should.be.eql('generated-filename');
+			r.getEncoding().should.be.eql('utf8');
+			r.metadata.should.be.eql(metadata);
 		});
 	});
 
@@ -286,7 +292,7 @@ describe('Scraper', () => {
 				ignoreErrors: true
 			});
 			return s.handleError(new Error('Request failed!')).then(() => {
-				should(true).be.eql(true);
+				true.should.be.true;
 			});
 		});
 
@@ -297,9 +303,9 @@ describe('Scraper', () => {
 				ignoreErrors: false
 			});
 			return s.handleError(new Error('Request failed!')).then(() => {
-				should(false).be.eql(true);
+				false.should.be.true;
 			}).catch(() => {
-				should(true).be.eql(true);
+				true.should.be.true;
 			});
 		});
 	});
@@ -331,7 +337,7 @@ describe('Scraper', () => {
 			sinon.stub(s, 'load').rejects(new Error('Awful error'));
 
 			return s.scrape().then(() => {
-				should(true).be.eql(false);
+				false.should.be.true();
 			}).catch((err) => {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('Awful error');
@@ -353,8 +359,10 @@ describe('Scraper', () => {
 			return s.scrape().then((res) => {
 				res.should.be.instanceOf(Array);
 				res.should.have.length(2);
-				res[0].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
-				res[1].should.be.instanceOf(Resource).and.have.properties(['url', 'filename', 'children']);
+				res[0].should.be.instanceOf(Resource);
+				res[0].should.include.keys(['url', 'filename', 'children']);
+				res[1].should.be.instanceOf(Resource);
+				res[1].should.include.keys(['url', 'filename', 'children']);
 			});
 		});
 	});
@@ -376,16 +384,16 @@ describe('Scraper', () => {
 
 			const result = await s.runActions('beforeStart', {options: s.options});
 
-			should(beforeStartActionStub1.callCount).eql(1);
-			should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+			beforeStartActionStub1.callCount.should.be.eql(1);
+			beforeStartActionStub1.args[0][0].should.be.eql({options: s.options});
 
-			should(beforeStartActionStub2.callCount).eql(1);
-			should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+			beforeStartActionStub2.callCount.should.be.eql(1);
+			beforeStartActionStub2.args[0][0].should.be.eql({options: s.options, result: 1});
 
-			should(beforeStartActionStub3.callCount).eql(1);
-			should(beforeStartActionStub3.args[0][0]).be.eql({options: s.options, result: 2});
+			beforeStartActionStub3.callCount.should.be.eql(1);
+			beforeStartActionStub3.args[0][0].should.be.eql({options: s.options, result: 2});
 
-			should(result).eql({result: 3});
+			result.should.be.eql({result: 3});
 		});
 
 		it('should fail if one of actions fails', async () => {
@@ -404,17 +412,17 @@ describe('Scraper', () => {
 
 			try {
 				await s.runActions('beforeStart', {options: s.options});
-				should(false).eql(true);
+				false.should.be.true();
 			} catch (err) {
-				should(beforeStartActionStub1.callCount).eql(1);
-				should(beforeStartActionStub1.args[0][0]).be.eql({options: s.options});
+				beforeStartActionStub1.callCount.should.be.eql(1);
+				beforeStartActionStub1.args[0][0].should.be.eql({options: s.options});
 
-				should(beforeStartActionStub2.callCount).eql(1);
-				should(beforeStartActionStub2.args[0][0]).be.eql({options: s.options, result: 1});
+				beforeStartActionStub2.callCount.should.be.eql(1);
+				beforeStartActionStub2.args[0][0].should.be.eql({options: s.options, result: 1});
 
-				should(beforeStartActionStub3.callCount).eql(0);
+				beforeStartActionStub3.callCount.should.be.eql(0);
 
-				should(err.message).eql('Error from beforeStart 2');
+				err.message.should.be.eql('Error from beforeStart 2');
 			}
 		});
 
@@ -426,25 +434,25 @@ describe('Scraper', () => {
 
 			const result = await s.runActions('beforeRequest', {requestOptions: {a: 1}});
 
-			should(result).eql({requestOptions: {a: 1}});
+			result.should.be.eql({requestOptions: {a: 1}});
 		});
 	});
 
 	describe('export defaults', () => {
 		it('should export defaults', () => {
-			should(defaultOptions).be.have.properties([
-				'subdirectories', 'sources', 'defaultFilename', 'prettifyUrls',
-				'request', 'requestConcurrency', 'ignoreErrors', 'urlFilter',
-				'maxDepth', 'maxRecursiveDepth'
+			defaultOptions.should.include.keys([
+				'defaultFilename', 'prettifyUrls', 'sources', 'subdirectories',
+				'request', 'requestConcurrency', 'urlFilter', 'recursive',
+				'maxRecursiveDepth', 'maxDepth', 'ignoreErrors'
 			]);
 		});
 	});
 
 	describe('export plugins', () => {
 		it('should export default plugins', () => {
-			should(plugins.SaveResourceToFileSystemPlugin).be.instanceOf(Function);
-			should(plugins.GenerateFilenameByTypePlugin).be.instanceOf(Function);
-			should(plugins.GenerateFilenameBySiteStructurePlugin).be.instanceOf(Function);
+			plugins.SaveResourceToFileSystemPlugin.should.be.instanceOf(Function);
+			plugins.GenerateFilenameByTypePlugin.should.be.instanceOf(Function);
+			plugins.GenerateFilenameBySiteStructurePlugin.should.be.instanceOf(Function);
 		});
 	});
 
@@ -458,7 +466,7 @@ describe('Scraper', () => {
 
 			await s.scrape();
 
-			should(fs.existsSync(testDirname)).be.eql(true);
+			fs.existsSync(testDirname).should.be.eql(true);
 		});
 
 		it('should save resource to FS', async () => {
@@ -471,8 +479,8 @@ describe('Scraper', () => {
 			await s.scrape();
 
 			const filename = path.join(testDirname, 'index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			fs.existsSync(filename).should.be.eql(true);
+			fs.readFileSync(filename).toString().should.be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should remove directory on error', async () => {
@@ -488,11 +496,11 @@ describe('Scraper', () => {
 
 			try {
 				await s.scrape();
-				should(true).be.eql(false);
+				false.should.be.true();
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.code).be.eql('ERR_NON_2XX_3XX_RESPONSE');
-				should(fs.existsSync(testDirname)).be.eql(false);
+				err.should.be.instanceOf(Error);
+				err.code.should.be.eql('ERR_NON_2XX_3XX_RESPONSE');
+				fs.existsSync(testDirname).should.be.eql(false);
 			}
 		});
 
@@ -502,10 +510,10 @@ describe('Scraper', () => {
 					urls: 'http://example.com',
 				});
 				await s.scrape();
-				should(false).eql(true);
+				false.should.be.true();
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).containEql('Incorrect directory');
+				err.should.be.instanceOf(Error);
+				err.message.should.include('Incorrect directory');
 			}
 		});
 
@@ -516,10 +524,10 @@ describe('Scraper', () => {
 					directory: ''
 				});
 				await s.scrape();
-				should(false).eql(true);
+				false.should.be.true();
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).containEql('Incorrect directory');
+				err.should.be.instanceOf(Error);
+				err.message.should.include('Incorrect directory');
 			}
 		});
 
@@ -530,10 +538,10 @@ describe('Scraper', () => {
 					directory: {}
 				});
 				await s.scrape();
-				should(false).eql(true);
+				false.should.be.true();
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).containEql('Incorrect directory');
+				err.should.be.instanceOf(Error);
+				err.message.should.include('Incorrect directory');
 			}
 		});
 
@@ -545,10 +553,10 @@ describe('Scraper', () => {
 					directory: testDirname
 				});
 				await s.scrape();
-				should(false).eql(true);
+				false.should.be.true();
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).match(/Directory (.*?) exists/);
+				err.should.be.instanceOf(Error);
+				err.message.should.match(/Directory (.*?) exists/);
 			}
 		});
 	});
@@ -567,11 +575,11 @@ describe('Scraper', () => {
 
 			await s.scrape();
 
-			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameByTypePlugin);
+			s.options.plugins[0].should.be.instanceOf(plugins.GenerateFilenameByTypePlugin);
 
 			const filename = path.join(testDirname, 'index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			fs.existsSync(filename).should.be.eql(true);
+			fs.readFileSync(filename).toString().should.be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should use bySiteStructure plugin if filenameGenerator option is set', async () => {
@@ -584,11 +592,11 @@ describe('Scraper', () => {
 
 			await s.scrape();
 
-			should(s.options.plugins[0]).be.instanceOf(plugins.GenerateFilenameBySiteStructurePlugin);
+			s.options.plugins[0].should.be.instanceOf(plugins.GenerateFilenameBySiteStructurePlugin);
 
 			const filename = path.join(testDirname, 'example.com/index.html');
-			should(fs.existsSync(filename)).be.eql(true);
-			should(fs.readFileSync(filename).toString()).be.eql('<html><head></head><body>some text</body></html>');
+			fs.existsSync(filename).should.be.eql(true);
+			fs.readFileSync(filename).toString().should.be.eql('<html><head></head><body>some text</body></html>');
 		});
 
 		it('should ignore filenameGenerator option if function passed', async () => {
@@ -598,7 +606,7 @@ describe('Scraper', () => {
 				filenameGenerator: () => {}
 			});
 
-			should(s.options.plugins.length).be.eql(0);
+			s.options.plugins.length.should.be.eql(0);
 		});
 	});
 });

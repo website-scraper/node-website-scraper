@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -50,15 +52,15 @@ describe('Functional html id href', function() {
 			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
 			// should update path to external svgs
-			should(indexHtml).containEql('xlink:href="local/sprite.svg#icon-undo"');
-			should(indexHtml).containEql('href="local/sprite.svg#icon-redo"');
+			indexHtml.should.contain('xlink:href="local/sprite.svg#icon-undo"');
+			indexHtml.should.contain('href="local/sprite.svg#icon-redo"');
 			// should keep links to local svgs
-			should(indexHtml).containEql('xlink:href="#codrops" class="codrops-1"');
-			should(indexHtml).containEql('xlink:href="#codrops" class="codrops-2"');
-			should(indexHtml).containEql('xlink:href="#codrops" class="codrops-3"');
+			indexHtml.should.contain('xlink:href="#codrops" class="codrops-1"');
+			indexHtml.should.contain('xlink:href="#codrops" class="codrops-2"');
+			indexHtml.should.contain('xlink:href="#codrops" class="codrops-3"');
 
-			should(indexHtml).containEql('<a href="#top">Go to top (this page)</a>');
-			should(indexHtml).containEql('<a href="other.html#top">Go to top (other page)</a>');
+			indexHtml.should.contain('<a href="#top">Go to top (this page)</a>');
+			indexHtml.should.contain('<a href="other.html#top">Go to top (other page)</a>');
 		});
 	});
 });

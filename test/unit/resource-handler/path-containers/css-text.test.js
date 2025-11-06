@@ -1,11 +1,12 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
 import CssText from '../../../../lib/resource-handler/path-containers/css-text.js';
 
 describe('PathsContainer: CssText', function () {
 	describe('constructor', function() {
 		it('should set text to empty string if nothing passed', function() {
 			const cssText = new CssText();
-			should(cssText.text).be.eql('');
+			cssText.text.should.eql('');
 		});
 	});
 
@@ -18,9 +19,9 @@ describe('PathsContainer: CssText', function () {
 			`;
 			const cssText = new CssText(text);
 			const resultPaths = cssText.getPaths();
-			should(resultPaths).containEql('a.jpg');
-			should(resultPaths).containEql('b.jpg');
-			should(resultPaths).containEql('c.jpg');
+			resultPaths.should.contain('a.jpg');
+			resultPaths.should.contain('b.jpg');
+			resultPaths.should.contain('c.jpg');
 		});
 
 		it('should return paths from @import', function() {
@@ -30,8 +31,8 @@ describe('PathsContainer: CssText', function () {
 			`;
 			const cssText = new CssText(text);
 			const resultPaths = cssText.getPaths();
-			should(resultPaths).containEql('style1.css');
-			should(resultPaths).containEql('style2.css');
+			resultPaths.should.contain('style1.css');
+			resultPaths.should.contain('style2.css');
 		});
 
 		it('should return paths from @import url()', function() {
@@ -41,8 +42,8 @@ describe('PathsContainer: CssText', function () {
 			`;
 			const cssText = new CssText(text);
 			const resultPaths = cssText.getPaths();
-			should(resultPaths).containEql('style1.css');
-			should(resultPaths).containEql('style2.css');
+			resultPaths.should.contain('style1.css');
+			resultPaths.should.contain('style2.css');
 		});
 	});
 
@@ -64,7 +65,7 @@ describe('PathsContainer: CssText', function () {
 				.b {background: url('images/b.jpg')}
 				.c {background: url("images/c.jpg")}
 			`;
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 
 		it('should update all duplicated paths in text', function() {
@@ -82,7 +83,7 @@ describe('PathsContainer: CssText', function () {
 				.b {background: url('newImg.jpg')}
 				.c {background: url("newImg.jpg")}
 			`;
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 
 		it('should update only completely equal paths (should not update partially matched)', function() {
@@ -100,7 +101,7 @@ describe('PathsContainer: CssText', function () {
 				@import 'mystyle.css';
 				@import url('another-style.css');
 			`;
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 
 		it('should update only specified paths', function() {
@@ -118,7 +119,7 @@ describe('PathsContainer: CssText', function () {
 				.b {background: url('b.jpg')}
 				.c {background: url("c.jpg")}
 			`;
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 	});
 });

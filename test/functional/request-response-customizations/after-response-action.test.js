@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -54,12 +56,17 @@ describe('Functional: afterResponse action in plugin', function() {
 		};
 
 		return scrape(options).then(function(result) {
-			should(result[0]).have.properties({ url: 'http://example.com/1.html', filename: '1.html', saved: true });
-			should(result[1]).have.properties({ url: 'http://example.com/2.html', filename: '2.html', saved: false });
+			result[0].should.have.property('url', 'http://example.com/1.html');
+			result[0].should.have.property('filename', '1.html');
+			result[0].should.have.property('saved', true);
+
+			result[1].should.have.property('url', 'http://example.com/2.html');
+			result[1].should.have.property('filename', '2.html');
+			result[1].should.have.property('saved', false);
 
 			fs.existsSync(testDirname + '/1.html').should.be.eql(true);
 			const indexHtml = fs.readFileSync(testDirname + '/1.html').toString();
-			should(indexHtml).containEql('content of 1.html');
+			indexHtml.should.contain('content of 1.html');
 
 			fs.existsSync(testDirname + '/2.html').should.be.eql(false);
 		});

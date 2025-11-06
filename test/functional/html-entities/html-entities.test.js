@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -58,34 +60,34 @@ describe('Functional: html entities', function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
-			should(indexHtml).containEql('href="local/fonts.css');
+			indexHtml.should.contain('href="local/fonts.css');
 			fs.existsSync(testDirname + '/local/fonts.css').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/fonts.css').toString()).be.eql('fonts.css');
+			fs.readFileSync(testDirname + '/local/fonts.css').toString().should.be.eql('fonts.css');
 
 			// single quote (') replaced with &#x27; in attribute
-			should(indexHtml).containEql('background: url(\'local/style-attr.png\')');
+			indexHtml.should.contain('background: url(\'local/style-attr.png\')');
 			fs.existsSync(testDirname + '/local/style-attr.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/style-attr.png').toString()).be.eql('style-attr.png');
+			fs.readFileSync(testDirname + '/local/style-attr.png').toString().should.be.eql('style-attr.png');
 
 			// double quote (") replaced with &quot; in attribute
-			should(indexHtml).containEql('background: url(&quot;local/style-attr2.png&quot;)');
+			indexHtml.should.contain('background: url(&quot;local/style-attr2.png&quot;)');
 			fs.existsSync(testDirname + '/local/style-attr2.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/style-attr2.png').toString()).be.eql('style-attr2.png');
+			fs.readFileSync(testDirname + '/local/style-attr2.png').toString().should.be.eql('style-attr2.png');
 
-			should(indexHtml).containEql('img src="local/img.png');
+			indexHtml.should.contain('img src="local/img.png');
 			fs.existsSync(testDirname + '/local/img.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/img.png').toString()).be.eql('img.png');
+			fs.readFileSync(testDirname + '/local/img.png').toString().should.be.eql('img.png');
 
-			should(indexHtml).containEql('href="index_1.html"');
+			indexHtml.should.contain('href="index_1.html"');
 			fs.existsSync(testDirname + '/index_1.html').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/index_1.html').toString()).be.eql('<html><head></head><body>index_1.html</body></html>');
+			fs.readFileSync(testDirname + '/index_1.html').toString().should.be.eql('<html><head></head><body>index_1.html</body></html>');
 
 			fs.existsSync(testDirname + '/local/style.css').should.be.eql(true);
 			const styleCss = fs.readFileSync(testDirname + '/local/style.css').toString();
 
-			should(styleCss).containEql('url(\'external-style.png\')');
+			styleCss.should.contain('url(\'external-style.png\')');
 			fs.existsSync(testDirname + '/local/external-style.png').should.be.eql(true);
-			should(fs.readFileSync(testDirname + '/local/external-style.png').toString()).be.eql('external-style.png');
+			fs.readFileSync(testDirname + '/local/external-style.png').toString().should.be.eql('external-style.png');
 		});
 	});
 
@@ -106,6 +108,6 @@ describe('Functional: html entities', function() {
 			becomes
 			<div data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"></div>
 		 */
-		should(indexHtml).containEql('data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"');
+		indexHtml.should.contain('data-test="[{&quot;breakpoint&quot;: 1200,&quot;slidesToShow&quot;: 3}]"');
 	});
 });

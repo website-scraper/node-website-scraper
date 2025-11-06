@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -51,10 +53,10 @@ describe('Functional: css handling', function() {
 
 			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
 
-			should(indexHtml).containEql('local/style-tag.png');
-			should(indexHtml).containEql('local/style-attr.png');
+			indexHtml.should.contain('local/style-tag.png');
+			indexHtml.should.contain('local/style-attr.png');
 
-			should(indexHtml).containEql('background: url(\'css-like-text-in-html.png\')');
+			indexHtml.should.contain("background: url('css-like-text-in-html.png')");
 		});
 	});
 });

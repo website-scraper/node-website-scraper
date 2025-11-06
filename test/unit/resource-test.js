@@ -1,4 +1,6 @@
-import 'should';
+import * as chai from 'chai';
+chai.should();
+import '../../test/utils/assertions.js';
 import Resource from '../../lib/resource.js';
 
 describe('Resource', function() {
@@ -12,7 +14,7 @@ describe('Resource', function() {
 		it('should set correct url and filename', function() {
 			const parent = new Resource('http://example.com');
 			const child = parent.createChild('http://google.com', 'google.html');
-			child.getUrl().should.be.eql('http://google.com');
+			child.getUrl().should.eql('http://google.com');
 			child.getFilename().should.equalFileSystemPath('google.html');
 		});
 
@@ -25,10 +27,10 @@ describe('Resource', function() {
 		it('should set depth', function() {
 			const parent = new Resource('http://example.com');
 			const child = parent.createChild('http://google.com');
-			child.depth.should.be.eql(1);
+			child.depth.should.eql(1);
 
 			const childOfChild = child.createChild('http://google.com.ua');
-			childOfChild.depth.should.be.eql(2);
+			childOfChild.depth.should.eql(2);
 		});
 	});
 });
