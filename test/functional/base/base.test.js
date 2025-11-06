@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -72,18 +74,21 @@ describe('Functional: base', function() {
 			// should return right result
 			result.should.be.instanceOf(Array).and.have.length(3);
 
-			result[0].should.have.properties({ url: 'http://example.com/', filename: 'index.html' });
-			result[0].should.have.properties('children');
+			result[0].should.have.property('url', 'http://example.com/');
+			result[0].should.have.property('filename', 'index.html');
+			result[0].should.have.property('children');
 			result[0].children.should.be.instanceOf(Array).and.have.length(4);
 			result[0].children[0].should.be.instanceOf(Resource);
 
-			result[1].should.have.properties({ url: 'http://example.com/about', filename: 'about.html' });
-			result[1].should.have.properties('children');
+			result[1].should.have.property('url', 'http://example.com/about');
+			result[1].should.have.property('filename', 'about.html');
+			result[1].should.have.property('children');
 			result[1].children.should.be.instanceOf(Array).and.have.length(4);
 			result[1].children[0].should.be.instanceOf(Resource);
 
-			result[2].should.have.properties({ url: 'http://blog.example.com/', filename: 'blog.html' }); // url after redirect
-			result[2].should.have.properties('children');
+			result[2].should.have.property('url', 'http://blog.example.com/'); // url after redirect
+			result[2].should.have.property('filename', 'blog.html');
+			result[2].should.have.property('children');
 			result[2].children.should.be.instanceOf(Array).and.have.length(1);
 			result[2].children[0].should.be.instanceOf(Resource);
 
@@ -102,7 +107,7 @@ describe('Functional: base', function() {
 			// all sources in index.html should be replaced with local paths
 			let $ = cheerio.load(fs.readFileSync(testDirname + '/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('css/index.css');
-			$('style').html().should.containEql('img/background.png');
+			$('style').html().should.contain('img/background.png');
 			$('img').attr('src').should.be.eql('img/cat.jpg');
 			$('script').attr('src').should.be.eql('js/script.min.js');
 
@@ -115,22 +120,22 @@ describe('Functional: base', function() {
 
 			// all sources in index.css should be replaces with local files recursively
 			const indexCss = fs.readFileSync(testDirname + '/css/index.css').toString();
-			indexCss.should.not.containEql('files/index-import-1.css');
-			indexCss.should.not.containEql('files/index-import-2.css');
-			indexCss.should.not.containEql('http://example.com/files/index-image-1.png');
-			indexCss.should.containEql('index-import-1.css');
-			indexCss.should.containEql('index-import-2.css');
-			indexCss.should.containEql('../img/index-image-1.png');
+			indexCss.should.not.contain('files/index-import-1.css');
+			indexCss.should.not.contain('files/index-import-2.css');
+			indexCss.should.not.contain('http://example.com/files/index-image-1.png');
+			indexCss.should.contain('index-import-1.css');
+			indexCss.should.contain('index-import-2.css');
+			indexCss.should.contain('../img/index-image-1.png');
 
 			const indexImportCss = fs.readFileSync(testDirname + '/css/index-import-2.css').toString();
-			indexImportCss.should.not.containEql('http://example.com/files/index-image-2.png');
-			indexImportCss.should.containEql('../img/index-image-2.png');
+			indexImportCss.should.not.contain('http://example.com/files/index-image-2.png');
+			indexImportCss.should.contain('../img/index-image-2.png');
 
 			// should deal with base tag in about.html and not load new resources
 			// all sources in about.html should be replaced with already loaded local resources
 			$ = cheerio.load(fs.readFileSync(testDirname + '/about.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('css/index.css');
-			$('style').html().should.containEql('img/background.png');
+			$('style').html().should.contain('img/background.png');
 			$('img').attr('src').should.be.eql('img/cat.jpg');
 			$('script').attr('src').should.be.eql('js/script.min.js');
 
@@ -144,21 +149,21 @@ describe('Functional: base', function() {
 		return scrape({...options, filenameGenerator: 'bySiteStructure'}).then(function(result) {
 			result.should.be.instanceOf(Array).and.have.length(3);
 
-			should(result[0].url).eql('http://example.com/');
-			should(result[0].filename).equalFileSystemPath('example.com/index.html');
-			result[0].should.have.properties('children');
+			result[0].url.should.eql('http://example.com/');
+			result[0].filename.should.equalFileSystemPath('example.com/index.html');
+			result[0].should.have.property('children');
 			result[0].children.should.be.instanceOf(Array).and.have.length(4);
 			result[0].children[0].should.be.instanceOf(Resource);
 
-			should(result[1].url).eql('http://example.com/about');
-			should(result[1].filename).equalFileSystemPath('example.com/about/index.html');
-			result[1].should.have.properties('children');
+			result[1].url.should.eql('http://example.com/about');
+			result[1].filename.should.equalFileSystemPath('example.com/about/index.html');
+			result[1].should.have.property('children');
 			result[1].children.should.be.instanceOf(Array).and.have.length(4);
 			result[1].children[0].should.be.instanceOf(Resource);
 
-			should(result[2].url).eql('http://blog.example.com/');  // url after redirect
-			should(result[2].filename).equalFileSystemPath('blog.example.com/index.html');
-			result[2].should.have.properties('children');
+			result[2].url.should.eql('http://blog.example.com/');  // url after redirect
+			result[2].filename.should.equalFileSystemPath('blog.example.com/index.html');
+			result[2].should.have.property('children');
 			result[2].children.should.be.instanceOf(Array).and.have.length(1);
 			result[2].children[0].should.be.instanceOf(Resource);
 
@@ -177,7 +182,7 @@ describe('Functional: base', function() {
 			// all sources in index.html should be replaced with local paths
 			let $ = cheerio.load(fs.readFileSync(testDirname + '/example.com/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('index.css');
-			$('style').html().should.containEql('background.png');
+			$('style').html().should.contain('background.png');
 			$('img').attr('src').should.be.eql('cat.jpg');
 			$('script').attr('src').should.be.eql('script.min.js');
 
@@ -190,18 +195,18 @@ describe('Functional: base', function() {
 
 			// all sources in index.css should be replaces with local files recursively
 			const indexCss = fs.readFileSync(testDirname + '/example.com/index.css').toString();
-			indexCss.should.containEql('files/index-import-1.css');
-			indexCss.should.containEql('files/index-import-2.css');
-			indexCss.should.containEql('files/index-image-1.png');
+			indexCss.should.contain('files/index-import-1.css');
+			indexCss.should.contain('files/index-import-2.css');
+			indexCss.should.contain('files/index-image-1.png');
 
 			const indexImportCss = fs.readFileSync(testDirname + '/example.com/files/index-import-2.css').toString();
-			indexImportCss.should.containEql('index-image-2.png');
+			indexImportCss.should.contain('index-image-2.png');
 
 			// should deal with base tag in about.html and not load new resources
 			// all sources in about.html should be replaced with already loaded local resources
 			$ = cheerio.load(fs.readFileSync(testDirname + '/example.com/about/index.html').toString());
 			$('link[rel="stylesheet"]').attr('href').should.be.eql('../index.css');
-			$('style').html().should.containEql('../background.png');
+			$('style').html().should.contain('../background.png');
 			$('img').attr('src').should.be.eql('../cat.jpg');
 			$('script').attr('src').should.be.eql('../script.min.js');
 

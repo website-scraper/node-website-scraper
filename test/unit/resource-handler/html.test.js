@@ -1,4 +1,7 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+const should = chai.should();
+
 import sinon from 'sinon';
 import Resource from '../../../lib/resource.js';
 import HtmlHandler from '../../../lib/resource-handler/html/index.js';
@@ -84,7 +87,7 @@ describe('ResourceHandler: Html', () => {
 
 			return htmlHandler.handle(resource).then(() =>{
 				resource.getUrl().should.be.eql('http://some-other-domain.com/src');
-				resource.getText().should.not.containEql('<base');
+				resource.getText().should.not.contain('<base');
 			});
 		});
 
@@ -102,7 +105,7 @@ describe('ResourceHandler: Html', () => {
 
 			return htmlHandler.handle(resource).then(() => {
 				resource.getUrl().should.be.eql('http://example.com/src');
-				resource.getText().should.not.containEql('<base');
+				resource.getText().should.not.contain('<base');
 			});
 		});
 
@@ -120,7 +123,7 @@ describe('ResourceHandler: Html', () => {
 
 			return htmlHandler.handle(resource).then(() => {
 				resource.getUrl().should.be.eql('http://example.com');
-				resource.getText().should.containEql('<base target="_blank">');
+				resource.getText().should.contain('<base target="_blank">');
 			});
 		});
 	});
@@ -143,7 +146,7 @@ describe('ResourceHandler: Html', () => {
 			resource.setText(html);
 
 			await htmlHandler.handle(resource);
-			should(resource.getEncoding()).eql('utf8');
+			resource.getEncoding().should.eql('utf8');
 		});
 	});
 
@@ -161,7 +164,7 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() => {
-			resource.getText().should.containEql('Этот текст не должен быть преобразован в html entities');
+			resource.getText().should.contain('Этот текст не должен быть преобразован в html entities');
 		});
 	});
 
@@ -181,7 +184,7 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		return htmlHandler.handle(resource).then(() => {
-			resource.getText().should.containEql('viewBox="0 0 100 100"');
+			resource.getText().should.contain('viewBox="0 0 100 100"');
 		});
 	});
 
@@ -278,14 +281,14 @@ describe('ResourceHandler: Html', () => {
 		resource.setText(html);
 
 		// before handle should contain both integrity checks
-		resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
-		resource.getText().should.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
+		resource.getText().should.contain('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+		resource.getText().should.contain('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 
 		return htmlHandler.handle(resource).then(() => {
 			// after handle should contain integrity check for styles
 			// but not contain integrity check for script because it was loaded
-			resource.getText().should.containEql('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
-			resource.getText().should.not.containEql('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
+			resource.getText().should.contain('integrity="sha256-gaWb8m2IHSkoZnT23u/necREOC//MiCFtQukVUYMyuU="');
+			resource.getText().should.not.contain('integrity="sha256-X+Q/xqnlEgxCczSjjpp2AUGGgqM5gcBzhRQ0p+EAUEk="');
 		});
 	});
 
@@ -310,6 +313,6 @@ describe('ResourceHandler: Html', () => {
 		await htmlHandler.handle(resource);
 		const text = resource.getText();
 
-		should(text).containEql('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
+		text.should.contain('style="width: 300px; height: 300px; background-image:url(&quot;./images/cat.jpg&quot;)"');
 	});
 });

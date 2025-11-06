@@ -1,4 +1,5 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
 import HtmlImgSrcSetTag from '../../../../lib/resource-handler/path-containers/html-img-srcset-tag.js';
 
 describe('PathsContainer: HtmlImgSrcSetTag', function () {
@@ -6,7 +7,7 @@ describe('PathsContainer: HtmlImgSrcSetTag', function () {
 	describe('constructor', function() {
 		it('should set text to empty string if nothing passed', function() {
 			const htmlImgSrcSetTag = new HtmlImgSrcSetTag();
-			should(htmlImgSrcSetTag.text).be.eql('');
+			htmlImgSrcSetTag.text.should.eql('');
 		});
 	});
 
@@ -15,8 +16,8 @@ describe('PathsContainer: HtmlImgSrcSetTag', function () {
 			const text = 'image150.jpg 150w, image45.jpg 45w';
 			const htmlImgSrcSetTag = new HtmlImgSrcSetTag(text);
 			const resultPaths = htmlImgSrcSetTag.getPaths();
-			should(resultPaths).containEql('image150.jpg');
-			should(resultPaths).containEql('image45.jpg');
+			resultPaths.should.contain('image150.jpg');
+			resultPaths.should.contain('image45.jpg');
 		});
 	});
 
@@ -29,7 +30,7 @@ describe('PathsContainer: HtmlImgSrcSetTag', function () {
 				{ oldPath: 'image45.jpg', newPath: 'images/45.jpg' }
 			]);
 			const expectedResultText = 'images/150.jpg 150w, images/45.jpg 45w';
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 
 		it('should update all duplicated paths in text', function() {
@@ -39,7 +40,7 @@ describe('PathsContainer: HtmlImgSrcSetTag', function () {
 				{ oldPath: 'image.jpg', newPath: 'newImage.jpg' }
 			]);
 			const expectedResultText = 'newImage.jpg 150w, newImage.jpg 45w';
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 
 		it('should update only specified paths', function () {
@@ -49,7 +50,7 @@ describe('PathsContainer: HtmlImgSrcSetTag', function () {
 				{ oldPath: 'image150.jpg', newPath: 'images/150.jpg' }
 			]);
 			const expectedResultText = 'images/150.jpg 150w, image45.jpg 45w';
-			should(actualResultText).be.eql(expectedResultText);
+			actualResultText.should.eql(expectedResultText);
 		});
 	});
 });
