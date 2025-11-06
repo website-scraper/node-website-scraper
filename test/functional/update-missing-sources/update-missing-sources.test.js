@@ -1,4 +1,6 @@
-import 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -55,7 +57,7 @@ describe('Functional: update missing sources', () => {
 
 
 			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="/missing-img.png"');
+			indexBody.should.contain('<img src="/missing-img.png"');
 		});
 	});
 
@@ -78,7 +80,7 @@ describe('Functional: update missing sources', () => {
 
 
 			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
+			indexBody.should.contain('<img src="http://example.com/missing-img.png"');
 		});
 	});
 
@@ -103,7 +105,7 @@ describe('Functional: update missing sources', () => {
 
 
 			const indexBody = fs.readFileSync(testDirname + '/index.html').toString();
-			indexBody.should.containEql('<img src="http://example.com/missing-img.png"');
+			indexBody.should.contain('<img src="http://example.com/missing-img.png"');
 		});
 	});
 
@@ -130,7 +132,7 @@ describe('Functional: update missing sources', () => {
 
 
 			const link = fs.readFileSync(testDirname + '/link1.html').toString();
-			link.should.containEql('<a href="http://example.com/missing-link.html"');
+			link.should.contain('<a href="http://example.com/missing-link.html"');
 		});
 	});
 
@@ -157,10 +159,9 @@ describe('Functional: update missing sources', () => {
 
 
 			const index = fs.readFileSync(testDirname + '/index.html').toString();
-			index.should.containEql(`.a { background: url('a.png') }`);
-			index.should.containEql(`.b { background: url('http://example.com/b.png') }`);
-			index.should.containEql(`.c { background: url('c.png') }`);
+			index.should.contain(`.a { background: url('a.png') }`);
+			index.should.contain(`.b { background: url('http://example.com/b.png') }`);
+			index.should.contain(`.c { background: url('c.png') }`);
 		});
 	});
 });
-

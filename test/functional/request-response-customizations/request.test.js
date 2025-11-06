@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -34,7 +36,7 @@ describe('Functional: customize request options with plugin', function() {
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
-			should(indexHtml).containEql('response for url with query');
+			indexHtml.should.contain('response for url with query');
 		});
 	});
 
@@ -64,7 +66,7 @@ describe('Functional: customize request options with plugin', function() {
 		return scrape(options).then(function() {
 			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
 			const indexHtml = fs.readFileSync(testDirname + '/index.html').toString();
-			should(indexHtml).containEql('response for url with query');
+			indexHtml.should.contain('response for url with query');
 		});
 	});
 });

@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -47,8 +49,8 @@ describe('Functional: plugin for saving resources', () => {
 		};
 
 		return scrape(options).catch(function() {
-			should(saveResourceStub.calledOnce).be.eql(true);
-			should(saveResourceStub.args[0][0].resource.url).be.eql('http://example.com/');
+			saveResourceStub.calledOnce.should.be.eql(true);
+			saveResourceStub.args[0][0].resource.url.should.be.eql('http://example.com/');
 		});
 	});
 
@@ -63,8 +65,8 @@ describe('Functional: plugin for saving resources', () => {
 		};
 
 		return scrape(options).catch(function() {
-			should(handleErrorStub.calledOnce).be.eql(true);
-			should(handleErrorStub.args[0][0].error.message).be.eql('SCRAPER AWFUL ERROR');
+			handleErrorStub.calledOnce.should.be.eql(true);
+			handleErrorStub.args[0][0].error.message.should.be.eql('SCRAPER AWFUL ERROR');
 		});
 	});
 

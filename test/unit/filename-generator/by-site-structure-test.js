@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 
 import sinon from 'sinon';
@@ -75,7 +77,7 @@ describe('FilenameGenerator: bySiteStructure', () => {
 		const resourceFilename = new Array(1000).fill('a').join('') + '.png';
 		const r = new Resource('http://example.com/' + resourceFilename);
 		const filename = bySiteStructureFilenameGenerator(r, options);
-		should(filename.length).be.lessThan(255);
+		filename.length.should.be.lessThan(255);
 	});
 
 	it('should shorten filename if resource is html without ext and default name is too long', () => {
@@ -85,7 +87,7 @@ describe('FilenameGenerator: bySiteStructure', () => {
 		const filepath = bySiteStructureFilenameGenerator(r, { defaultFilename: defaultFilename });
 		const filenameParts = filepath.split('/');
 		const filename = filenameParts[filenameParts.length - 1];
-		should(filename.length).be.lessThan(255);
+		filename.length.should.be.lessThan(255);
 	});
 
 	it('should return decoded filepath', () => {

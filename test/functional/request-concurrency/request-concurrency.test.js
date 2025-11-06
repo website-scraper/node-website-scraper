@@ -1,4 +1,6 @@
-import 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -61,6 +63,6 @@ describe('Functional concurrent requests', function() {
 	});
 
 	it('should have maximum concurrent requests == requestConcurrency option', () => {
-		maxConcurrentRequests.should.be.belowOrEqual(1);
+		maxConcurrentRequests.should.be.at.most(1);
 	});
 });

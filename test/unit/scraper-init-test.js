@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../utils/assertions.js';
 import Scraper from '../../lib/scraper.js';
 import Resource from '../../lib/resource.js';
@@ -62,8 +64,8 @@ describe('Scraper initialization', function () {
 			});
 
 			s.options.sources.should.have.length(2);
-			s.options.sources.should.containEql({ selector: 'img', attr: 'src' });
-			s.options.sources.should.containEql({ selector: 'a', attr: 'href' });
+			s.options.sources.should.deep.include({ selector: 'img', attr: 'src' });
+			s.options.sources.should.deep.include({ selector: 'a', attr: 'href' });
 		});
 	});
 
@@ -108,7 +110,7 @@ describe('Scraper initialization', function () {
 				subdirectories: null
 			});
 
-			should(s.options.subdirectories).eql(null);
+			(s.options.subdirectories === null).should.be.true;
 		});
 	});
 
@@ -119,7 +121,7 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.options.request.should.containEql({
+			s.options.request.should.deep.include({
 				throwHttpErrors: false,
 				responseType: 'buffer',
 				decompress: true,
@@ -141,7 +143,7 @@ describe('Scraper initialization', function () {
 				}
 			});
 
-			s.options.request.should.eql({
+			s.options.request.should.deep.include({
 				throwHttpErrors: true,
 				responseType: 'buffer',
 				decompress: true,
@@ -163,7 +165,7 @@ describe('Scraper initialization', function () {
 				}
 			});
 
-			s.options.request.should.containEql({
+			s.options.request.should.deep.include({
 				encoding: 'another encoding',
 				decompress: true,
 				https: {
@@ -182,8 +184,8 @@ describe('Scraper initialization', function () {
 			};
 
 			const s = new Scraper(options);
-			should(typeof s.resourceHandler.requestResource).be.eql('function');
-			should(typeof s.resourceHandler.getReference).be.eql('function');
+			s.resourceHandler.requestResource.should.be.a('function');
+			s.resourceHandler.getReference.should.be.a('function');
 		});
 	});
 
@@ -194,8 +196,8 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.options.urls.should.be.an.instanceOf(Array).and.have.length(1);
-			s.options.urls[0].should.be.eql({url: 'http://not-array-url.com', filename: 'index.html'});
+			s.options.urls.should.be.an('array').with.lengthOf(1);
+			s.options.urls[0].should.eql({url: 'http://not-array-url.com', filename: 'index.html'});
 		});
 	});
 
@@ -210,13 +212,13 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.resources.should.be.an.instanceOf(Array).and.have.length(3);
-			s.resources[0].should.be.an.instanceOf(Resource);
-			s.resources[0].url.should.be.eql('http://first-url.com');
-			s.resources[1].should.be.an.instanceOf(Resource);
-			s.resources[1].url.should.be.eql('http://second-url.com');
-			s.resources[2].should.be.an.instanceOf(Resource);
-			s.resources[2].url.should.be.eql('http://third-url.com');
+			s.resources.should.be.an('array').with.lengthOf(3);
+			s.resources[0].should.be.instanceOf(Resource);
+			s.resources[0].url.should.eql('http://first-url.com');
+			s.resources[1].should.be.instanceOf(Resource);
+			s.resources[1].url.should.eql('http://second-url.com');
+			s.resources[2].should.be.instanceOf(Resource);
+			s.resources[2].url.should.eql('http://third-url.com');
 		});
 
 		it('should use urls filename', function() {
@@ -244,17 +246,17 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.actions.beforeStart.length.should.be.eql(2);
-			s.actions.afterFinish.length.should.be.eql(0);
-			s.actions.error.length.should.be.eql(1);
+			s.actions.beforeStart.length.should.eql(2);
+			s.actions.afterFinish.length.should.eql(0);
+			s.actions.error.length.should.eql(1);
 
-			s.actions.beforeRequest.length.should.be.eql(0);
-			s.actions.afterResponse.length.should.be.eql(0);
-			s.actions.onResourceSaved.length.should.be.eql(0);
-			s.actions.onResourceError.length.should.be.eql(0);
+			s.actions.beforeRequest.length.should.eql(0);
+			s.actions.afterResponse.length.should.eql(0);
+			s.actions.onResourceSaved.length.should.eql(0);
+			s.actions.onResourceError.length.should.eql(0);
 
-			s.actions.saveResource.length.should.be.eql(1);
-			s.actions.generateFilename.length.should.be.eql(1);
+			s.actions.saveResource.length.should.eql(1);
+			s.actions.generateFilename.length.should.eql(1);
 		});
 
 		it('should add actions when plugin set', () => {
@@ -273,17 +275,17 @@ describe('Scraper initialization', function () {
 				]
 			});
 
-			s.actions.beforeStart.length.should.be.eql(3);
-			s.actions.afterFinish.length.should.be.eql(1);
-			s.actions.error.length.should.be.eql(1);
+			s.actions.beforeStart.length.should.eql(3);
+			s.actions.afterFinish.length.should.eql(1);
+			s.actions.error.length.should.eql(1);
 
-			s.actions.beforeRequest.length.should.be.eql(0);
-			s.actions.afterResponse.length.should.be.eql(0);
-			s.actions.onResourceSaved.length.should.be.eql(0);
-			s.actions.onResourceError.length.should.be.eql(0);
+			s.actions.beforeRequest.length.should.eql(0);
+			s.actions.afterResponse.length.should.eql(0);
+			s.actions.onResourceSaved.length.should.eql(0);
+			s.actions.onResourceError.length.should.eql(0);
 
-			s.actions.saveResource.length.should.be.eql(1);
-			s.actions.generateFilename.length.should.be.eql(1);
+			s.actions.saveResource.length.should.eql(1);
+			s.actions.generateFilename.length.should.eql(1);
 		});
 
 		it('should add actions when multiple plugins set', () => {
@@ -311,18 +313,18 @@ describe('Scraper initialization', function () {
 				]
 			});
 
-			s.actions.beforeStart.length.should.be.eql(4);
-			s.actions.afterFinish.length.should.be.eql(1);
-			s.actions.error.length.should.be.eql(1);
+			s.actions.beforeStart.length.should.eql(4);
+			s.actions.afterFinish.length.should.eql(1);
+			s.actions.error.length.should.eql(1);
 
-			s.actions.beforeRequest.length.should.be.eql(1);
-			s.actions.afterResponse.length.should.be.eql(0);
+			s.actions.beforeRequest.length.should.eql(1);
+			s.actions.afterResponse.length.should.eql(0);
 
-			s.actions.onResourceSaved.length.should.be.eql(1);
-			s.actions.onResourceError.length.should.be.eql(0);
+			s.actions.onResourceSaved.length.should.eql(1);
+			s.actions.onResourceError.length.should.eql(0);
 
-			s.actions.saveResource.length.should.be.eql(1);
-			s.actions.generateFilename.length.should.be.eql(1);
+			s.actions.saveResource.length.should.eql(1);
+			s.actions.generateFilename.length.should.eql(1);
 		});
 
 		it('should throw error if plugin has wrong action', () => {
@@ -341,10 +343,10 @@ describe('Scraper initialization', function () {
 						new MyPlugin()
 					]
 				});
-				should(false).eql(true);
+				false.should.be.true;
 			} catch (err) {
-				should(err).be.instanceOf(Error);
-				should(err.message).be.eql('Unknown action "wrongAction"');
+				err.should.be.instanceOf(Error);
+				err.message.should.eql('Unknown action "wrongAction"');
 			}
 		});
 	});
@@ -356,8 +358,8 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-			s.actions.saveResource.length.should.be.eql(1);
-			s.actions.generateFilename.length.should.be.eql(1);
+		 s.actions.saveResource.length.should.eql(1);
+		 s.actions.generateFilename.length.should.eql(1);
 		});
 	});
 });

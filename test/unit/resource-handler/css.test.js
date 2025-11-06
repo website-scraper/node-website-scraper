@@ -1,4 +1,5 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
 import sinon from 'sinon';
 import Resource from '../../../lib/resource.js';
 import CssResourceHandler from '../../../lib/resource-handler/css/index.js';
@@ -12,8 +13,8 @@ describe('ResourceHandler: Css', () => {
 		const cssHandler = new CssResourceHandler({}, {downloadChildrenPaths});
 
 		return cssHandler.handle(originalResource).then((updatedResource) => {
-			should(updatedResource).be.equal(originalResource);
-			should(updatedResource.getText()).be.eql('updated text');
+			updatedResource.should.be.equal(originalResource);
+			updatedResource.getText().should.be.eql('updated text');
 		});
 	});
 
@@ -25,8 +26,8 @@ describe('ResourceHandler: Css', () => {
 		const cssHandler = new CssResourceHandler({}, {downloadChildrenPaths});
 
 		return cssHandler.handle(originalResource).then((updatedResource) => {
-			should(updatedResource).be.equal(originalResource);
-			should(updatedResource.getEncoding()).be.eql('utf8');
+			updatedResource.should.be.equal(originalResource);
+			updatedResource.getEncoding().should.be.eql('utf8');
 		});
 	});
 });

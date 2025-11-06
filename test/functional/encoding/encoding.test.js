@@ -32,11 +32,11 @@ describe('Functional: encoding', () => {
 		await scrape(options);
 
 		const scrapedIndex = await fs.readFile(testDirname + '/index.html', { encoding: 'utf8' });
-		scrapedIndex.should.be.containEql('<div id="special-characters-korean">저는 7년 동안 한국에서 살았어요.</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Слава Україні!</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-chinese">加入网站</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Обладнання та ПЗ</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-french">PAR PASSION DU VÉLO</div>');
+		scrapedIndex.should.contain('<div id="special-characters-korean">\uc800\ub294 7\ub144 \ub3d9\uc548 \ud55c\uad6d\uc5d0\uc11c \uc0b4\uc558\uc5b4\uc694.</div>');
+		scrapedIndex.should.contain('<div id="special-characters-ukrainian">\u0421\u043b\u0430\u0432\u0430 \u0423\u043a\u0440\u0430\u0457\u043d\u0456!</div>');
+		scrapedIndex.should.contain('<div id="special-characters-chinese">\u52a0\u5165\u7f51\u7ad9</div>');
+		scrapedIndex.should.contain('<div id="special-characters-ukrainian">\u041e\u0431\u043b\u0430\u0434\u043d\u0430\u043d\u043d\u044f \u0442\u0430 \u041f\u0417</div>');
+		scrapedIndex.should.contain('<div id="special-characters-french">PAR PASSION DU V\u00c9LO</div>');
 	});
 
 	it('should save the page with enconding from html meta tag', async () => {
@@ -45,10 +45,10 @@ describe('Functional: encoding', () => {
 		await scrape(options);
 
 		const scrapedIndex = await fs.readFile(testDirname + '/index.html', { encoding: 'utf8' });
-		scrapedIndex.should.be.containEql('<div id="special-characters-korean">저는 7년 동안 한국에서 살았어요.</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Слава Україні!</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-chinese">加入网站</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-ukrainian">Обладнання та ПЗ</div>');
-		scrapedIndex.should.be.containEql('<div id="special-characters-french">PAR PASSION DU VÉLO</div>');
+		scrapedIndex.should.contain('<div id="special-characters-korean">\uc800\ub294 7\ub144 \ub3d9\uc548 \ud55c\uad6d\uc5d0\uc11c \uc0b4\uc558\uc5b4\uc694.</div>');
+		scrapedIndex.should.contain('<div id="special-characters-ukrainian">\u0421\u043b\u0430\u0432\u0430 \u0423\u043a\u0440\u0430\u0457\u043d\u0456!</div>');
+		scrapedIndex.should.contain('<div id="special-characters-chinese">\u52a0\u5165\u7f51\u7ad9</div>');
+		scrapedIndex.should.contain('<div id="special-characters-ukrainian">\u041e\u0431\u043b\u0430\u0434\u043d\u0430\u043d\u043d\u044f \u0442\u0430 \u041f\u0417</div>');
+		scrapedIndex.should.contain('<div id="special-characters-french">PAR PASSION DU V\u00c9LO</div>');
 	});
 });
