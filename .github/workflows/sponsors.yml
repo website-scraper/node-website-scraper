@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # Required to allow push to master without the checks/PR
           token: ${{ secrets.GH_PUSH_TOKEN }}

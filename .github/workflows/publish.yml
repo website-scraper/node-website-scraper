@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # Required to allow push to master without the checks/PR
           token: ${{ secrets.GH_PUSH_TOKEN }}
