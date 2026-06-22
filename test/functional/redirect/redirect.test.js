@@ -1,4 +1,6 @@
-import 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -54,9 +56,9 @@ describe('Functional redirects', function() {
 			fs.existsSync(testDirname + '/true-page.html').should.be.eql(true);
 
 			// should update all urls to true-page.html
-			fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="true-page.html">1</a>');
-			fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="true-page.html">2</a>');
-			fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="true-page.html">3</a>');
+			fs.readFileSync(testDirname + '/index.html').toString().should.contain('<a href="true-page.html">1</a>');
+			fs.readFileSync(testDirname + '/index.html').toString().should.contain('<a href="true-page.html">2</a>');
+			fs.readFileSync(testDirname + '/index.html').toString().should.contain('<a href="true-page.html">3</a>');
 
 			// true-page.html should have body from 1st response
 			fs.readFileSync(testDirname + '/true-page.html').toString().should.be.eql('<html><head></head><body>true page 1</body></html>');
@@ -98,11 +100,11 @@ describe('Functional redirects', function() {
 			style1.should.be.eql('about/style.css');
 
 			const index = fs.readFileSync(testDirname + '/index.html').toString();
-			index.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
+			index.should.contain('<link rel="stylesheet" type="text/css" href="css/style.css">');
 
 			const about = fs.readFileSync(testDirname + '/about.html').toString();
-			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style.css">');
-			about.should.containEql('<link rel="stylesheet" type="text/css" href="css/style_1.css">');
+			about.should.contain('<link rel="stylesheet" type="text/css" href="css/style.css">');
+			about.should.contain('<link rel="stylesheet" type="text/css" href="css/style_1.css">');
 		});
 	});
 });

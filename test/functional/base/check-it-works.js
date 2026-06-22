@@ -1,4 +1,5 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -28,9 +29,9 @@ describe('Functional: check it works', function() {
 		};
 
 		return scrape(options).then((result) => {
-			should(result[0].url).be.eql('http://example.com/');
-			should(result[0].filename).be.eql('index.html');
-			should(result[0].text).be.eql('<html><head></head><body>TEST PROMISES</body></html>');
+			result[0].url.should.be.eql('http://example.com/');
+			result[0].filename.should.be.eql('index.html');
+			result[0].text.should.be.eql('<html><head></head><body>TEST PROMISES</body></html>');
 		});
 	});
 });

@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+const should = chai.should();
+
 import sinon from 'sinon';
 import path from 'path';
 import Resource from '../../../lib/resource.js';
@@ -18,12 +20,12 @@ describe('ResourceHandler', function() {
 				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]
 			};
 			const resHandler = new ResourceHandler(options);
-			resHandler.options.should.containEql({
+			resHandler.options.should.deep.include({
 				prettifyUrls: 'a',
 				defaultFilename: 'test',
 				sources: [{ selector: 'dummyTag', attr: 'dummyAttr' }]	
 			});
-			resHandler.options.should.not.containEql({
+			resHandler.options.should.not.deep.include({
 				a: 1,
 				b: 2
 			});
@@ -71,7 +73,7 @@ describe('ResourceHandler', function() {
 			sinon.stub(r, 'getType').returns('other');
 
 			const specificResourceHandler = resourceHandler.getResourceHandler(r);
-			should(specificResourceHandler).be.eql(null);
+			(specificResourceHandler === null).should.equal(true);
 		});
 	});
 
@@ -104,7 +106,7 @@ describe('ResourceHandler', function() {
 
 			const r = new Resource('http://example.com');
 			return resHandler.handleResource(r).then(function(returnedResource) {
-				should(returnedResource).be.eql(r);
+				returnedResource.should.be.eql(r);
 			});
 		});
 	});
@@ -174,15 +176,15 @@ describe('ResourceHandler', function() {
 				const updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(3);
-				updateTextStub.args[0][0].should.containEql({
+				updateTextStub.args[0][0].should.deep.include({
 					oldPath: 'http://first.com/img/a.jpg',
 					newPath: 'local/a.jpg'
 				});
-				updateTextStub.args[0][0].should.containEql({
+				updateTextStub.args[0][0].should.deep.include({
 					oldPath: 'http://first.com/b.jpg',
 					newPath: 'local/b.jpg'
 				});
-				updateTextStub.args[0][0].should.containEql({
+				updateTextStub.args[0][0].should.deep.include({
 					oldPath: 'http://second.com/img/c.jpg',
 					newPath: 'local/c.jpg'
 				});
@@ -207,7 +209,7 @@ describe('ResourceHandler', function() {
 				const updateTextStub = pathContainer.updateText;
 				updateTextStub.calledOnce.should.be.eql(true);
 				updateTextStub.args[0][0].length.should.be.eql(1);
-				updateTextStub.args[0][0].should.containEql({
+				updateTextStub.args[0][0].should.deep.include({
 					oldPath: 'http://second.com/img/c.jpg',
 					newPath: 'local/c.jpg'
 				});
@@ -245,7 +247,7 @@ describe('ResourceHandler', function() {
 					const updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
-					updateTextStub.args[0][0].should.containEql({
+					updateTextStub.args[0][0].should.deep.include({
 						oldPath: 'http://example.com/page1.html#hash',
 						newPath: 'local/page1.html#hash'
 					});
@@ -265,7 +267,7 @@ describe('ResourceHandler', function() {
 					const updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
-					updateTextStub.args[0][0].should.containEql({
+					updateTextStub.args[0][0].should.deep.include({
 						oldPath: 'http://example.com/other-page/index.html',
 						newPath: 'other-page/index.html'
 					});
@@ -283,7 +285,7 @@ describe('ResourceHandler', function() {
 					const updateTextStub = pathContainer.updateText;
 					updateTextStub.calledOnce.should.be.eql(true);
 					updateTextStub.args[0][0].length.should.be.eql(1);
-					updateTextStub.args[0][0].should.containEql({
+					updateTextStub.args[0][0].should.deep.include({
 						oldPath: 'http://example.com/other-page/index.html',
 						newPath: 'other-page/'
 					});

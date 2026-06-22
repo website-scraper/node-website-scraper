@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -45,12 +47,12 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		};
 
 		return scrape(options).then(function() {
-			should(resourceSavedStub.calledOnce).be.eql(true);
-			should(resourceSavedStub.args[0][0].resource.url).be.eql('http://example.com/');
+			resourceSavedStub.calledOnce.should.be.eql(true);
+			resourceSavedStub.args[0][0].resource.url.should.be.eql('http://example.com/');
 
-			should(resourceErrorStub.calledOnce).be.eql(true);
-			should(resourceErrorStub.args[0][0].resource.url).be.eql('http://nodejs.org/');
-			should(resourceErrorStub.args[0][0].error.message).be.eql('REQUEST ERROR!!');
+			resourceErrorStub.calledOnce.should.be.eql(true);
+			resourceErrorStub.args[0][0].resource.url.should.be.eql('http://nodejs.org/');
+			resourceErrorStub.args[0][0].error.message.should.be.eql('REQUEST ERROR!!');
 		});
 	});
 
@@ -80,11 +82,11 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		};
 
 		return scrape(options).then(function() {
-			should(true).eql(false);
+			false.should.be.true;
 		}).catch(() => {
-			should(resourceErrorStub.calledOnce).be.eql(true);
-			should(resourceErrorStub.args[0][0].resource.url).be.eql('http://nodejs.org/');
-			should(resourceErrorStub.args[0][0].error.message).be.eql('REQUEST ERROR!!');
+			resourceErrorStub.calledOnce.should.be.eql(true);
+			resourceErrorStub.args[0][0].resource.url.should.be.eql('http://nodejs.org/');
+			resourceErrorStub.args[0][0].error.message.should.be.eql('REQUEST ERROR!!');
 		});
 	});
 });

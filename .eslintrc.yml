@@ -5,6 +5,7 @@ parserOptions:
 env:
   node: true
   es6: true
+  mocha: true
 rules:
   consistent-return: "error"
   curly: "error"

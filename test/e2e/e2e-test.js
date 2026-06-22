@@ -1,12 +1,13 @@
-import 'should';
 import scrape from 'website-scraper';
 import fs from 'fs-extra';
+import * as chai from 'chai';
 
 import { readFile } from 'fs/promises';
 const urls = JSON.parse(await readFile(new URL('./urls.json', import.meta.url)));
 const options = JSON.parse(await readFile(new URL('./options.json', import.meta.url)));
 
 const resultDirname = './test/e2e/results';
+chai.should();
 
 describe('E2E', function() {
 	before(function() {
@@ -26,7 +27,7 @@ describe('E2E', function() {
 				scraperOptions.urls = [ { url: url, filename: 'index.html' } ];
 				scraperOptions.filenameGenerator = 'byType';
 				return scrape(scraperOptions).then(function(result) {
-					result.should.be.ok();
+					result.should.be.ok;
 				});
 			});
 
@@ -37,7 +38,7 @@ describe('E2E', function() {
 				scraperOptions.urls = [ { url: url } ];
 				scraperOptions.filenameGenerator = 'bySiteStructure';
 				return scrape(scraperOptions).then(function(result) {
-					result.should.be.ok();
+					result.should.be.ok;
 				});
 			});
 		});

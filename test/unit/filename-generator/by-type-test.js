@@ -1,4 +1,6 @@
-import should from 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 
 import sinon from 'sinon';
@@ -114,7 +116,7 @@ describe('FilenameGenerator: byType', () => {
 		const filepath = byTypeFilenameGenerator(r, {}, []);
 		const filenameParts = filepath.split('/');
 		const filename = filenameParts[filenameParts.length - 1];
-		should(filename.length).be.lessThanOrEqual(255);
+		filename.length.should.be.lessThanOrEqual(255);
 	});
 
 	it('should return different short filename if first short filename is occupied', () => {
@@ -126,13 +128,13 @@ describe('FilenameGenerator: byType', () => {
 		const fp1 = byTypeFilenameGenerator(r1, {}, []);
 		const filenameParts1 = fp1.split('/');
 		const filename1 = filenameParts1[filenameParts1.length - 1];
-		should(filename1.length).be.lessThanOrEqual(255);
+		filename1.length.should.be.lessThanOrEqual(255);
 
 		const fp2 = byTypeFilenameGenerator(r2, {}, [ fp1 ]);
 		const filenameParts2 = fp2.split('/');
 		const filename2 = filenameParts2[filenameParts2.length - 1];
-		should(filename2.length).be.lessThanOrEqual(255);
-		should(filename2).not.be.eql(filename1);
+		filename2.length.should.be.lessThanOrEqual(255);
+		filename2.should.not.be.eql(filename1);
 	});
 
 	it('should return decoded url-based filename', () => {

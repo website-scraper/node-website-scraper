@@ -1,4 +1,6 @@
-import 'should';
+import * as chai from 'chai';
+chai.should();
+
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs-extra';
@@ -150,12 +152,12 @@ describe('Functional: maxDepth and maxRecursiveDepth ', () => {
 			fs.existsSync(testDirname + '/pageC.html').should.be.eql(true);
 
 			const pageASaved = fs.readFileSync(testDirname + '/pageA.html').toString();
-			pageASaved.should.containEql('<a href="pageB.html"');
-			pageASaved.should.containEql('<a href="pageC.html"');
+			pageASaved.should.contain('<a href="pageB.html"');
+			pageASaved.should.contain('<a href="pageC.html"');
 
 			const pageBSaved = fs.readFileSync(testDirname + '/pageB.html').toString();
 			// todo: should we change reference here because pageC was already downloaded?
-			pageBSaved.should.containEql('<a href="/pageC.html"'); // reference to pageC was not changed here because it > maxRecursiveDepth
+			pageBSaved.should.contain('<a href="/pageC.html"'); // reference to pageC was not changed here because it > maxRecursiveDepth
 		});
 	});
 
