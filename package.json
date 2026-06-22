@@ -55,7 +55,7 @@
     "globals": "^17.7.0",
     "mocha": "^11.0.1",
     "nock": "^14.0.0",
-    "sinon": "^21.0.0"
+    "sinon": "^22.0.0"
   },
   "files": [
     "index.mjs",
