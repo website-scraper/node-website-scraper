@@ -1,5 +1,4 @@
 import * as chai from 'chai';
-chai.should();
 const should = chai.should();
 import {
 	isUrl, getUrl, getUnixPath, getFilenameFromUrl,
@@ -230,12 +229,12 @@ describe('Utils', function () {
 		});
 
 		it('should return charset from the beginning of css (inside single quotes)', () => {
-			const cssText = `@charset 'UTF-8'; `;
+			const cssText = '@charset \'UTF-8\'; ';
 			getCharsetFromCss(cssText).should.eql('utf-8');
 		});
 
 		it('should return null if no charset', () => {
-			should.equal(getCharsetFromCss(`h1 {color: red};`), null);
+			should.equal(getCharsetFromCss('h1 {color: red};'), null);
 		});
 
 		it('should return null if charset is not valid', () => {

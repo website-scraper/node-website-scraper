@@ -56,7 +56,7 @@ describe('Functional: css handling', function() {
 			indexHtml.should.contain('local/style-tag.png');
 			indexHtml.should.contain('local/style-attr.png');
 
-			indexHtml.should.contain("background: url('css-like-text-in-html.png')");
+			indexHtml.should.contain('background: url(\'css-like-text-in-html.png\')');
 		});
 	});
 });

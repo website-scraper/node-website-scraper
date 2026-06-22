@@ -1,5 +1,4 @@
 import * as chai from 'chai';
-chai.should();
 const should = chai.should();
 import NormalizedUrlMap from '../../../lib/utils/normalized-url-map.js';
 

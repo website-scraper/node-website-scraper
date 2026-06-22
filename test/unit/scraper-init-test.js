@@ -358,8 +358,8 @@ describe('Scraper initialization', function () {
 				directory: testDirname
 			});
 
-		 s.actions.saveResource.length.should.eql(1);
-		 s.actions.generateFilename.length.should.eql(1);
+			s.actions.saveResource.length.should.eql(1);
+			s.actions.generateFilename.length.should.eql(1);
 		});
 	});
 });

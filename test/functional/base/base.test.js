@@ -161,7 +161,7 @@ describe('Functional: base', function() {
 			result[1].children.should.be.instanceOf(Array).and.have.length(4);
 			result[1].children[0].should.be.instanceOf(Resource);
 
-			result[2].url.should.eql('http://blog.example.com/');  // url after redirect
+			result[2].url.should.eql('http://blog.example.com/'); // url after redirect
 			result[2].filename.should.equalFileSystemPath('blog.example.com/index.html');
 			result[2].should.have.property('children');
 			result[2].children.should.be.instanceOf(Array).and.have.length(1);

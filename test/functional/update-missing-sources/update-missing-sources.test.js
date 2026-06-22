@@ -159,9 +159,9 @@ describe('Functional: update missing sources', () => {
 
 
 			const index = fs.readFileSync(testDirname + '/index.html').toString();
-			index.should.contain(`.a { background: url('a.png') }`);
-			index.should.contain(`.b { background: url('http://example.com/b.png') }`);
-			index.should.contain(`.c { background: url('c.png') }`);
+			index.should.contain('.a { background: url(\'a.png\') }');
+			index.should.contain('.b { background: url(\'http://example.com/b.png\') }');
+			index.should.contain('.c { background: url(\'c.png\') }');
 		});
 	});
 });

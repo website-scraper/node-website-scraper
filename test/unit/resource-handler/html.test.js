@@ -1,6 +1,5 @@
 import * as chai from 'chai';
 chai.should();
-const should = chai.should();
 
 import sinon from 'sinon';
 import Resource from '../../../lib/resource.js';

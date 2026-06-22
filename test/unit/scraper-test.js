@@ -105,7 +105,6 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.be.a.string;
 				rr.getText().should.not.be.empty;
 			});
 
@@ -141,7 +140,6 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.be.a.string;
 				rr.getText().should.not.be.empty;
 			});
 		});
@@ -164,7 +162,6 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.be.a.string;
 				rr.getText().should.not.be.empty;
 			});
 
@@ -186,7 +183,6 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.be.a.string;
 				rr.getText().should.not.be.empty;
 			});
 
@@ -207,7 +203,6 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.be.a.string;
 				rr.getText().should.not.be.empty;
 			});
 
@@ -337,7 +332,7 @@ describe('Scraper', () => {
 			sinon.stub(s, 'load').rejects(new Error('Awful error'));
 
 			return s.scrape().then(() => {
-				false.should.be.true();
+				false.should.be.true;
 			}).catch((err) => {
 				err.should.be.instanceOf(Error);
 				err.message.should.be.eql('Awful error');
@@ -412,7 +407,7 @@ describe('Scraper', () => {
 
 			try {
 				await s.runActions('beforeStart', {options: s.options});
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				beforeStartActionStub1.callCount.should.be.eql(1);
 				beforeStartActionStub1.args[0][0].should.be.eql({options: s.options});
@@ -496,7 +491,7 @@ describe('Scraper', () => {
 
 			try {
 				await s.scrape();
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				err.should.be.instanceOf(Error);
 				err.code.should.be.eql('ERR_NON_2XX_3XX_RESPONSE');
@@ -510,7 +505,7 @@ describe('Scraper', () => {
 					urls: 'http://example.com',
 				});
 				await s.scrape();
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.include('Incorrect directory');
@@ -524,7 +519,7 @@ describe('Scraper', () => {
 					directory: ''
 				});
 				await s.scrape();
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.include('Incorrect directory');
@@ -538,7 +533,7 @@ describe('Scraper', () => {
 					directory: {}
 				});
 				await s.scrape();
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.include('Incorrect directory');
@@ -553,7 +548,7 @@ describe('Scraper', () => {
 					directory: testDirname
 				});
 				await s.scrape();
-				false.should.be.true();
+				false.should.be.true;
 			} catch (err) {
 				err.should.be.instanceOf(Error);
 				err.message.should.match(/Directory (.*?) exists/);
