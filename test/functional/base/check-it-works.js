@@ -2,7 +2,7 @@ import * as chai from 'chai';
 chai.should();
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/base/.tmp2';
@@ -17,7 +17,7 @@ describe('Functional: check it works', function() {
 	afterEach(function () {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	it('should work with promise', () => {

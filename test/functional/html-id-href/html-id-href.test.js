@@ -3,7 +3,7 @@ chai.should();
 
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/html-id-href/.tmp';
@@ -19,7 +19,7 @@ describe('Functional html id href', function() {
 	afterEach(function() {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	it('should ignore same-file paths and update other-file paths', function() {

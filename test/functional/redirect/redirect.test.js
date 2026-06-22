@@ -3,7 +3,7 @@ chai.should();
 
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import sinon from 'sinon';
 import scrape from 'website-scraper';
 import Scraper from '../../../lib/scraper.js';
@@ -21,7 +21,7 @@ describe('Functional redirects', function() {
 	afterEach(function() {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	it('should follow redirects and save resource once if it has different urls', function() {

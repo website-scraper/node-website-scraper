@@ -3,7 +3,7 @@ chai.should();
 
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import scrape from 'website-scraper';
 
 const testDirname = './test/functional/html-entities/.tmp';
@@ -19,7 +19,7 @@ describe('Functional: html entities', function() {
 	afterEach(function() {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	it('should decode all html-entities found in html files and not encode entities from css file', function() {

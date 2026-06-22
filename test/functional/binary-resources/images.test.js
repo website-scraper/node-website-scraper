@@ -3,7 +3,7 @@ chai.should();
 
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import * as cheerio from 'cheerio';
 import scrape from 'website-scraper';
 
@@ -31,7 +31,7 @@ describe('Functional: images', () => {
 	afterEach(() => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	beforeEach(() => {

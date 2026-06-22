@@ -3,7 +3,7 @@ chai.should();
 
 import '../../utils/assertions.js';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import sinon from 'sinon';
 import scrape from 'website-scraper';
 
@@ -19,7 +19,7 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 	afterEach(() => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	it('should call onResourceSaved callback and onResourceError callback if ignoreErrors = true', function() {

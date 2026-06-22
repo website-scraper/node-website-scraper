@@ -2,7 +2,7 @@ import * as chai from 'chai';
 chai.should();
 import sinon from 'sinon';
 import nock from 'nock';
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
 import Scraper from '../../lib/scraper.js';
 import Resource from '../../lib/resource.js';
@@ -23,7 +23,7 @@ describe('Scraper', () => {
 	afterEach(() => {
 		nock.cleanAll();
 		nock.enableNetConnect();
-		fs.removeSync(testDirname);
+		fs.rmSync(testDirname, {recursive: true, force: true});
 	});
 
 	describe('#loadResource', () => {
@@ -542,7 +542,7 @@ describe('Scraper', () => {
 
 		it('should return error if existing directory passed', async () => {
 			try {
-				fs.mkdirpSync(testDirname);
+				fs.mkdirSync(testDirname, {recursive: true});
 				const s = new Scraper({
 					urls: 'http://example.com',
 					directory: testDirname

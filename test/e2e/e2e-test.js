@@ -1,5 +1,5 @@
 import scrape from 'website-scraper';
-import fs from 'fs-extra';
+import fs from 'fs';
 import * as chai from 'chai';
 
 import { readFile } from 'fs/promises';
@@ -11,7 +11,8 @@ chai.should();
 
 describe('E2E', function() {
 	before(function() {
-		fs.emptyDirSync(resultDirname);
+		fs.rmSync(resultDirname, {recursive: true, force: true});
+		fs.mkdirSync(resultDirname, {recursive: true});
 	});
 
 	after(function() {
