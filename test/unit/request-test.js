@@ -1,7 +1,8 @@
 import * as chai from 'chai';
-chai.should();
+const should = chai.should();
 import sinon from 'sinon';
 import nock from 'nock';
+import { text as readStreamText, buffer as readStreamBuffer } from 'stream/consumers';
 import request from '../../lib/request.js';
 
 describe('request', () => {
@@ -47,22 +48,120 @@ describe('request', () => {
 		});
 	});
 
-	it('should call afterResponse with correct params', () => {
-		const url = 'http://example.com';
-		const scope = nock(url).get('/').reply(200, 'TEST BODY');
-		let handlerStub = sinon.stub().resolves('');
-
-		return request.get({url, afterResponse: handlerStub}).then(() => {
-			scope.isDone().should.eql(true);
-			handlerStub.calledOnce.should.eql(true);
-			const afterResponseArgs = handlerStub.getCall(0).args[0];
-			afterResponseArgs.response.body.should.eql('TEST BODY');
-			afterResponseArgs.response.headers.should.eql({});
+	it('should return object with url, statusCode, mimeType, encoding and stream with the body', async () => {
+		const url = 'http://www.google.com';
+		nock(url).get('/').reply(200, 'Hello from Google!', {
+			'content-type': 'text/html; charset=utf-8'
 		});
+
+		const data = await request.get({url});
+		data.should.have.property('url');
+		data.should.have.property('statusCode');
+		data.should.have.property('mimeType');
+		data.should.have.property('stream');
+		data.url.should.eql('http://www.google.com/');
+		data.statusCode.should.eql(200);
+		data.mimeType.should.eql('text/html');
+		data.encoding.should.eql('utf8');
+		(data.metadata === null).should.be.true;
+
+		const body = await readStreamText(data.stream);
+		body.should.eql('Hello from Google!');
 	});
 
-	describe('transformResult from afterResponse', () => {
-		it('should return object with body and metadata properties', () => {
+	it('should return mimeType = null and binary encoding if content-type header was not found in response', async () => {
+		const url = 'http://www.google.com';
+		nock(url).get('/').reply(200, 'Hello from Google!', {});
+
+		const data = await request.get({url});
+		data.url.should.eql('http://www.google.com/');
+		data.encoding.should.eql('binary');
+		data.should.have.property('mimeType', null);
+	});
+
+	it('should retry transient network errors before response', async () => {
+		const url = 'http://retry.example.com';
+		nock(url).get('/').replyWithError(Object.assign(new Error('connection reset'), {code: 'ECONNRESET'}));
+		nock(url).get('/').reply(200, 'recovered');
+
+		const data = await request.get({url, options: {retry: {limit: 1}}});
+		data.statusCode.should.eql(200);
+		const body = await readStreamText(data.stream);
+		body.should.eql('recovered');
+	});
+
+	it('should reject when request fails without retries left', async () => {
+		const url = 'http://fail.example.com';
+		nock(url).get('/').replyWithError(Object.assign(new Error('connection reset'), {code: 'ECONNRESET'}));
+
+		try {
+			await request.get({url, options: {retry: {limit: 0}}});
+			throw new Error('expected request.get to reject');
+		} catch (err) {
+			err.code.should.eql('ECONNRESET');
+		}
+	});
+
+	describe('afterResponse', () => {
+		it('should call afterResponse with url, statusCode, headers and getBody', async () => {
+			const url = 'http://example.com';
+			const scope = nock(url).get('/').reply(200, 'TEST BODY', {'content-type': 'text/html'});
+			const handlerStub = sinon.stub().resolves({});
+
+			await request.get({url, afterResponse: handlerStub});
+			scope.isDone().should.eql(true);
+			handlerStub.calledOnce.should.eql(true);
+
+			const {response} = handlerStub.getCall(0).args[0];
+			response.url.should.eql('http://example.com/');
+			response.statusCode.should.eql(200);
+			response.headers.should.have.property('content-type', 'text/html');
+			response.getBody.should.be.a('function');
+		});
+
+		it('should provide body via getBody', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+
+			let receivedBody;
+			const afterResponse = async ({response}) => {
+				receivedBody = await response.getBody();
+				return {};
+			};
+
+			const data = await request.get({url, afterResponse});
+			receivedBody.should.be.instanceOf(Buffer);
+			receivedBody.toString().should.eql('TEST BODY');
+
+			// original stream was consumed by getBody - body must still be readable from result
+			const body = await readStreamText(data.stream);
+			body.should.eql('TEST BODY');
+		});
+
+		it('should memoize getBody', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+
+			const afterResponse = async ({response}) => {
+				const first = await response.getBody();
+				const second = await response.getBody();
+				first.should.be.equal(second);
+				return {};
+			};
+
+			await request.get({url, afterResponse});
+		});
+
+		it('should return null and skip resource when action returns null', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+			const handlerStub = sinon.stub().resolves(null);
+
+			const data = await request.get({url, afterResponse: handlerStub});
+			should.not.exist(data);
+		});
+
+		it('should replace body when action returns object with body', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
 			const handlerStub = sinon.stub().resolves({
@@ -71,220 +170,73 @@ describe('request', () => {
 				encoding: 'utf8'
 			});
 
-			return request.get({url, afterResponse: handlerStub}).then((data) => {
-				data.body.should.eql('a');
-				data.metadata.should.eql('b');
-				data.encoding.should.eql('utf8');
-			});
+			const data = await request.get({url, afterResponse: handlerStub});
+			data.metadata.should.eql('b');
+			data.encoding.should.eql('utf8');
+			const body = await readStreamText(data.stream);
+			body.should.eql('a');
 		});
 
-		it('should return with metadata == null if metadata is not defined', () => {
+		it('should support Buffer body', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
-			const handlerStub = sinon.stub().resolves({
-				body: 'a'
-			});
+			const bodyBuffer = Buffer.from([0xff, 0x00, 0xab]);
+			const handlerStub = sinon.stub().resolves({body: bodyBuffer});
 
-			return request.get({url, afterResponse: handlerStub}).then((data) => {
-				data.body.should.eql('a');
-				(data.metadata === null).should.be.true;
-				data.encoding.should.eql('binary');
-			});
+			const data = await request.get({url, afterResponse: handlerStub});
+			(data.metadata === null).should.be.true;
+			const body = await readStreamBuffer(data.stream);
+			body.should.eql(bodyBuffer);
 		});
 
-		it('should transform string result', () => {
+		it('should keep original body streaming when action returns metadata only', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
-			const handlerStub = sinon.stub().resolves('test body');
+			const handlerStub = sinon.stub().resolves({metadata: {foo: 'bar'}});
 
-			return request.get({url, afterResponse: handlerStub}).then((data) => {
-				data.body.should.eql('test body');
-				(data.metadata === null).should.be.true;
-			});
+			const data = await request.get({url, afterResponse: handlerStub});
+			data.metadata.should.eql({foo: 'bar'});
+			const body = await readStreamText(data.stream);
+			body.should.eql('TEST BODY');
 		});
 
-		it('should be rejected if wrong result (no string nor object) returned', () => {
+		it('should be rejected if wrong result (no null nor object) returned', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
 			const handlerStub = sinon.stub().resolves(['1', '2']);
 
-			return request.get({url, afterResponse: handlerStub}).then(() => {
-				true.should.eql(false);
-			}).catch((e) => {
-				e.should.be.instanceOf(Error);
-				e.message.should.match(/Wrong response handler result. Expected string or object, but received/);
-			});
-		});
-	});
-
-	it('should return object with url, body, mimeType properties', () => {
-		const url = 'http://www.google.com';
-		nock(url).get('/').reply(200, 'Hello from Google!', {
-			'content-type': 'text/html; charset=utf-8'
-		});
-
-		return request.get({url}).then((data) => {
-			data.should.have.property('url');
-			data.should.have.property('body');
-			data.should.have.property('mimeType');
-			data.url.should.eql('http://www.google.com/');
-			data.body.should.eql('Hello from Google!');
-			data.mimeType.should.eql('text/html');
-			data.encoding.should.eql('utf8');
-		});
-	});
-
-	it('should return mimeType = null if content-type header was not found in response', () => {
-		let url = 'http://www.google.com';
-		nock(url).get('/').reply(200, 'Hello from Google!', {});
-
-		return request.get({url}).then((data) => {
-			data.should.include.all.keys(['url', 'body', 'mimeType', 'encoding']);
-			data.url.should.eql('http://www.google.com/');
-			data.body.should.eql('Hello from Google!');
-			data.encoding.should.eql('binary');
-			data.should.have.property('mimeType', null);
-		});
-	});
-});
-
-describe('get encoding', () => {
-	it('should return binary by default', () => {
-		const result = request.getEncoding(null);
-
-		result.should.eql('binary');
-	});
-
-	it('should return binary when no content-type header supplies', () => {
-		const result = request.getEncoding({
-			headers: {}
-		});
-
-		result.should.eql('binary');
-	});
-
-	it('should return binary when content type header doesn\'t include utf-8', () => {
-		const result = request.getEncoding({
-			headers: {}
-		});
-
-		result.should.eql('binary');
-	});
-
-	it('should return binary when content type header doesn\'t include utf-8', () => {
-		const result = request.getEncoding({
-			headers: {
-				'content-type': 'text/html'
+			try {
+				await request.get({url, afterResponse: handlerStub});
+				throw new Error('expected request.get to reject');
+			} catch (e) {
+				e.message.should.match(/Wrong afterResponse result. Expected null or object.*but received array/);
 			}
 		});
 
-		result.should.eql('binary');
-	});
+		it('should be rejected if string returned (removed in v7)', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+			const handlerStub = sinon.stub().resolves('test body');
 
-	it('should return utf8 when content type includes utf-8', () => {
-		const result = request.getEncoding({
-			headers: {
-				'content-type': 'text/html; charset=utf-8'
+			try {
+				await request.get({url, afterResponse: handlerStub});
+				throw new Error('expected request.get to reject');
+			} catch (e) {
+				e.message.should.match(/Wrong afterResponse result.*but received string/);
 			}
 		});
 
-		result.should.eql('utf8');
-	});
+		it('should be rejected with error thrown by action', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+			const handlerStub = sinon.stub().rejects(new Error('action failed'));
 
-	it('should return utf8 response object includes it', () => {
-		const result = request.getEncoding({
-			encoding: 'utf8'
+			try {
+				await request.get({url, afterResponse: handlerStub});
+				throw new Error('expected request.get to reject');
+			} catch (e) {
+				e.message.should.eql('action failed');
+			}
 		});
-
-		result.should.eql('utf8');
-	});
-});
-
-describe('transformResult', () => {
-	it('should throw with weird shaped response', () => {
-		try {
-			request.transformResult([1,2,3]);
-
-			// We shouldn't get here.
-			true.should.eql(false);
-		} catch (e) {
-			e.should.be.instanceOf(Error);
-			e.message.should.eql('Wrong response handler result. Expected string or object, but received array');
-		}
-	});
-
-	it('should pass through error', () => {
-		try {
-			request.transformResult(new Error('Oh no'));
-
-			// We shouldn't get here.
-			true.should.eql(false);
-		} catch (e) {
-			e.should.be.instanceOf(Error);
-			e.message.should.eql('Oh no');
-		}
-	});
-
-	it('should throw with boolean input', () => {
-		try {
-			request.transformResult(true);
-
-			// We shouldn't get here.
-			true.should.eql(false);
-		} catch (e) {
-			e.should.be.instanceOf(Error);
-			e.message.should.eql('Wrong response handler result. Expected string or object, but received boolean');
-		}
-	});
-
-	it('should handle object', () => {
-		const result = request.transformResult({
-			body: 'SOME BODY',
-			encoding: 'utf8',
-			metadata: { foo: 'bar' }
-		});
-
-		result.should.have.property('body', 'SOME BODY');
-		result.should.have.property('encoding', 'utf8');
-		result.should.have.property('metadata').that.eql({ foo: 'bar' });
-	});
-
-	it('should handle object with empty body string', () => {
-		const result = request.transformResult({
-			body: '',
-			encoding: 'utf8',
-		});
-
-		result.should.have.property('body', '');
-		result.should.have.property('encoding', 'utf8');
-		result.should.have.property('metadata', null);
-	});
-
-	it('should handle object with defaults and buffer body', () => {
-		const result = request.transformResult({
-			body: Buffer.from('SOME BODY'),
-		});
-
-		result.should.have.property('body', 'SOME BODY');
-		result.should.have.property('encoding', 'binary');
-		result.should.have.property('metadata', null);
-	});
-
-	it('should handle raw string input', () => {
-		const result = request.transformResult('SOME BODY');
-
-		result.should.have.property('body', 'SOME BODY');
-		result.should.have.property('encoding', 'binary');
-		result.should.have.property('metadata', null);
-	});
-
-	it('should handle null input', () => {
-		const result = request.transformResult(null);
-		(result === null).should.be.true;
-	});
-
-	it('should handle undefined input', () => {
-		const result = request.transformResult(undefined);
-		(result === null).should.be.true;
 	});
 });
