@@ -119,7 +119,7 @@ The difference between [maxRecursiveDepth](#maxRecursiveDepth) and [maxDepth](#m
   only html resources with depth 2 will be filtered out, last image will be downloaded
 
 #### request
-Object, custom options for http module [got](https://github.com/sindresorhus/got#options) which is used inside website-scraper. Allows to set retries, cookies, userAgent, encoding, etc.
+Object, custom options for http module [got](https://github.com/sindresorhus/got#options) which is used inside website-scraper. Allows to set retries, cookies, userAgent, encoding, etc. Note that `responseType` is controlled by the scraper (responses are streamed) and is ignored if passed here.
 ```javascript
 // use same request options for all resources
 scrape({
@@ -244,7 +244,7 @@ class MyPlugin {
 		registerAction('afterFinish', async () => {});
 		registerAction('error', async ({error}) => {console.error(error)});
 		registerAction('beforeRequest', async ({resource, requestOptions}) => ({requestOptions}));
-		registerAction('afterResponse', async ({response}) => response.body);
+		registerAction('afterResponse', async ({response}) => ({metadata: {headers: response.headers}}));
 		registerAction('onResourceSaved', ({resource}) => {});
 		registerAction('onResourceError', ({resource, error}) => {});
 		registerAction('saveResource', async ({resource}) => {});
@@ -315,15 +315,19 @@ registerAction('beforeRequest', async ({resource, requestOptions}) => {
 ```
 
 ##### afterResponse
-Action afterResponse is called after each response, it allows to customize resource or reject its saving.
+Action afterResponse is called after response headers were received, before the body is consumed. It allows to customize resource or reject its saving.
 
 Parameters - object which includes:
-* response - response object from http module [got](https://github.com/sindresorhus/got#response)
+* response - object which includes:
+  * `url` (string) - final url of the response (after redirects)
+  * `statusCode` (number)
+  * `headers` (object)
+  * `getBody()` - async function which buffers the response body and resolves with a `Buffer`. Note that calling it loads the whole body into memory - don't call it if you only need headers or status code, so the resource keeps streaming to storage
 
 Return resolved `Promise` with:
-  * object if the resource should be saved, object should contain next properties:
-    * `body` (string, required)
-    * `encoding` (`binary` or `utf8`) is used to save the file, binary is used by default.
+  * object if the resource should be saved, object may contain next properties:
+    * `body` (string or Buffer, optional) - replaces resource content; if omitted, the original body is used without buffering it in memory
+    * `encoding` (`binary` or `utf8`) is used to decode a string `body`, binary is used by default.
     * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for the result
   * or null if the resource should be skipped
 
@@ -335,14 +339,21 @@ registerAction('afterResponse', ({response}) => {
 		return null;
 	} else {
 		return {
-			body: response.body,
-                        encoding: 'utf8',
 			metadata: {
 				headers: response.headers,
 				someOtherData: [ 1, 2, 3 ]
 			}
 		}
 	}
+});
+
+// Modify html body before it is processed
+registerAction('afterResponse', async ({response}) => {
+	if (response.headers['content-type']?.includes('text/html')) {
+		const body = await response.getBody();
+		return { body: transformHtml(body.toString()), encoding: 'utf8' };
+	}
+	return {}; // everything else keeps streaming to storage
 });
 ```
 
@@ -374,7 +385,7 @@ Action generateFilename is called to determine path in file system where the res
 
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
-* responseData - object returned from afterResponse action, contains `url`, `mimeType`, `body`, `metadata` properties
+* responseData - object which contains `url`, `statusCode`, `mimeType`, `encoding`, `metadata` properties. Note that it does not contain the response body - filenames are generated before the body is consumed
 
 Should return object which includes:
 * filename - String, relative to `directory` path for specified resource
@@ -419,12 +430,23 @@ Action saveResource is called to save file to some storage. Use it to save files
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
-If multiple actions `saveResource` added - resource will be saved to multiple storages.
+Resource content is exposed as a Readable stream returned by `resource.getContentStream()`. For resources which are streamed directly from the network (all types except html and css) the stream can be consumed only once - consume it (or destroy it) within the action.
+
+If multiple actions `saveResource` added - resource will be saved to multiple storages (the scraper buffers streamed content in that case so every action can read it).
 ```javascript
+import { pipeline } from 'stream/promises';
+
 registerAction('saveResource', async ({resource}) => {
   const filename = resource.getFilename();
-  const text = resource.getText();
-  await saveItSomewhere(filename, text);
+  await pipeline(resource.getContentStream(), createMyStorageWriteStream(filename));
+});
+
+// or, if your storage needs the whole content at once
+import { buffer } from 'stream/consumers';
+
+registerAction('saveResource', async ({resource}) => {
+  const content = await buffer(resource.getContentStream());
+  await saveItSomewhere(resource.getFilename(), content);
 });
 ```
 
@@ -433,6 +455,8 @@ Array of [Resource](https://github.com/website-scraper/node-website-scraper/blob
 - `url`: url of loaded page
 - `filename`: filename where page was saved (relative to `directory`)
 - `children`: array of children Resources
+
+Note that resource content is not retained in memory after the resource was saved - read the saved files from your storage if you need the content.
 
 ## Log and debug
 This module uses [debug](https://github.com/visionmedia/debug) to log events. To enable logs you should use environment variable `DEBUG`.

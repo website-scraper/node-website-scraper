@@ -1,5 +1,60 @@
 # Migration Guide
 
+## From version 6 to 7
+
+Version 7 stops storing resource content in memory ([#386](https://github.com/website-scraper/node-website-scraper/issues/386)). Resources which need no modification (images, fonts, media, scripts - everything except html and css) are streamed directly from the network to storage, and html/css content is freed as soon as the resource is saved. Memory usage no longer grows with the size of the scraped website.
+
+#### saveResource action
+
+Resource content is now exposed as a Readable stream via `resource.getContentStream()` instead of `resource.getText()`. For streamed resources the stream can be consumed only once - consume or destroy it within the action.
+
+```javascript
+// before
+registerAction('saveResource', async ({resource}) => {
+  await saveItSomewhere(resource.getFilename(), resource.getText());
+});
+
+// after
+import { buffer } from 'stream/consumers';
+registerAction('saveResource', async ({resource}) => {
+  await saveItSomewhere(resource.getFilename(), await buffer(resource.getContentStream()));
+});
+// or pipe resource.getContentStream() to your storage to avoid buffering
+```
+
+#### afterResponse action
+
+The action is called when response headers arrive, before the body is downloaded. It receives `{response}` where response is `{url, statusCode, headers, getBody()}` instead of the full got response. Returning a string is not supported anymore - return an object or null. Return an object without `body` to keep the resource streaming (no buffering).
+
+```javascript
+// before
+registerAction('afterResponse', ({response}) => {
+  if (response.statusCode === 404) return null;
+  return { body: response.body, metadata: { headers: response.headers } };
+});
+
+// after
+registerAction('afterResponse', ({response}) => {
+  if (response.statusCode === 404) return null;
+  return { metadata: { headers: response.headers } };
+});
+// call `await response.getBody()` only if you need to inspect or replace the body
+```
+
+#### scrape() result
+
+Resource content is not retained after save: `resource.getText()` returns `null` in the result and in `onResourceSaved`. Read saved files from your storage instead.
+
+#### generateFilename action
+
+`responseData` no longer contains `body` - filenames are generated from headers (`url`, `statusCode`, `mimeType`, `encoding`, `metadata`) before the body is consumed.
+
+#### Other behavior changes
+
+* Binary files are written byte-for-byte from the network (previously the content was round-tripped through a latin1 string). Output for correctly-served files is unchanged; edge-case encodings may differ.
+* Transient request errors are retried as before, but only until response headers are received. A connection which dies mid-body is not retried.
+* `responseType` in the `request` option is ignored (responses are streamed).
+
 ## From version 4 to 5
 
 #### ESM module
