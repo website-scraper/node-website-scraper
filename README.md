@@ -11,7 +11,7 @@
 
 Download the website to the local directory (including all css, images, js, etc.)
 
-**Note:** by default dynamic websites (where content is loaded by js) may be saved not correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download a dynamic website take a look at [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
+**Note:** by default dynamic websites (where content is loaded by js) may not be saved correctly because `website-scraper` doesn't execute js, it only parses http responses for html and css files. If you need to download a dynamic website take a look at [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer).
 
 ## Sponsors
 Maintenance of this project is made possible by all the [contributors](https://github.com/website-scraper/node-website-scraper/graphs/contributors) and [sponsors](https://github.com/sponsors/s0ph1e).
@@ -221,7 +221,7 @@ Plugins allow to extend scraper behaviour
     * [getReference](#getreference)
 
 ##### Built-in plugins
-Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory. Thease plugins are intended for internal use but can be coppied if the behaviour of the plugins needs to be extended / changed.
+Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory. These plugins are intended for internal use but can be copied if the behaviour of the plugins needs to be extended / changed.
 
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
@@ -231,7 +231,7 @@ Scraper has built-in plugins which are used by default if not overwritten with c
 
 Plugin is object with `.apply` method, can be used to change scraper behavior.
 
-`.apply` method takes one argument - `registerAction` function which allows to add handlers for different actions. Action handlers are functions that are called by scraper on different stages of downloading website. For example `generateFilename` is called to generate filename for resource based on its url, `onResourceError` is called when error occured during requesting/handling/saving resource.
+`.apply` method takes one argument - `registerAction` function which allows to add handlers for different actions. Action handlers are functions that are called by scraper on different stages of downloading website. For example `generateFilename` is called to generate filename for resource based on its url, `onResourceError` is called when error occurred during requesting/handling/saving resource.
 
 You can add multiple plugins which register multiple actions. Plugins will be applied in order they were added to options.
 All actions should be regular or async functions. Scraper will call actions of specific type in order they were added and use result (if supported by action type) from last action call.
@@ -360,7 +360,7 @@ registerAction('afterResponse', async ({response}) => {
 ##### onResourceSaved
 Action onResourceSaved is called each time after a resource is saved (to file system or other storage with 'saveResource' action).
 
-Parameters- object which includes:
+Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
 Scraper ignores the result returned from this action and does not wait until it is resolved
@@ -369,9 +369,9 @@ registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resour
 ```
 
 ##### onResourceError
-Action onResourceError is called each time when resource's downloading/handling/saving to was failed
+Action onResourceError is called each time a resource's downloading/handling/saving fails
 
-Parameters- object which includes:
+Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 * error - Error object
 
@@ -395,7 +395,7 @@ If multiple actions `generateFilename` added - scraper will use result from last
 Default plugins which generate filenames: [byType](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-type-plugin.js), [bySiteStructure](https://github.com/website-scraper/node-website-scraper/blob/master/lib/plugins/generate-filenamy-by-site-structure-plugin.js)
 ```javascript
 // Generate random filename
-const crypto = require('crypto');
+import crypto from 'crypto';
 registerAction('generateFilename', ({resource}) => {
   return {filename: crypto.randomBytes(20).toString('hex')};
 });
