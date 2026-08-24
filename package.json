@@ -1,6 +1,6 @@
 {
   "name": "website-scraper",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "Download website to a local directory (including all css, images, js, etc.)",
   "readmeFilename": "README.md",
   "type": "module",
@@ -11,6 +11,7 @@
   "scripts": {
     "test": "c8 --all --reporter=text --reporter=lcov mocha --recursive --timeout 7000 ./test/unit/ ./test/functional",
     "test-e2e": "mocha --timeout 300000 ./test/e2e/*-test.js",
+    "benchmark:memory": "node benchmark/memory.mjs",
     "eslint": "eslint lib index.mjs"
   },
   "repository": {

@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-chai.should();
+const should = chai.should();
 import sinon from 'sinon';
 import nock from 'nock';
 import fs from 'fs';
@@ -96,6 +96,7 @@ describe('Scraper', () => {
 					urlFilter: () => { return true; },
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
+				sinon.stub(s, 'persistResource').resolves();
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(2);
@@ -105,7 +106,8 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.not.be.empty;
+				should.exist(rr.getContentStream());
+				s.persistResource.calledOnce.should.be.eql(true);
 			});
 
 			it('should return null if the urlFilter returns false', async () =>{
@@ -131,6 +133,7 @@ describe('Scraper', () => {
 					urlFilter: () => false,
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
+				sinon.stub(s, 'persistResource').resolves();
 
 				const r = new Resource('http://example.com');
 				r.getDepth = sinon.stub().returns(0);
@@ -140,7 +143,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.not.be.empty;
+				should.exist(rr.getContentStream());
 			});
 		});
 
@@ -153,6 +156,7 @@ describe('Scraper', () => {
 					directory: testDirname,
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
+				sinon.stub(s, 'persistResource').resolves();
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(212);
@@ -162,7 +166,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.not.be.empty;
+				should.exist(rr.getContentStream());
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is less than maxDept', async () =>{
@@ -174,6 +178,7 @@ describe('Scraper', () => {
 					maxDepth: 3,
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
+				sinon.stub(s, 'persistResource').resolves();
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(2);
@@ -183,7 +188,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.not.be.empty;
+				should.exist(rr.getContentStream());
 			});
 
 			it('should request the resource if maxDepth is set and resource depth is equal to maxDept', async () =>{
@@ -195,6 +200,7 @@ describe('Scraper', () => {
 					maxDepth: 3,
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
+				sinon.stub(s, 'persistResource').resolves();
 
 				const r = new Resource('http://example.com/a.png');
 				r.getDepth = sinon.stub().returns(3);
@@ -203,7 +209,7 @@ describe('Scraper', () => {
 				rr.should.be.eql(r);
 				rr.getUrl().should.be.eql('http://example.com/a.png');
 				rr.getFilename().should.not.be.empty;
-				rr.getText().should.not.be.empty;
+				should.exist(rr.getContentStream());
 			});
 
 			it('should return null if maxDepth is set and resource depth is greater than maxDepth', async () =>{
