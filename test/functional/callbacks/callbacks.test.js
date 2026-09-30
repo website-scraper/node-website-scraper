@@ -81,12 +81,18 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		events.should.eql(['onResourceSaved done', 'afterFinish', 'scrape resolved']);
 	});
 
-	it('should not fail scrape if onResourceSaved action rejects', async () => {
+	it('should run afterFinish and resolve if onResourceSaved action rejects', async () => {
 		nock('http://example.com/').get('/').reply(200, 'OK');
+
+		const afterFinishStub = sinon.stub();
 
 		class MyPlugin {
 			apply(addAction) {
-				addAction('onResourceSaved', async () => { throw new Error('ACTION ERROR'); });
+				addAction('onResourceSaved', async () => {
+					await new Promise((resolve) => setTimeout(resolve, 50));
+					return Promise.reject();
+				});
+				addAction('afterFinish', afterFinishStub);
 			}
 		}
 
@@ -97,6 +103,7 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		});
 
 		result.length.should.eql(1);
+		afterFinishStub.calledOnce.should.be.eql(true);
 	});
 
 	it('should call onResourceError callback if ignoreErrors = false', function() {
