@@ -352,7 +352,7 @@ Action onResourceSaved is called each time after a resource is saved (to file sy
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
-Scraper ignores the result returned from this action and does not wait until it is resolved
+Scraper ignores the result returned from this action. It doesn't wait for the action before saving other resources, but it waits for all pending onResourceSaved and onResourceError actions before running afterFinish and resolving `scrape()`. If the action rejects, scraper logs a warning.
 ```javascript
 registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
 ```
@@ -364,7 +364,7 @@ Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 * error - Error object
 
-Scraper ignores result returned from this action and does not wait until it is resolved
+Scraper ignores the result returned from this action. Like onResourceSaved, `scrape()` waits for pending onResourceError actions before running afterFinish, and logs a warning if one rejects.
 ```javascript
 registerAction('onResourceError', ({resource, error}) => console.log(`Resource ${resource.url} has error ${error}`));
 ```
