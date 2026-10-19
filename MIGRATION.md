@@ -1,5 +1,21 @@
 # Migration Guide
 
+## From version 6 to 7
+
+#### Node.js
+Minimal supported Node.js version is 22.12.0.
+
+#### options.request
+[got](https://github.com/sindresorhus/got) was updated from v14 to v16. If you're using [request object](https://github.com/website-scraper/node-website-scraper#request) to customize requests, please check got's breaking changes in [v15](https://github.com/sindresorhus/got/releases/tag/v15.0.0) and [v16](https://github.com/sindresorhus/got/releases/tag/v16.0.0). Most notable:
+* `strictContentLength` is `true` by default - request fails if `Content-Length` doesn't match the actual body size
+* 300 and 304 responses are no longer followed as redirects
+* `url` is no longer allowed in options object
+* deprecated `searchParameters`, `followRedirects` and `auth` options now throw
+* `http2-wrapper` and `cacheable-lookup` were replaced with built-in implementations (`agent.http2`, `dnsCache` options changed)
+* credentials are stripped when a hook redirects request to a different origin
+
+`response.body` passed to `afterResponse` action is still a `Buffer` (with default `responseType: 'buffer'`), but `response.rawBody` is now a `Uint8Array`.
+
 ## From version 4 to 5
 
 #### ESM module
