@@ -2,6 +2,19 @@
 
 ## From version 6 to 7
 
+#### Node.js
+Minimal supported Node.js version is 22.12.0.
+
+#### options.request
+[got](https://github.com/sindresorhus/got) was updated from v14 to v16. If you're using [request object](https://github.com/website-scraper/node-website-scraper#request) to customize requests, please check got's breaking changes in [v15](https://github.com/sindresorhus/got/releases/tag/v15.0.0) and [v16](https://github.com/sindresorhus/got/releases/tag/v16.0.0). Most notable:
+* `strictContentLength` is `true` by default - request fails if `Content-Length` doesn't match the actual body size
+* 300 and 304 responses are no longer followed as redirects
+* `url` is no longer allowed in options object
+* deprecated `searchParameters`, `followRedirects` and `auth` options now throw
+* `http2-wrapper` and `cacheable-lookup` were replaced with built-in implementations (`agent.http2`, `dnsCache` options changed)
+* credentials are stripped when a hook redirects request to a different origin
+
+#### Streaming resources to storage
 Version 7 stops storing resource content in memory ([#386](https://github.com/website-scraper/node-website-scraper/issues/386)). Resources which need no modification (images, fonts, media, scripts - everything except html and css) are streamed directly from the network to storage, and html/css content is freed as soon as the resource is saved. Memory usage no longer grows with the size of the scraped website.
 
 #### saveResource action

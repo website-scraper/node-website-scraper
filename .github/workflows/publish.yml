@@ -47,7 +47,7 @@ jobs:
           token: ${{ secrets.GH_PUSH_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
@@ -91,7 +91,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ steps.bump-version.outputs.tag }}
           generate_release_notes: true

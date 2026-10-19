@@ -235,6 +235,16 @@ describe('request', () => {
 			body.should.eql(bodyBuffer);
 		});
 
+		it('should support Uint8Array body', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+			const handlerStub = sinon.stub().resolves({body: new TextEncoder().encode('SOME BODY')});
+
+			const data = await request.get({url, afterResponse: handlerStub});
+			const body = await readStreamText(data.stream);
+			body.should.eql('SOME BODY');
+		});
+
 		it('should keep original body streaming when action returns metadata only', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
