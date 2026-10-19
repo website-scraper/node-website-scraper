@@ -1,0 +1,10 @@
+config_version = "0"
+
+exclude_patterns = [
+  "test/**",
+]
+
+[coverage]
+ignores = [
+  "benchmark/**",
+]

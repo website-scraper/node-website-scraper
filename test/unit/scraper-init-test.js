@@ -123,7 +123,6 @@ describe('Scraper initialization', function () {
 
 			s.options.request.should.deep.include({
 				throwHttpErrors: false,
-				responseType: 'buffer',
 				decompress: true,
 				https: {
 					rejectUnauthorized: false
@@ -145,7 +144,6 @@ describe('Scraper initialization', function () {
 
 			s.options.request.should.deep.include({
 				throwHttpErrors: true,
-				responseType: 'buffer',
 				decompress: true,
 				https: {
 					rejectUnauthorized: false
