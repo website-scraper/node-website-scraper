@@ -10,7 +10,7 @@ export default [
 			'@stylistic': stylistic
 		},
 		languageOptions: {
-			ecmaVersion: 2020,
+			ecmaVersion: 2025,
 			sourceType: 'module',
 			globals: {
 				...globals.node,
