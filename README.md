@@ -326,7 +326,7 @@ Parameters - object which includes:
 
 Return resolved `Promise` with:
   * object if the resource should be saved, object may contain next properties:
-    * `body` (string or Buffer, optional) - replaces resource content; if omitted, the original body is used without buffering it in memory
+    * `body` (string or Buffer, optional) - replaces resource content; if omitted, the original body is used without buffering it in memory. `null` body skips the resource, same as returning `null`
     * `encoding` (`binary` or `utf8`) is used to decode a string `body`, binary is used by default.
     * `metadata` (object) - everything you want to save for this resource (like headers, original text, timestamps, etc.), scraper will not use this field at all, it is only for the result
   * or null if the resource should be skipped
