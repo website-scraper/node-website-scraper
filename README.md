@@ -20,7 +20,7 @@ If you'd like to sponsor this project and have your avatar or company logo appea
 <!-- sponsors --><a href="https://github.com/aivus"><img src="https:&#x2F;&#x2F;github.com&#x2F;aivus.png" width="60px" alt="User avatar: Illia Antypenko" /></a><a href="https://github.com/swissspidy"><img src="https:&#x2F;&#x2F;github.com&#x2F;swissspidy.png" width="60px" alt="User avatar: Pascal Birchler" /></a><a href="https://github.com/itscarlosrufo"><img src="https:&#x2F;&#x2F;github.com&#x2F;itscarlosrufo.png" width="60px" alt="User avatar: Carlos Rufo" /></a><a href="https://github.com/francescamarano"><img src="https:&#x2F;&#x2F;github.com&#x2F;francescamarano.png" width="60px" alt="User avatar: Francesca Marano" /></a><a href="https://github.com/github"><img src="https:&#x2F;&#x2F;github.com&#x2F;github.png" width="60px" alt="User avatar: GitHub" /></a><a href="https://github.com/Belrestro"><img src="https:&#x2F;&#x2F;github.com&#x2F;Belrestro.png" width="60px" alt="User avatar: Andrew Vorobiov" /></a><a href="https://github.com/Effiezhu"><img src="https:&#x2F;&#x2F;github.com&#x2F;Effiezhu.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/madebyyusuf"><img src="https:&#x2F;&#x2F;github.com&#x2F;madebyyusuf.png" width="60px" alt="User avatar: Yusuf" /></a><!-- sponsors -->
 
 ## Requirements
-* nodejs version >= 20.18.1
+* nodejs version >= 22.12.0
 * website-scraper since v5 is pure ESM (it doesn't work with CommonJS), [read more in release v5.0.0 docs](https://github.com/website-scraper/node-website-scraper/releases/tag/v5.0.0)
 
 ## Installation
