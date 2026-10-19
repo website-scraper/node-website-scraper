@@ -61,6 +61,18 @@ describe('request', () => {
 		});
 	});
 
+	it('should pass response body to afterResponse as Buffer', () => {
+		const url = 'http://example.com';
+		nock(url).get('/').reply(200, 'TEST BODY');
+		const handlerStub = sinon.stub().resolves('');
+
+		return request.get({url, options: {responseType: 'buffer'}, afterResponse: handlerStub}).then(() => {
+			const { response } = handlerStub.getCall(0).args[0];
+			Buffer.isBuffer(response.body).should.eql(true);
+			response.body.toString().should.eql('TEST BODY');
+		});
+	});
+
 	describe('transformResult from afterResponse', () => {
 		it('should return object with body and metadata properties', () => {
 			const url = 'http://example.com';
@@ -263,6 +275,16 @@ describe('transformResult', () => {
 	it('should handle object with defaults and buffer body', () => {
 		const result = request.transformResult({
 			body: Buffer.from('SOME BODY'),
+		});
+
+		result.should.have.property('body', 'SOME BODY');
+		result.should.have.property('encoding', 'binary');
+		result.should.have.property('metadata', null);
+	});
+
+	it('should handle object with Uint8Array body', () => {
+		const result = request.transformResult({
+			body: new TextEncoder().encode('SOME BODY'),
 		});
 
 		result.should.have.property('body', 'SOME BODY');
