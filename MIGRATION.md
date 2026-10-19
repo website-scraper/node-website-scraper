@@ -22,6 +22,10 @@ registerAction('saveResource', async ({resource}) => {
 // or pipe resource.getContentStream() to your storage to avoid buffering
 ```
 
+`saveResource` actions are no longer called one resource at a time: streamed resources are saved as their responses arrive, concurrently. If your action writes to a shared sink which is not concurrency-safe (an archive, a single file, a serial connection) - make it concurrency-safe or set `requestConcurrency: 1`.
+
+Note: when more than one `saveResource` action is registered, resource content is buffered in memory once so that every action can read it - memory usage is then again bounded by resource size for those resources.
+
 #### afterResponse action
 
 The action is called when response headers arrive, before the body is downloaded. It receives `{response}` where response is `{url, statusCode, headers, getBody()}` instead of the full got response. Returning a string is not supported anymore - return an object or null. Return an object without `body` to keep the resource streaming (no buffering).

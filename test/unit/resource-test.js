@@ -68,13 +68,25 @@ describe('Resource', function() {
 			const streamedBytes = await readStreamBuffer(resource.getContentStream());
 			streamedBytes.should.be.eql(originalBytes);
 		});
+
+		it('should return fresh stream with content buffer on each call', async function () {
+			const resource = new Resource('http://example.com');
+			const contentBuffer = Buffer.from([0xff, 0x00, 0xab, 0x10]);
+			resource.setContentBuffer(contentBuffer);
+
+			const firstBytes = await readStreamBuffer(resource.getContentStream());
+			const secondBytes = await readStreamBuffer(resource.getContentStream());
+			firstBytes.should.be.eql(contentBuffer);
+			secondBytes.should.be.eql(contentBuffer);
+		});
 	});
 
 	describe('#clearContent', function () {
-		it('should clear text and content stream', function () {
+		it('should clear text, content stream and content buffer', function () {
 			const resource = new Resource('http://example.com');
 			resource.setText('some text');
 			resource.setContentStream(Readable.from('stream'));
+			resource.setContentBuffer(Buffer.from('buffer'));
 
 			resource.clearContent();
 

@@ -156,6 +156,36 @@ describe('Functional: streaming resources to storage', function () {
 		seenResources.should.be.eql(['http://example.com/a.png']);
 	});
 
+	it('should reject the scrape when saving a streamed child resource fails and ignoreErrors is false', async function () {
+		nock('http://example.com/').get('/').reply(200, '<html><body><img src="a.png"></body></html>', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/a.png').reply(200, 'image content', {'content-type': 'image/png'});
+
+		const errors = [];
+		class FailingStoragePlugin {
+			apply (add) {
+				add('saveResource', async ({resource}) => {
+					if (resource.getFilename().endsWith('.png')) {
+						throw new Error('SAVE FAILED');
+					}
+				});
+				add('onResourceError', ({error}) => errors.push(error.message));
+			}
+		}
+
+		try {
+			await scrape({
+				urls: ['http://example.com/'],
+				directory: testDirname,
+				ignoreErrors: false,
+				plugins: [new FailingStoragePlugin()]
+			});
+			throw new Error('expected scrape to reject');
+		} catch (err) {
+			err.message.should.be.eql('SAVE FAILED');
+		}
+		errors.should.be.eql(['SAVE FAILED']); // handled exactly once
+	});
+
 	// nock cannot simulate a connection dying mid-body, so these tests use a real local server
 	describe('mid-stream failures', function () {
 		let server, baseUrl;
@@ -218,6 +248,70 @@ describe('Functional: streaming resources to storage', function () {
 			}
 
 			fs.existsSync(testDirname).should.be.eql(false);
+		});
+	});
+
+	describe('stream cleanup when an action fails', function () {
+		let server, baseUrl, pngSocket;
+
+		beforeEach(function (done) {
+			nock.enableNetConnect(/127\.0\.0\.1|localhost/);
+			server = http.createServer((req, res) => {
+				if (req.url === '/a.png') {
+					// never ends the body - the socket stays open unless the client destroys it
+					pngSocket = req.socket;
+					res.writeHead(200, {'content-type': 'image/png'});
+					res.write('partial data');
+				} else {
+					res.writeHead(200, {'content-type': 'text/html'});
+					res.end('<html><body><img src="a.png"></body></html>');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				baseUrl = `http://127.0.0.1:${server.address().port}`;
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			if (pngSocket && !pngSocket.destroyed) {
+				pngSocket.destroy();
+			}
+			server.close(done);
+		});
+
+		it('should destroy the response stream when generateFilename throws', async function () {
+			class FailingFilenamePlugin {
+				apply (add) {
+					add('generateFilename', ({resource}) => {
+						if (resource.getUrl().endsWith('.png')) {
+							throw new Error('FILENAME FAILED');
+						}
+						return {filename: 'index.html'};
+					});
+				}
+			}
+
+			await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				ignoreErrors: true,
+				plugins: [new FailingFilenamePlugin()]
+			});
+
+			// the failed resource's socket must be released, otherwise the process never exits
+			await new Promise((resolve, reject) => {
+				const startedAt = Date.now();
+				(function checkSocketClosed () {
+					if (pngSocket.destroyed) {
+						return resolve();
+					}
+					if (Date.now() - startedAt > 2000) {
+						return reject(new Error('response socket was not destroyed'));
+					}
+					setTimeout(checkSocketClosed, 20);
+				})();
+			});
 		});
 	});
 

@@ -152,6 +152,22 @@ describe('request', () => {
 			await request.get({url, afterResponse});
 		});
 
+		it('should return full body to concurrent getBody calls', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+
+			const afterResponse = async ({response}) => {
+				const [first, second] = await Promise.all([response.getBody(), response.getBody()]);
+				first.toString().should.eql('TEST BODY');
+				second.should.be.equal(first);
+				return {};
+			};
+
+			const data = await request.get({url, afterResponse});
+			const body = await readStreamText(data.stream);
+			body.should.eql('TEST BODY');
+		});
+
 		it('should return null and skip resource when action returns null', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
@@ -175,6 +191,26 @@ describe('request', () => {
 			data.encoding.should.eql('utf8');
 			const body = await readStreamText(data.stream);
 			body.should.eql('a');
+		});
+
+		it('should return null and skip resource when action returns object with null body', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+			const handlerStub = sinon.stub().resolves({body: null});
+
+			const data = await request.get({url, afterResponse: handlerStub});
+			should.not.exist(data);
+		});
+
+		it('should decode string body as binary when no encoding returned', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY', {'content-type': 'text/html; charset=utf-8'});
+			const handlerStub = sinon.stub().resolves({body: 'café'});
+
+			const data = await request.get({url, afterResponse: handlerStub});
+			data.encoding.should.eql('binary');
+			const body = await readStreamBuffer(data.stream);
+			body.should.eql(Buffer.from('café', 'binary'));
 		});
 
 		it('should support Buffer body', async () => {
