@@ -30,6 +30,10 @@ Note: when more than one `saveResource` action is registered, resource content i
 
 The action is called when response headers arrive, before the body is downloaded. It receives `{response}` where response is `{url, statusCode, headers, getBody()}` instead of the full got response. Returning a string is not supported anymore - return an object or null. Return an object without `body` to keep the resource streaming (no buffering).
 
+Other contract changes:
+
+* When a returned string `body` has no `encoding`, it is decoded with the encoding derived from the response `content-type` header (`utf8` if it contains utf-8, case-insensitive, `binary` otherwise). Previously `binary` was always the default - pass `encoding: 'binary'` explicitly to keep the old behavior.
+
 ```javascript
 // before
 registerAction('afterResponse', ({response}) => {

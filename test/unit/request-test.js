@@ -69,6 +69,16 @@ describe('request', () => {
 		body.should.eql('Hello from Google!');
 	});
 
+	it('should return utf8 encoding when charset in content-type header is uppercase', async () => {
+		const url = 'http://www.google.com';
+		nock(url).get('/').reply(200, 'Hello from Google!', {
+			'content-type': 'text/html; charset=UTF-8'
+		});
+
+		const data = await request.get({url});
+		data.encoding.should.eql('utf8');
+	});
+
 	it('should return mimeType = null and binary encoding if content-type header was not found in response', async () => {
 		const url = 'http://www.google.com';
 		nock(url).get('/').reply(200, 'Hello from Google!', {});
@@ -202,15 +212,15 @@ describe('request', () => {
 			should.not.exist(data);
 		});
 
-		it('should decode string body as binary when no encoding returned', async () => {
+		it('should decode string body with header-derived encoding when no encoding returned', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY', {'content-type': 'text/html; charset=utf-8'});
 			const handlerStub = sinon.stub().resolves({body: 'café'});
 
 			const data = await request.get({url, afterResponse: handlerStub});
-			data.encoding.should.eql('binary');
+			data.encoding.should.eql('utf8');
 			const body = await readStreamBuffer(data.stream);
-			body.should.eql(Buffer.from('café', 'binary'));
+			body.should.eql(Buffer.from('café', 'utf8'));
 		});
 
 		it('should support Buffer body', async () => {
