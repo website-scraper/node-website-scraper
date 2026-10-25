@@ -32,8 +32,8 @@ describe('Functional: afterResponse action in plugin', function() {
 					if (response.statusCode === 404) {
 						return null;
 					} else {
+						// no body returned - the resource keeps streaming
 						return {
-							body: response.body,
 							metadata: {
 								headers: response.headers,
 								someOtherData: [ 1, 2, 3 ]

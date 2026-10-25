@@ -31,7 +31,9 @@ describe('Functional: check it works', function() {
 		return scrape(options).then((result) => {
 			result[0].url.should.be.eql('http://example.com/');
 			result[0].filename.should.be.eql('index.html');
-			result[0].text.should.be.eql('<html><head></head><body>TEST PROMISES</body></html>');
+			// content is not retained in memory after save - read the saved file instead
+			(result[0].text === null).should.be.true;
+			fs.readFileSync(testDirname + '/index.html').toString().should.be.eql('<html><head></head><body>TEST PROMISES</body></html>');
 		});
 	});
 });

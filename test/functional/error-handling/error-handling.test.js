@@ -91,6 +91,30 @@ describe('Functional error handling', function() {
 		});
 	});
 
+	describe('Error before anything was saved', function () {
+		it('should not remove the directory when the fs plugin wrote nothing to it', function () {
+			nock.cleanAll();
+			nock('http://example.com/').get('/').replyWithError('REQUEST FAILED!');
+
+			class RequestLogPlugin {
+				apply (registerAction) {
+					registerAction('beforeRequest', ({requestOptions}) => {
+						fs.mkdirSync(testDirname, {recursive: true});
+						fs.appendFileSync(testDirname + '/requests.log', 'request\n');
+						return {requestOptions};
+					});
+				}
+			}
+
+			return scrape({...options, ignoreErrors: false, plugins: [new RequestLogPlugin()]}).then(function () {
+				false.should.be.true;
+			}).catch(function (err) {
+				err.message.should.be.eql('REQUEST FAILED!');
+				fs.existsSync(testDirname + '/requests.log').should.be.eql(true);
+			});
+		});
+	});
+
 	describe('Resource Handler Error', function () {
 		let scraper;
 		let handleResourceStub;

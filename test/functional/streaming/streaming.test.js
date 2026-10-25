@@ -1,0 +1,441 @@
+import * as chai from 'chai';
+const should = chai.should();
+import '../../utils/assertions.js';
+import nock from 'nock';
+import fs from 'fs';
+import path from 'path';
+import http from 'http';
+import { buffer as readStreamBuffer } from 'stream/consumers';
+import scrape from 'website-scraper';
+
+const testDirname = './test/functional/streaming/.tmp';
+
+// deterministic multi-MB binary payload
+function generateBigBinary (sizeInBytes) {
+	const chunk = Buffer.alloc(64 * 1024);
+	for (let i = 0; i < chunk.length; i++) {
+		chunk[i] = (i * 7 + 13) % 256;
+	}
+	return Buffer.concat(Array.from({length: Math.ceil(sizeInBytes / chunk.length)}, () => chunk), sizeInBytes);
+}
+
+describe('Functional: streaming resources to storage', function () {
+
+	beforeEach(function () {
+		nock.cleanAll();
+		nock.disableNetConnect();
+	});
+
+	afterEach(function () {
+		nock.cleanAll();
+		nock.enableNetConnect();
+		fs.rmSync(testDirname, {recursive: true, force: true});
+	});
+
+	it('should save a large binary resource byte-identical', async function () {
+		const pngBody = generateBigBinary(5 * 1024 * 1024);
+		nock('http://example.com/').get('/').reply(200, '<html><body><img src="a.png"></body></html>', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/a.png').reply(200, pngBody, {'content-type': 'image/png'});
+
+		await scrape({
+			urls: ['http://example.com/'],
+			directory: testDirname
+		});
+
+		const savedBytes = fs.readFileSync(testDirname + '/images/a.png');
+		savedBytes.equals(pngBody).should.be.eql(true);
+	});
+
+	it('should free resource content from memory after save', async function () {
+		nock('http://example.com/').get('/').reply(200, '<html><body><img src="a.png"></body></html>', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/a.png').reply(200, 'image content', {'content-type': 'image/png'});
+
+		const result = await scrape({
+			urls: ['http://example.com/'],
+			directory: testDirname
+		});
+
+		(result[0].getText() === null).should.be.true;
+		should.not.exist(result[0].getContentStream());
+
+		const child = result[0].children.find((c) => c.url === 'http://example.com/a.png');
+		(child.getText() === null).should.be.true;
+		should.not.exist(child.getContentStream());
+
+		// content is on disk instead
+		fs.readFileSync(testDirname + '/images/a.png').toString().should.be.eql('image content');
+	});
+
+	it('should save body returned from afterResponse (buffered path)', async function () {
+		nock('http://example.com/').get('/a.png').reply(200, 'original content', {'content-type': 'image/png'});
+
+		class ReplaceBodyPlugin {
+			apply (add) {
+				add('afterResponse', async ({response}) => {
+					const body = await response.getBody();
+					return { body: Buffer.concat([body, Buffer.from(' + replaced')]) };
+				});
+			}
+		}
+
+		await scrape({
+			urls: [{url: 'http://example.com/a.png', filename: 'a.png'}],
+			directory: testDirname,
+			plugins: [new ReplaceBodyPlugin()]
+		});
+
+		fs.readFileSync(testDirname + '/images/a.png').toString().should.be.eql('original content + replaced');
+	});
+
+	it('should keep resource streaming and attach metadata when afterResponse returns no body', async function () {
+		const pngBody = generateBigBinary(1024 * 1024);
+		nock('http://example.com/').get('/a.png').reply(200, pngBody, {'content-type': 'image/png'});
+
+		class MetadataPlugin {
+			apply (add) {
+				add('afterResponse', ({response}) => {
+					return { metadata: { statusCode: response.statusCode } };
+				});
+			}
+		}
+
+		const result = await scrape({
+			urls: [{url: 'http://example.com/a.png', filename: 'a.png'}],
+			directory: testDirname,
+			plugins: [new MetadataPlugin()]
+		});
+
+		result[0].metadata.should.be.eql({statusCode: 200});
+		fs.readFileSync(testDirname + '/images/a.png').equals(pngBody).should.be.eql(true);
+	});
+
+	it('should provide full content to multiple saveResource actions', async function () {
+		const pngBody = generateBigBinary(1024 * 1024);
+		nock('http://example.com/').get('/a.png').reply(200, pngBody, {'content-type': 'image/png'});
+
+		const saved = [];
+		class MultiStoragePlugin {
+			apply (add) {
+				add('saveResource', async ({resource}) => {
+					saved.push(await readStreamBuffer(resource.getContentStream()));
+				});
+				add('saveResource', async ({resource}) => {
+					saved.push(await readStreamBuffer(resource.getContentStream()));
+				});
+			}
+		}
+
+		await scrape({
+			urls: [{url: 'http://example.com/a.png', filename: 'a.png'}],
+			directory: testDirname,
+			plugins: [new MultiStoragePlugin()]
+		});
+
+		saved.should.have.length(2);
+		saved[0].equals(pngBody).should.be.eql(true);
+		saved[1].equals(pngBody).should.be.eql(true);
+	});
+
+	it('should complete scraping when saveResource action does not consume the stream', async function () {
+		nock('http://example.com/').get('/a.png').reply(200, generateBigBinary(1024 * 1024), {'content-type': 'image/png'});
+
+		const seenResources = [];
+		class IgnoreContentPlugin {
+			apply (add) {
+				add('saveResource', async ({resource}) => {
+					seenResources.push(resource.url);
+				});
+			}
+		}
+
+		await scrape({
+			urls: [{url: 'http://example.com/a.png', filename: 'a.png'}],
+			directory: testDirname,
+			plugins: [new IgnoreContentPlugin()]
+		});
+
+		seenResources.should.be.eql(['http://example.com/a.png']);
+	});
+
+	it('should reject the scrape when saving a streamed child resource fails and ignoreErrors is false', async function () {
+		nock('http://example.com/').get('/').reply(200, '<html><body><img src="a.png"></body></html>', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/a.png').reply(200, 'image content', {'content-type': 'image/png'});
+
+		const errors = [];
+		class FailingStoragePlugin {
+			apply (add) {
+				add('saveResource', async ({resource}) => {
+					if (resource.getFilename().endsWith('.png')) {
+						throw new Error('SAVE FAILED');
+					}
+				});
+				add('onResourceError', ({error}) => errors.push(error.message));
+			}
+		}
+
+		try {
+			await scrape({
+				urls: ['http://example.com/'],
+				directory: testDirname,
+				ignoreErrors: false,
+				plugins: [new FailingStoragePlugin()]
+			});
+			throw new Error('expected scrape to reject');
+		} catch (err) {
+			err.message.should.be.eql('SAVE FAILED');
+		}
+		errors.should.be.eql(['SAVE FAILED']); // handled exactly once
+	});
+
+	// nock cannot simulate a connection dying mid-body, so these tests use a real local server
+	describe('mid-stream failures', function () {
+		let server, baseUrl;
+
+		beforeEach(function (done) {
+			nock.enableNetConnect(/127\.0\.0\.1|localhost/);
+			server = http.createServer((req, res) => {
+				switch (req.url) {
+					case '/':
+						res.writeHead(200, {'content-type': 'text/html'});
+						res.end('<html><body><img src="fail.png"><img src="fine.png"></body></html>');
+						break;
+					case '/fail.png':
+						res.writeHead(200, {'content-type': 'image/png'});
+						res.write('partial data');
+						setTimeout(() => res.destroy(), 10);
+						break;
+					default:
+						res.writeHead(200, {'content-type': 'image/png'});
+						res.end('fine content');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				baseUrl = `http://127.0.0.1:${server.address().port}`;
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			server.close(done);
+		});
+
+		it('should continue scraping and leave no partial file when child fails mid-stream with ignoreErrors', async function () {
+			await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				request: {retry: {limit: 0}},
+				ignoreErrors: true
+			});
+
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/images/fail.png').should.be.eql(false); // failed, partial file removed
+			fs.readFileSync(testDirname + '/images/fine.png').toString().should.be.eql('fine content');
+		});
+
+		it('should continue scraping when a child fails mid-stream without ignoreErrors (same as a failed child request)', async function () {
+			const errors = [];
+			class ErrorCollectorPlugin {
+				apply (add) {
+					add('onResourceError', ({resource, error}) => errors.push({url: resource.getUrl(), message: error.message}));
+				}
+			}
+
+			const result = await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				request: {retry: {limit: 0}},
+				ignoreErrors: false,
+				plugins: [new ErrorCollectorPlugin()]
+			});
+
+			result.should.have.length(1);
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/images/fail.png').should.be.eql(false); // failed, partial file removed
+			fs.readFileSync(testDirname + '/images/fine.png').toString().should.be.eql('fine content');
+			errors.should.have.length(1); // handled exactly once
+			errors[0].url.should.be.eql(baseUrl + '/fail.png');
+		});
+
+		it('should fail the save instead of hanging when a saveResource action does not propagate stream errors', async function () {
+			const errors = [];
+			// replaces the default fs saver, so it is the only saveResource action and receives the live stream
+			class PipeWithoutErrorHandlingPlugin {
+				apply (add) {
+					add('beforeStart', () => fs.mkdirSync(testDirname, {recursive: true}));
+					add('saveResource', ({resource}) => new Promise((resolve) => {
+						const ws = fs.createWriteStream(path.join(testDirname, path.basename(resource.getFilename())));
+						// .pipe() does not forward source errors - 'finish' never fires if the body dies
+						resource.getContentStream().pipe(ws).on('finish', resolve);
+					}));
+					add('onResourceError', ({resource, error}) => errors.push({url: resource.getUrl(), message: error.message}));
+				}
+			}
+
+			const result = await scrape({
+				urls: [baseUrl + '/'],
+				request: {retry: {limit: 0}},
+				ignoreErrors: true,
+				plugins: [new PipeWithoutErrorHandlingPlugin()]
+			});
+
+			result.should.have.length(1);
+			fs.readFileSync(testDirname + '/fine.png').toString().should.be.eql('fine content');
+			errors.should.have.length(1);
+			errors[0].url.should.be.eql(baseUrl + '/fail.png');
+		});
+
+		it('should reject and remove directory when a root resource fails mid-stream without ignoreErrors', async function () {
+			try {
+				await scrape({
+					urls: [
+						{url: baseUrl + '/fine.png', filename: 'fine.png'},
+						{url: baseUrl + '/fail.png', filename: 'fail.png'}
+					],
+					directory: testDirname,
+					request: {retry: {limit: 0}},
+					ignoreErrors: false
+				});
+				throw new Error('expected scrape to reject');
+			} catch (err) {
+				err.message.should.not.be.eql('expected scrape to reject');
+			}
+
+			fs.existsSync(testDirname).should.be.eql(false);
+		});
+	});
+
+	describe('mid-body retries', function () {
+		let server, baseUrl, attempts;
+
+		beforeEach(function (done) {
+			nock.enableNetConnect(/127\.0\.0\.1|localhost/);
+			attempts = {};
+			server = http.createServer((req, res) => {
+				attempts[req.url] = (attempts[req.url] || 0) + 1;
+				const isHtml = req.url === '/';
+				res.writeHead(200, {'content-type': isHtml ? 'text/html' : 'image/png'});
+				if (attempts[req.url] === 1) {
+					res.write(isHtml ? '<html><body>' : 'partial');
+					setTimeout(() => res.destroy(), 10);
+				} else {
+					res.end(isHtml ? '<html><body><img src="a.png"></body></html>' : 'image content');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				baseUrl = `http://127.0.0.1:${server.address().port}`;
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			server.close(done);
+		});
+
+		it('should retry html which fails mid-body, but not a streamed resource', async function () {
+			const errors = [];
+			class ErrorCollectorPlugin {
+				apply (add) {
+					add('onResourceError', ({resource}) => errors.push(resource.getUrl()));
+				}
+			}
+
+			await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				request: {retry: {limit: 1}},
+				ignoreErrors: false,
+				plugins: [new ErrorCollectorPlugin()]
+			});
+
+			attempts['/'].should.be.eql(2); // html body retried and buffered from the 2nd attempt
+			fs.readFileSync(testDirname + '/index.html').toString().should.contain('<img src="images/a.png">');
+			attempts['/a.png'].should.be.eql(1); // streamed to storage - no mid-body retry
+			fs.existsSync(testDirname + '/images/a.png').should.be.eql(false);
+			errors.should.be.eql([baseUrl + '/a.png']);
+		});
+	});
+
+	describe('stream cleanup when an action fails', function () {
+		let server, baseUrl, pngSocket;
+
+		beforeEach(function (done) {
+			nock.enableNetConnect(/127\.0\.0\.1|localhost/);
+			server = http.createServer((req, res) => {
+				if (req.url === '/a.png') {
+					// never ends the body - the socket stays open unless the client destroys it
+					pngSocket = req.socket;
+					res.writeHead(200, {'content-type': 'image/png'});
+					res.write('partial data');
+				} else {
+					res.writeHead(200, {'content-type': 'text/html'});
+					res.end('<html><body><img src="a.png"></body></html>');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				baseUrl = `http://127.0.0.1:${server.address().port}`;
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			if (pngSocket && !pngSocket.destroyed) {
+				pngSocket.destroy();
+			}
+			server.close(done);
+		});
+
+		it('should destroy the response stream when generateFilename throws', async function () {
+			class FailingFilenamePlugin {
+				apply (add) {
+					add('generateFilename', ({resource}) => {
+						if (resource.getUrl().endsWith('.png')) {
+							throw new Error('FILENAME FAILED');
+						}
+						return {filename: 'index.html'};
+					});
+				}
+			}
+
+			await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				ignoreErrors: true,
+				plugins: [new FailingFilenamePlugin()]
+			});
+
+			// the failed resource's socket must be released, otherwise the process never exits
+			await new Promise((resolve, reject) => {
+				const startedAt = Date.now();
+				(function checkSocketClosed () {
+					if (pngSocket.destroyed) {
+						return resolve();
+					}
+					if (Date.now() - startedAt > 2000) {
+						return reject(new Error('response socket was not destroyed'));
+					}
+					setTimeout(checkSocketClosed, 20);
+				})();
+			});
+		});
+	});
+
+	it('should handle redirect to an already requested resource with requestConcurrency 1', async function () {
+		this.timeout(3000); // a deadlock in the request queue would exceed this
+
+		nock('http://example.com/').get('/').reply(200,
+			'<html><body><img src="a.png"><img src="b.png"></body></html>', {'content-type': 'text/html'});
+		nock('http://example.com/').get('/a.png').reply(200, 'a content', {'content-type': 'image/png'});
+		nock('http://example.com/').get('/b.png').reply(301, undefined, {location: 'http://example.com/a.png'});
+		nock('http://example.com/').get('/a.png').reply(200, 'a content', {'content-type': 'image/png'});
+
+		await scrape({
+			urls: ['http://example.com/'],
+			directory: testDirname,
+			requestConcurrency: 1
+		});
+
+		fs.readFileSync(testDirname + '/images/a.png').toString().should.be.eql('a content');
+		const html = fs.readFileSync(testDirname + '/index.html').toString();
+		html.should.contain('src="images/a.png"');
+	});
+});
