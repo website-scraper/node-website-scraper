@@ -247,6 +247,26 @@ describe('request', () => {
 			body.should.eql('TEST BODY');
 		});
 
+		it('should reject getBody called after the action has returned', async () => {
+			const url = 'http://example.com';
+			nock(url).get('/').reply(200, 'TEST BODY');
+
+			let savedResponse;
+			const data = await request.get({url, afterResponse: ({response}) => {
+				savedResponse = response;
+				return {};
+			}});
+
+			try {
+				await savedResponse.getBody();
+				throw new Error('expected getBody to reject');
+			} catch (err) {
+				err.message.should.contain('getBody() can only be called while the afterResponse action is running');
+			}
+			// the stream handed over to the caller is untouched
+			(await readStreamText(data.stream)).should.eql('TEST BODY');
+		});
+
 		it('should return null and skip resource when action returns null', async () => {
 			const url = 'http://example.com';
 			nock(url).get('/').reply(200, 'TEST BODY');
