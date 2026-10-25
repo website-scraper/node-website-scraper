@@ -3,6 +3,7 @@ const should = chai.should();
 import '../../utils/assertions.js';
 import nock from 'nock';
 import fs from 'fs';
+import path from 'path';
 import http from 'http';
 import { buffer as readStreamBuffer } from 'stream/consumers';
 import scrape from 'website-scraper';
@@ -252,6 +253,34 @@ describe('Functional: streaming resources to storage', function () {
 			fs.existsSync(testDirname + '/images/fail.png').should.be.eql(false); // failed, partial file removed
 			fs.readFileSync(testDirname + '/images/fine.png').toString().should.be.eql('fine content');
 			errors.should.have.length(1); // handled exactly once
+			errors[0].url.should.be.eql(baseUrl + '/fail.png');
+		});
+
+		it('should fail the save instead of hanging when a saveResource action does not propagate stream errors', async function () {
+			const errors = [];
+			// replaces the default fs saver, so it is the only saveResource action and receives the live stream
+			class PipeWithoutErrorHandlingPlugin {
+				apply (add) {
+					add('beforeStart', () => fs.mkdirSync(testDirname, {recursive: true}));
+					add('saveResource', ({resource}) => new Promise((resolve) => {
+						const ws = fs.createWriteStream(path.join(testDirname, path.basename(resource.getFilename())));
+						// .pipe() does not forward source errors - 'finish' never fires if the body dies
+						resource.getContentStream().pipe(ws).on('finish', resolve);
+					}));
+					add('onResourceError', ({resource, error}) => errors.push({url: resource.getUrl(), message: error.message}));
+				}
+			}
+
+			const result = await scrape({
+				urls: [baseUrl + '/'],
+				request: {retry: {limit: 0}},
+				ignoreErrors: true,
+				plugins: [new PipeWithoutErrorHandlingPlugin()]
+			});
+
+			result.should.have.length(1);
+			fs.readFileSync(testDirname + '/fine.png').toString().should.be.eql('fine content');
+			errors.should.have.length(1);
 			errors[0].url.should.be.eql(baseUrl + '/fail.png');
 		});
 
