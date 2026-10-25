@@ -231,6 +231,30 @@ describe('Functional: streaming resources to storage', function () {
 			fs.readFileSync(testDirname + '/images/fine.png').toString().should.be.eql('fine content');
 		});
 
+		it('should continue scraping when a child fails mid-stream without ignoreErrors (same as a failed child request)', async function () {
+			const errors = [];
+			class ErrorCollectorPlugin {
+				apply (add) {
+					add('onResourceError', ({resource, error}) => errors.push({url: resource.getUrl(), message: error.message}));
+				}
+			}
+
+			const result = await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				request: {retry: {limit: 0}},
+				ignoreErrors: false,
+				plugins: [new ErrorCollectorPlugin()]
+			});
+
+			result.should.have.length(1);
+			fs.existsSync(testDirname + '/index.html').should.be.eql(true);
+			fs.existsSync(testDirname + '/images/fail.png').should.be.eql(false); // failed, partial file removed
+			fs.readFileSync(testDirname + '/images/fine.png').toString().should.be.eql('fine content');
+			errors.should.have.length(1); // handled exactly once
+			errors[0].url.should.be.eql(baseUrl + '/fail.png');
+		});
+
 		it('should reject and remove directory when a root resource fails mid-stream without ignoreErrors', async function () {
 			try {
 				await scrape({
