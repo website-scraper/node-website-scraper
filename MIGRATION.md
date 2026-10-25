@@ -19,7 +19,7 @@ Version 7 stops storing resource content in memory ([#386](https://github.com/we
 
 #### saveResource action
 
-Resource content is now exposed as a Readable stream via `resource.getContentStream()` instead of `resource.getText()`. For streamed resources the stream can be consumed only once - consume or destroy it within the action.
+Resource content is now exposed as a Readable stream via `resource.getContentStream()` instead of `resource.getText()`. For streamed resources the stream can be consumed only once - consume or destroy it within the action. `getContentStream()` hands such a stream out only once, a second call throws.
 
 ```javascript
 // before

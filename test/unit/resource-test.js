@@ -49,6 +49,24 @@ describe('Resource', function() {
 			resource.getContentStream().should.be.equal(stream);
 		});
 
+		it('should throw when a live stream is requested a second time', function () {
+			const resource = new Resource('http://example.com/a.png');
+			resource.setContentStream(Readable.from(Buffer.from('binary data')));
+			resource.getContentStream();
+
+			(() => resource.getContentStream()).should.throw(/was already taken/);
+		});
+
+		it('should hand out a newly set live stream again', function () {
+			const resource = new Resource('http://example.com/a.png');
+			resource.setContentStream(Readable.from(Buffer.from('first')));
+			resource.getContentStream();
+
+			const second = Readable.from(Buffer.from('second'));
+			resource.setContentStream(second);
+			resource.getContentStream().should.be.equal(second);
+		});
+
 		it('should return fresh stream with text content on each call', async function () {
 			const resource = new Resource('http://example.com');
 			resource.setEncoding('utf8');

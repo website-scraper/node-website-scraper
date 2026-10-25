@@ -430,7 +430,7 @@ Action saveResource is called to save file to some storage. Use it to save files
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
-Resource content is exposed as a Readable stream returned by `resource.getContentStream()`. For resources which are streamed directly from the network (all types except html and css) the stream can be consumed only once - consume it (or destroy it) within the action.
+Resource content is exposed as a Readable stream returned by `resource.getContentStream()`. For resources which are streamed directly from the network (all types except html and css) the stream can be consumed only once - consume it (or destroy it) within the action. `getContentStream()` hands such a stream out only once, a second call throws - buffer the content yourself if you need it more than once.
 
 If multiple actions `saveResource` added - resource will be saved to multiple storages (the scraper buffers streamed content in that case so every action can read it).
 ```javascript
