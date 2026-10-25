@@ -304,6 +304,57 @@ describe('Functional: streaming resources to storage', function () {
 		});
 	});
 
+	describe('mid-body retries', function () {
+		let server, baseUrl, attempts;
+
+		beforeEach(function (done) {
+			nock.enableNetConnect(/127\.0\.0\.1|localhost/);
+			attempts = {};
+			server = http.createServer((req, res) => {
+				attempts[req.url] = (attempts[req.url] || 0) + 1;
+				const isHtml = req.url === '/';
+				res.writeHead(200, {'content-type': isHtml ? 'text/html' : 'image/png'});
+				if (attempts[req.url] === 1) {
+					res.write(isHtml ? '<html><body>' : 'partial');
+					setTimeout(() => res.destroy(), 10);
+				} else {
+					res.end(isHtml ? '<html><body><img src="a.png"></body></html>' : 'image content');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				baseUrl = `http://127.0.0.1:${server.address().port}`;
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			server.close(done);
+		});
+
+		it('should retry html which fails mid-body, but not a streamed resource', async function () {
+			const errors = [];
+			class ErrorCollectorPlugin {
+				apply (add) {
+					add('onResourceError', ({resource}) => errors.push(resource.getUrl()));
+				}
+			}
+
+			await scrape({
+				urls: [baseUrl + '/'],
+				directory: testDirname,
+				request: {retry: {limit: 1}},
+				ignoreErrors: false,
+				plugins: [new ErrorCollectorPlugin()]
+			});
+
+			attempts['/'].should.be.eql(2); // html body retried and buffered from the 2nd attempt
+			fs.readFileSync(testDirname + '/index.html').toString().should.contain('<img src="images/a.png">');
+			attempts['/a.png'].should.be.eql(1); // streamed to storage - no mid-body retry
+			fs.existsSync(testDirname + '/images/a.png').should.be.eql(false);
+			errors.should.be.eql([baseUrl + '/a.png']);
+		});
+	});
+
 	describe('stream cleanup when an action fails', function () {
 		let server, baseUrl, pngSocket;
 

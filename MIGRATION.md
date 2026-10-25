@@ -73,7 +73,7 @@ Resource content is not retained after save: `resource.getText()` returns `null`
 #### Other behavior changes
 
 * Binary files are written byte-for-byte from the network (previously the content was round-tripped through a latin1 string). Output for correctly-served files is unchanged; edge-case encodings may differ.
-* Transient request errors are retried as before, but only until response headers are received. A connection which dies mid-body is not retried.
+* Transient request errors are retried as before. For streamed resources (everything except html and css) retries happen only until response headers are received - a connection which dies mid-body is not retried, since the body is already being written to storage.
 * `responseType` in the `request` option is ignored (responses are streamed).
 
 ## From version 4 to 5

@@ -2,6 +2,9 @@ import * as chai from 'chai';
 const should = chai.should();
 import sinon from 'sinon';
 import nock from 'nock';
+import http from 'http';
+import { pipeline } from 'stream/promises';
+import { Writable } from 'stream';
 import { text as readStreamText, buffer as readStreamBuffer } from 'stream/consumers';
 import request from '../../lib/request.js';
 
@@ -110,6 +113,72 @@ describe('request', () => {
 		} catch (err) {
 			err.code.should.eql('ECONNRESET');
 		}
+	});
+
+	// nock cannot simulate a connection dying mid-body, so these tests use a real local server
+	describe('mid-body errors', () => {
+		let server, url, attempts;
+
+		beforeEach((done) => {
+			attempts = 0;
+			server = http.createServer((req, res) => {
+				attempts++;
+				res.writeHead(200, {'content-type': 'text/html'});
+				if (attempts === 1) {
+					res.write('partial');
+					setTimeout(() => res.destroy(), 10);
+				} else {
+					res.end('full body');
+				}
+			});
+			server.listen(0, '127.0.0.1', () => {
+				url = `http://127.0.0.1:${server.address().port}/`;
+				done();
+			});
+		});
+
+		afterEach((done) => server.close(done));
+
+		it('should retry and return full body from readBody', async () => {
+			const data = await request.get({url, options: {retry: {limit: 1}}});
+			const body = await data.readBody();
+			body.toString().should.eql('full body');
+			attempts.should.eql(2);
+		});
+
+		it('should reject readBody with the request error when no retries are left', async () => {
+			const data = await request.get({url, options: {retry: {limit: 0}}});
+			try {
+				await data.readBody();
+				throw new Error('expected readBody to reject');
+			} catch (err) {
+				err.name.should.eql('ReadError');
+			}
+			attempts.should.eql(1);
+		});
+
+		it('should not retry when the body is consumed as a stream', async () => {
+			const data = await request.get({url, options: {retry: {limit: 1}}});
+			try {
+				await pipeline(data.stream, new Writable({write (chunk, enc, cb) { cb(); }}));
+				throw new Error('expected pipeline to reject');
+			} catch (err) {
+				err.name.should.eql('ReadError');
+			}
+			attempts.should.eql(1);
+		});
+
+		it('should retry inside afterResponse getBody', async () => {
+			let receivedBody;
+			const afterResponse = async ({response}) => {
+				receivedBody = await response.getBody();
+				return {};
+			};
+			const data = await request.get({url, options: {retry: {limit: 1}}, afterResponse});
+			receivedBody.toString().should.eql('full body');
+			(await readStreamText(data.stream)).should.eql('full body');
+			attempts.should.eql(2);
+		});
 	});
 
 	describe('afterResponse', () => {
