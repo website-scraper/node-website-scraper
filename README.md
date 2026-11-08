@@ -224,6 +224,25 @@ Plugins allow to extend scraper behaviour
 ##### Built-in plugins
 Scraper has built-in plugins which are used by default if not overwritten with custom plugins. You can find them in [lib/plugins](lib/plugins) directory. These plugins are intended for internal use but can be copied if the behaviour of the plugins needs to be extended / changed.
 
+One built-in plugin is opt-in and exported for use in your application:
+* [BlockPrivateAddressesPlugin](#blockprivateaddressesplugin) - rejects requests to loopback, link-local, private and other non-public addresses
+
+##### BlockPrivateAddressesPlugin
+website-scraper requests the urls passed in [urls](#urls) and, by default, every resource referenced by the downloaded content, following redirects. It does not check whether a destination is a public address, because mirroring intranet, staging or localhost sites is a legitimate use. If your application scrapes urls supplied by untrusted users, a page you are asked to download can make the scraper request internal services and save their responses to the output directory (server-side request forgery).
+
+Add this plugin to reject such requests. It checks the url of every requested resource (including the initial `urls`), every redirect target and every address a hostname resolves to, against loopback, link-local, private, CGNAT, multicast, reserved and documentation ranges for IPv4 and IPv6, including IPv4-mapped IPv6 addresses. A blocked request fails like any other request error, so combine it with [ignoreErrors](#ignoreerrors) to skip blocked resources and continue. Use [urlFilter](#urlfilter) in addition to restrict hosts further, for example to an allowlist.
+```javascript
+import scrape, { BlockPrivateAddressesPlugin } from 'website-scraper';
+
+await scrape({
+  urls: [untrustedUrl],
+  directory: '/path/to/save',
+  ignoreErrors: true,
+  plugins: [ new BlockPrivateAddressesPlugin() ]
+});
+```
+If the plugin's policy does not fit your deployment, copy [lib/plugins/block-private-addresses-plugin.js](lib/plugins/block-private-addresses-plugin.js) and adjust the ranges.
+
 ##### Existing plugins
 * [website-scraper-puppeteer](https://github.com/website-scraper/website-scraper-puppeteer) - download dynamic (rendered with js) websites using puppeteer
 * [website-scraper-existing-directory](https://github.com/website-scraper/website-scraper-existing-directory) - save files to existing directory
