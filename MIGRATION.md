@@ -16,6 +16,36 @@ Minimal supported Node.js version is 22.12.0.
 
 `response.body` passed to `afterResponse` action is still a `Buffer` (with default `responseType: 'buffer'`), but `response.rawBody` is now a `Uint8Array`.
 
+#### onResourceSaved and onResourceError actions
+`scrape()` now waits for pending [onResourceSaved](https://github.com/website-scraper/node-website-scraper#onresourcesaved) and [onResourceError](https://github.com/website-scraper/node-website-scraper#onresourceerror) actions before running `afterFinish` and resolving. These actions still don't block downloading of other resources, but a slow action now delays `scrape()`, and an action which never settles makes `scrape()` hang.
+
+Errors from these actions are handled differently:
+* A failing `onResourceSaved` action is handled like any other resource error: `onResourceError` is called for the resource, and with [ignoreErrors](https://github.com/website-scraper/node-website-scraper#ignoreerrors) `false` (default) `scrape()` rejects with that error once downloading is finished. In version 6 it caused an unhandled promise rejection, which crashes Node.js by default.
+* A failing `onResourceError` action is only logged to the `website-scraper:warn` logger and doesn't change the result of `scrape()`. In version 6 it caused an unhandled promise rejection.
+
+If you used `afterFinish` to wait for work started in `onResourceSaved`, it is no longer needed:
+```javascript
+// version 6
+class MyPlugin {
+	apply(registerAction) {
+		const pending = [];
+		registerAction('onResourceSaved', ({resource}) => {
+			pending.push(postProcess(resource));
+		});
+		registerAction('afterFinish', () => Promise.all(pending));
+	}
+}
+
+// version 7
+class MyPlugin {
+	apply(registerAction) {
+		registerAction('onResourceSaved', ({resource}) => postProcess(resource));
+	}
+}
+```
+
+If a failing `onResourceSaved` action shouldn't fail the whole scrape, either set `ignoreErrors: true` or catch errors inside the action.
+
 ## From version 4 to 5
 
 #### ESM module
