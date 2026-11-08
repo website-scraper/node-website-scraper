@@ -57,7 +57,7 @@ describe('request', () => {
 			handlerStub.calledOnce.should.eql(true);
 			const afterResponseArgs = handlerStub.getCall(0).args[0];
 			afterResponseArgs.response.body.should.eql('TEST BODY');
-			afterResponseArgs.response.headers.should.eql({});
+			chai.expect(afterResponseArgs.response.headers).to.eql({});
 		});
 	});
 
