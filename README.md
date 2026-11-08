@@ -160,6 +160,7 @@ Boolean, whether urls should be 'prettified', by having the `defaultFilename` re
 
 #### ignoreErrors
 Boolean, if `true` scraper will continue downloading resources after error occurred, if `false` - scraper will finish process and return error. Defaults to `false`.
+Errors thrown by plugin actions while handling a resource (including [onResourceSaved](#onresourcesaved)) are treated the same way.
 
 #### urlFilter
 Function which is called for each url to check whether it should be scraped. Defaults to `null` - no url filter will be applied.
@@ -352,7 +353,7 @@ Action onResourceSaved is called each time after a resource is saved (to file sy
 Parameters - object which includes:
 * resource - [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) object
 
-Scraper ignores the result returned from this action. It doesn't wait for the action before saving other resources, but it waits for all pending onResourceSaved and onResourceError actions before running afterFinish and resolving `scrape()`. If the action throws or rejects, the error doesn't fail the scrape: it is only logged to the `website-scraper:warn` logger (hidden unless enabled, see [Log and debug](#log-and-debug)), so handle errors inside the action if you need to react to them.
+Scraper ignores the result returned from this action. It doesn't wait for the action before saving other resources, but it waits for all pending onResourceSaved and onResourceError actions before running afterFinish and resolving `scrape()`. If the action throws or rejects, it is handled like any other resource error: [onResourceError](#onresourceerror) is called for the resource, and if [ignoreErrors](#ignoreerrors) is `false` `scrape()` is rejected with this error. Since scraper doesn't wait for this action, the rejection happens after all resources are downloaded and pending actions are finished, not immediately.
 ```javascript
 registerAction('onResourceSaved', ({resource}) => console.log(`Resource ${resource.url} saved!`));
 ```
