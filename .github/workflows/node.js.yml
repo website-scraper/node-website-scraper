@@ -17,6 +17,7 @@ jobs:
         node-version:
           - 22
           - 24
+          - 26
           - current
         os:
           - ubuntu-latest
