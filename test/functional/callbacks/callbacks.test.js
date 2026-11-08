@@ -81,29 +81,75 @@ describe('Functional: onResourceSaved and onResourceError callbacks in plugin', 
 		events.should.eql(['onResourceSaved done', 'afterFinish', 'scrape resolved']);
 	});
 
-	it('should run afterFinish and resolve if onResourceSaved action rejects', async () => {
-		nock('http://example.com/').get('/').reply(200, 'OK');
+	describe('when notification actions reject', () => {
+		let unhandledRejections;
+		const onUnhandledRejection = (reason) => unhandledRejections.push(reason);
 
-		const afterFinishStub = sinon.stub();
-
-		class MyPlugin {
-			apply(addAction) {
-				addAction('onResourceSaved', async () => {
-					await new Promise((resolve) => setTimeout(resolve, 50));
-					return Promise.reject();
-				});
-				addAction('afterFinish', afterFinishStub);
-			}
-		}
-
-		const result = await scrape({
-			urls: [ 'http://example.com/' ],
-			directory: testDirname,
-			plugins: [ new MyPlugin() ]
+		beforeEach(() => {
+			unhandledRejections = [];
+			process.on('unhandledRejection', onUnhandledRejection);
 		});
 
-		result.length.should.eql(1);
-		afterFinishStub.calledOnce.should.be.eql(true);
+		afterEach(() => {
+			process.off('unhandledRejection', onUnhandledRejection);
+		});
+
+		// unhandledRejection is emitted asynchronously, give it a chance to fire before asserting
+		const flushUnhandledRejections = () => new Promise((resolve) => setTimeout(resolve, 10));
+
+		it('should run afterFinish, resolve and not leave unhandled rejection if onResourceSaved action rejects', async () => {
+			nock('http://example.com/').get('/').reply(200, 'OK');
+
+			const afterFinishStub = sinon.stub();
+
+			class MyPlugin {
+				apply(addAction) {
+					// reject with non-Error value to make sure such rejections are handled too
+					addAction('onResourceSaved', () => Promise.reject());
+					addAction('afterFinish', afterFinishStub);
+				}
+			}
+
+			const result = await scrape({
+				urls: [ 'http://example.com/' ],
+				directory: testDirname,
+				plugins: [ new MyPlugin() ]
+			});
+			await flushUnhandledRejections();
+
+			result.length.should.eql(1);
+			afterFinishStub.calledOnce.should.be.eql(true);
+			unhandledRejections.should.eql([]);
+		});
+
+		it('should run afterFinish, resolve and not leave unhandled rejection if onResourceError action rejects', async () => {
+			nock('http://example.com/').get('/').reply(200, 'OK');
+			nock('http://nodejs.org/').get('/').replyWithError('REQUEST ERROR!!');
+
+			const afterFinishStub = sinon.stub();
+
+			class MyPlugin {
+				apply(addAction) {
+					addAction('onResourceError', async () => {
+						throw new Error('onResourceError failed');
+					});
+					addAction('afterFinish', afterFinishStub);
+				}
+			}
+
+			const result = await scrape({
+				urls: [ 'http://example.com/', 'http://nodejs.org/' ],
+				directory: testDirname,
+				subdirectories: null,
+				ignoreErrors: true,
+				plugins: [ new MyPlugin() ]
+			});
+			await flushUnhandledRejections();
+
+			result.length.should.eql(2);
+			afterFinishStub.calledOnce.should.be.eql(true);
+			unhandledRejections.should.eql([]);
+		});
 	});
 
 	it('should call onResourceError callback if ignoreErrors = false', function() {
