@@ -52,8 +52,9 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.branch }}
-          # Required to allow push to the release branch without the checks/PR
-          token: ${{ secrets.GH_PUSH_TOKEN }}
+          # Don't leave the token in .git/config where dependency scripts
+          # (npm install / npm test) could read it; it's passed to the push step only
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -123,8 +124,13 @@ jobs:
         if: ${{ !inputs.dryRun }}
         env:
           BRANCH: ${{ inputs.branch }}
+          # Required to allow push to the release branch without the checks/PR
+          GH_PUSH_TOKEN: ${{ secrets.GH_PUSH_TOKEN }}
         run: |
-          git push origin "HEAD:refs/heads/$BRANCH" --follow-tags
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_PUSH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$AUTH_HEADER"
+          git -c "http.https://github.com/.extraheader=$AUTH_HEADER" \
+            push origin "HEAD:refs/heads/$BRANCH" --follow-tags
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
