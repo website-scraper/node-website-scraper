@@ -16,6 +16,9 @@ Minimal supported Node.js version is 22.12.0.
 
 `response.body` passed to `afterResponse` action is still a `Buffer` (with default `responseType: 'buffer'`), but `response.rawBody` is now a `Uint8Array`.
 
+#### urlFilter and redirects
+[urlFilter](https://github.com/website-scraper/node-website-scraper#urlfilter) is now also called with the final url of a resource which was redirected, and the resource is skipped if the filter rejects it. In version 6 the filter only saw the url found in the content, so a resource could be downloaded from a host the filter would have rejected if it was reached through a redirect. The initial [urls](https://github.com/website-scraper/node-website-scraper#urls) are still not filtered, also after redirects.
+
 #### onResourceSaved and onResourceError actions
 `scrape()` now waits for pending [onResourceSaved](https://github.com/website-scraper/node-website-scraper#onresourcesaved) and [onResourceError](https://github.com/website-scraper/node-website-scraper#onresourceerror) actions before running `afterFinish` and resolving. These actions still don't block downloading of other resources, but a slow action now delays `scrape()`, and an action which never settles makes `scrape()` hang.
 
