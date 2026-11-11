@@ -114,6 +114,19 @@ jobs:
           echo "Using npm dist-tag: $DIST_TAG"
           echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
 
+      # Fail before publishing to npm if the push would be rejected (bad token,
+      # missing permissions, branch moved since checkout). Runs in dry-run mode too.
+      # Branch protection is only evaluated on a real push, so it isn't covered here.
+      - name: Verify push to ${{ inputs.branch }}
+        env:
+          BRANCH: ${{ inputs.branch }}
+          GH_PUSH_TOKEN: ${{ secrets.GH_PUSH_TOKEN }}
+        run: |
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_PUSH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$AUTH_HEADER"
+          git -c "http.https://github.com/.extraheader=$AUTH_HEADER" \
+            push --dry-run origin "HEAD:refs/heads/$BRANCH" --follow-tags
+
       - name: Publish to npm
         env:
           DRY_RUN_FLAG: ${{ inputs.dryRun && '--dry-run' || '' }}
