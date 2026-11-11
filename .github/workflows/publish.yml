@@ -26,11 +26,11 @@ on:
         type: string
         required: false
       npmPreTag:
-        description: 'NPM tag used for all pre* bumps (default: "next" on master, "next-<major>" on maintenance branches)'
+        description: 'NPM tag used for all pre* bumps (default: "next" if newer than the current latest, otherwise "next-<major>")'
         type: string
         required: false
       npmTag:
-        description: 'NPM tag used for regular bumps (default: "latest" on master, "latest-<major>" on maintenance branches)'
+        description: 'NPM tag used for regular bumps (default: "latest" if newer than the current latest, otherwise "latest-<major>")'
         type: string
         required: false
       dryRun:
@@ -91,13 +91,26 @@ jobs:
       - name: Resolve npm dist-tag
         id: npm-tag
         env:
-          BRANCH: ${{ inputs.branch }}
           IS_PRE: ${{ startsWith(inputs.bump, 'pre') }}
           NPM_TAG: ${{ inputs.npmTag }}
           NPM_PRE_TAG: ${{ inputs.npmPreTag }}
         run: |
-          MAJOR=$(node -p "require('./package.json').version.split('.')[0]")
-          if [ "$BRANCH" = "master" ]; then
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          MAJOR="${VERSION%%.*}"
+          CURRENT_LATEST=$(npm view "$NAME" dist-tags.latest)
+          if [ -z "$CURRENT_LATEST" ]; then
+            echo "::error::Could not read the current \"latest\" dist-tag of $NAME"
+            exit 1
+          fi
+          # Use the semver package bundled with npm to compare versions
+          SEMVER="$(npm root -g)/npm/node_modules/semver"
+          IS_NEWEST=$(node -e 'const semver = require(process.argv[1]); console.log(semver.gt(process.argv[2], process.argv[3]))' \
+            "$SEMVER" "$VERSION" "$CURRENT_LATEST")
+
+          # Only a version newer than the current "latest" may take the "latest"/"next" tags,
+          # no matter which branch it is released from (e.g. 6.x while master is the 7.0 candidate)
+          if [ "$IS_NEWEST" = "true" ]; then
             DEFAULT_TAG=latest; DEFAULT_PRE_TAG=next
           else
             DEFAULT_TAG="latest-$MAJOR"; DEFAULT_PRE_TAG="next-$MAJOR"
@@ -107,12 +120,20 @@ jobs:
           else
             DIST_TAG="${NPM_TAG:-$DEFAULT_TAG}"
           fi
-          if [ "$BRANCH" != "master" ] && { [ "$DIST_TAG" = "latest" ] || [ "$DIST_TAG" = "next" ]; }; then
-            echo "::error::Refusing to publish from maintenance branch $BRANCH with the \"$DIST_TAG\" dist-tag"
+          if [ "$IS_NEWEST" != "true" ] && { [ "$DIST_TAG" = "latest" ] || [ "$DIST_TAG" = "next" ]; }; then
+            echo "::error::Refusing to publish $VERSION with the \"$DIST_TAG\" dist-tag: it is not newer than the current latest $CURRENT_LATEST"
             exit 1
           fi
-          echo "Using npm dist-tag: $DIST_TAG"
+
+          # The GitHub release becomes "Latest" only together with the npm "latest" tag
+          MAKE_LATEST=false
+          if [ "$IS_PRE" != "true" ] && [ "$DIST_TAG" = "latest" ]; then
+            MAKE_LATEST=true
+          fi
+
+          echo "Version: $VERSION, current latest: $CURRENT_LATEST, npm dist-tag: $DIST_TAG, GitHub latest: $MAKE_LATEST"
           echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "make_latest=$MAKE_LATEST" >> "$GITHUB_OUTPUT"
 
       # Fail before publishing to npm if the push would be rejected (bad token,
       # missing permissions, branch moved since checkout). Runs in dry-run mode too.
@@ -152,7 +173,6 @@ jobs:
           tag_name: ${{ steps.bump-version.outputs.tag }}
           target_commitish: ${{ inputs.branch }}
           generate_release_notes: true
-          # Only releases from master may become the "Latest" GitHub release
-          make_latest: ${{ inputs.branch == 'master' && 'true' || 'false' }}
+          make_latest: ${{ steps.npm-tag.outputs.make_latest }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
