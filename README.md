@@ -7,7 +7,7 @@
 
 # website-scraper
 
-[Options](#usage) | [Plugins](#plugins) | [Log and debug](#log-and-debug) | [Frequently Asked Questions](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
+[Options](#usage) | [Plugins](#plugins) | [Security](#security) | [Log and debug](#log-and-debug) | [Frequently Asked Questions](https://github.com/website-scraper/node-website-scraper/blob/master/docs/FAQ.md) | [Contributing](https://github.com/website-scraper/node-website-scraper/blob/master/CONTRIBUTING.md) | [Code of Conduct](https://github.com/website-scraper/node-website-scraper/blob/master/CODE_OF_CONDUCT.md)
 
 
 Download website to local directory (including all css, images, js, etc.)
@@ -172,6 +172,7 @@ scrape({
   directory: '/path/to/save'
 });
 ```
+`urlFilter` is called for every url found in downloaded content and, when such a resource is redirected, for the url it was redirected to. It is not called for the urls passed in [urls](#urls), validate those before calling `scrape`. See [Security](#security) for how to restrict destinations for all requests.
 
 #### filenameGenerator
 String (name of the bundled filenameGenerator). Filename generator determines path in file system where the resource will be saved.
@@ -434,6 +435,13 @@ registerAction('saveResource', async ({resource}) => {
   await saveItSomewhere(filename, text);
 });
 ```
+
+## Security
+website-scraper requests the urls passed in [urls](#urls) and, by default, every resource referenced by the downloaded content (images, scripts, stylesheets, iframes, media, ...), following redirects. It does not check whether a destination is a public, private, loopback or link-local address, because mirroring intranet, staging or localhost sites is a legitimate use.
+
+If your application scrapes urls supplied by untrusted users, treat the supplied urls and every url found in the downloaded content as untrusted. Without restrictions, a page you are asked to download can make the scraper request internal services and save their responses to the output directory (server-side request forgery). Use [urlFilter](#urlfilter) to restrict discovered urls and a [beforeRequest](#beforerequest) action to validate every request, including redirects and resolved addresses. A complete example is in [SECURITY.md](https://github.com/website-scraper/node-website-scraper/blob/master/SECURITY.md).
+
+Please report security issues privately through [GitHub security advisories](https://github.com/website-scraper/node-website-scraper/security/advisories/new).
 
 ## result
 Array of [Resource](https://github.com/website-scraper/node-website-scraper/blob/master/lib/resource.js) objects containing:

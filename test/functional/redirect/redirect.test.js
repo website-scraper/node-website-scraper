@@ -63,6 +63,39 @@ describe('Functional redirects', function() {
 		});
 	});
 
+	it('should not save a resource redirected to a url rejected by urlFilter', async () => {
+		nock('http://example.com/').get('/').reply(200,
+			'<html><body><a href="/go.html">go</a><a href="/moved.html">moved</a></body></html>',
+			{'content-type': 'text/html'});
+		// passes urlFilter, redirects to a host which does not
+		nock('http://example.com/').get('/go.html').reply(302, '', {'Location': 'http://internal.example/secret.html'});
+		const internal = nock('http://internal.example/').get('/secret.html').reply(200, 'INTERNAL-SECRET', {'content-type': 'text/html'});
+		// passes urlFilter, redirects within the allowed host
+		nock('http://example.com/').get('/moved.html').reply(302, '', {'Location': 'http://example.com/new.html'});
+		nock('http://example.com/').get('/new.html').reply(200, 'new page', {'content-type': 'text/html'});
+
+		await scrape({
+			urls: [ 'http://example.com/' ],
+			directory: testDirname,
+			subdirectories: null,
+			recursive: true,
+			maxRecursiveDepth: 1,
+			sources: [],
+			urlFilter: (url) => url.startsWith('http://example.com'),
+		});
+
+		// the redirect is followed by the http client, but the response is dropped
+		internal.isDone().should.be.eql(true);
+		fs.existsSync(testDirname + '/new.html').should.be.eql(true);
+		fs.existsSync(testDirname + '/secret.html').should.be.eql(false);
+		for (const file of fs.readdirSync(testDirname, {recursive: true})) {
+			fs.readFileSync(`${testDirname}/${file}`).toString().should.not.containEql('INTERNAL-SECRET');
+		}
+		// the filtered link is left untouched, as for any url rejected by urlFilter
+		fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="/go.html">go</a>');
+		fs.readFileSync(testDirname + '/index.html').toString().should.containEql('<a href="new.html">moved</a>');
+	});
+
 	it('should correctly handle relative source in redirected page', () => {
 		const options = {
 			urls: [
