@@ -129,7 +129,7 @@ describe('Scraper', () => {
 				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: (url) => url.startsWith('http://example.com'),
+					urlFilter: (url) => new URL(url).hostname === 'example.com',
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
@@ -151,7 +151,7 @@ describe('Scraper', () => {
 				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: (url) => url.startsWith('http://example.com'),
+					urlFilter: (url) => new URL(url).hostname === 'example.com',
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
 
@@ -171,7 +171,7 @@ describe('Scraper', () => {
 				const s = new Scraper({
 					urls: ['http://example.com'],
 					directory: testDirname,
-					urlFilter: (url) => url.startsWith('http://example.com'),
+					urlFilter: (url) => new URL(url).hostname === 'example.com',
 					plugins: [ new GenerateFilenamePlugin() ]
 				});
 

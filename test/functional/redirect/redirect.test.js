@@ -83,7 +83,7 @@ describe('Functional redirects', function() {
 			recursive: true,
 			maxRecursiveDepth: 1,
 			sources: [],
-			urlFilter: (url) => url.startsWith('http://example.com'),
+			urlFilter: (url) => new URL(url).hostname === 'example.com',
 		});
 
 		// the redirect is followed by the http client, but the response is dropped
