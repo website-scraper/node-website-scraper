@@ -121,6 +121,68 @@ describe('Scraper', () => {
 				should.equal(rr, null);
 			});
 
+			it('should return null if the urlFilter returns false for the redirect target', async () => {
+				nock('http://example.com').get('/a.png').reply(302, '', { location: 'http://internal.example/a.png' });
+				const internal = nock('http://internal.example').get('/a.png').reply(200, 'INTERNAL');
+
+				const s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					urlFilter: (url) => url.startsWith('http://example.com'),
+					plugins: [ new GenerateFilenamePlugin() ]
+				});
+
+				const r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(2);
+
+				const rr = await s.requestResource(r);
+				(rr === null).should.be.true();
+				// the redirect itself is followed by the http client, the response is dropped
+				internal.isDone().should.be.eql(true);
+				r.getUrl().should.be.eql('http://example.com/a.png');
+				(r.getText() === undefined).should.be.true();
+			});
+
+			it('should request the resource if the urlFilter returns true for the redirect target', async () => {
+				nock('http://example.com').get('/a.png').reply(302, '', { location: 'http://example.com/b.png' });
+				nock('http://example.com').get('/b.png').reply(200, 'OK');
+
+				const s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					urlFilter: (url) => url.startsWith('http://example.com'),
+					plugins: [ new GenerateFilenamePlugin() ]
+				});
+
+				const r = new Resource('http://example.com/a.png');
+				r.getDepth = sinon.stub().returns(2);
+
+				const rr = await s.requestResource(r);
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('http://example.com/b.png');
+				rr.getText().should.be.eql('OK');
+			});
+
+			it('should ignore urlFilter for the redirect target if resource depth=0', async () => {
+				nock('http://example.com').get('/').reply(301, '', { location: 'https://www.example.com/' });
+				nock('https://www.example.com').get('/').reply(200, 'OK');
+
+				const s = new Scraper({
+					urls: ['http://example.com'],
+					directory: testDirname,
+					urlFilter: (url) => url.startsWith('http://example.com'),
+					plugins: [ new GenerateFilenamePlugin() ]
+				});
+
+				const r = new Resource('http://example.com');
+				r.getDepth = sinon.stub().returns(0);
+
+				const rr = await s.requestResource(r);
+				rr.should.be.eql(r);
+				rr.getUrl().should.be.eql('https://www.example.com/');
+				rr.getText().should.be.eql('OK');
+			});
+
 			it('should ignore urlFilter if resource depth=0', async () => {
 				nock('http://example.com').get('/').reply(200, 'OK');
 
