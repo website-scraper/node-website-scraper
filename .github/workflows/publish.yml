@@ -3,6 +3,11 @@ name: Create a tag and publish to npm
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch to release from (master, or a maintenance branch like 5.x)'
+        type: string
+        default: 'master'
+        required: true
       bump:
         description: 'Version bump type'
         type: choice
@@ -21,9 +26,12 @@ on:
         type: string
         required: false
       npmPreTag:
-        description: 'NPM tag used for all pre* bumps'
+        description: 'NPM tag used for all pre* bumps (default: "next" on master, "next-<major>" on maintenance branches)'
         type: string
-        default: 'next'
+        required: false
+      npmTag:
+        description: 'NPM tag used for regular bumps (default: "latest" on master, "latest-<major>" on maintenance branches)'
+        type: string
         required: false
       dryRun:
         description: 'Run in "dry run" mode'
@@ -43,7 +51,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
-          # Required to allow push to master without the checks/PR
+          ref: ${{ inputs.branch }}
+          # Required to allow push to the release branch without the checks/PR
           token: ${{ secrets.GH_PUSH_TOKEN }}
 
       - name: Set up Node.js
@@ -78,22 +87,53 @@ jobs:
           echo "Created tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve npm dist-tag
+        id: npm-tag
+        env:
+          BRANCH: ${{ inputs.branch }}
+          IS_PRE: ${{ startsWith(inputs.bump, 'pre') }}
+          NPM_TAG: ${{ inputs.npmTag }}
+          NPM_PRE_TAG: ${{ inputs.npmPreTag }}
+        run: |
+          MAJOR=$(node -p "require('./package.json').version.split('.')[0]")
+          if [ "$BRANCH" = "master" ]; then
+            DEFAULT_TAG=latest; DEFAULT_PRE_TAG=next
+          else
+            DEFAULT_TAG="latest-$MAJOR"; DEFAULT_PRE_TAG="next-$MAJOR"
+          fi
+          if [ "$IS_PRE" = "true" ]; then
+            DIST_TAG="${NPM_PRE_TAG:-$DEFAULT_PRE_TAG}"
+          else
+            DIST_TAG="${NPM_TAG:-$DEFAULT_TAG}"
+          fi
+          if [ "$BRANCH" != "master" ] && { [ "$DIST_TAG" = "latest" ] || [ "$DIST_TAG" = "next" ]; }; then
+            echo "::error::Refusing to publish from maintenance branch $BRANCH with the \"$DIST_TAG\" dist-tag"
+            exit 1
+          fi
+          echo "Using npm dist-tag: $DIST_TAG"
+          echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Publish to npm
         env:
           DRY_RUN_FLAG: ${{ inputs.dryRun && '--dry-run' || '' }}
-          TAG_FLAG: ${{ startsWith(inputs.bump, 'pre') && format('--tag {0}', inputs.npmPreTag) || ''}}
-        run: npm publish --provenance --access=public $DRY_RUN_FLAG $TAG_FLAG
+          DIST_TAG: ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access=public $DRY_RUN_FLAG --tag "$DIST_TAG"
 
-      - name: Push changes to master
+      - name: Push changes to ${{ inputs.branch }}
         if: ${{ !inputs.dryRun }}
+        env:
+          BRANCH: ${{ inputs.branch }}
         run: |
-          git push origin master --follow-tags
+          git push origin "HEAD:refs/heads/$BRANCH" --follow-tags
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ steps.bump-version.outputs.tag }}
+          target_commitish: ${{ inputs.branch }}
           generate_release_notes: true
+          # Only releases from master may become the "Latest" GitHub release
+          make_latest: ${{ inputs.branch == 'master' && 'true' || 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
