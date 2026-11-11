@@ -3,6 +3,11 @@ name: Create a tag and publish to npm
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch to release from (master, or a maintenance branch like 5.x)'
+        type: string
+        default: 'master'
+        required: true
       bump:
         description: 'Version bump type'
         type: choice
@@ -21,9 +26,12 @@ on:
         type: string
         required: false
       npmPreTag:
-        description: 'NPM tag used for all pre* bumps'
+        description: 'NPM tag used for all pre* bumps (default: "next" if newer than the current latest, otherwise "next-<major>")'
         type: string
-        default: 'next'
+        required: false
+      npmTag:
+        description: 'NPM tag used for regular bumps (default: "latest" if newer than the current latest, otherwise "latest-<major>")'
+        type: string
         required: false
       dryRun:
         description: 'Run in "dry run" mode'
@@ -43,8 +51,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
-          # Required to allow push to master without the checks/PR
-          token: ${{ secrets.GH_PUSH_TOKEN }}
+          ref: ${{ inputs.branch }}
+          # Don't leave the token in .git/config where dependency scripts
+          # (npm install / npm test) could read it; it's passed to the push step only
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -78,22 +88,91 @@ jobs:
           echo "Created tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve npm dist-tag
+        id: npm-tag
+        env:
+          IS_PRE: ${{ startsWith(inputs.bump, 'pre') }}
+          NPM_TAG: ${{ inputs.npmTag }}
+          NPM_PRE_TAG: ${{ inputs.npmPreTag }}
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          MAJOR="${VERSION%%.*}"
+          CURRENT_LATEST=$(npm view "$NAME" dist-tags.latest)
+          if [ -z "$CURRENT_LATEST" ]; then
+            echo "::error::Could not read the current \"latest\" dist-tag of $NAME"
+            exit 1
+          fi
+          # Use the semver package bundled with npm to compare versions
+          SEMVER="$(npm root -g)/npm/node_modules/semver"
+          IS_NEWEST=$(node -e 'const semver = require(process.argv[1]); console.log(semver.gt(process.argv[2], process.argv[3]))' \
+            "$SEMVER" "$VERSION" "$CURRENT_LATEST")
+
+          # Only a version newer than the current "latest" may take the "latest"/"next" tags,
+          # no matter which branch it is released from (e.g. 6.x while master is the 7.0 candidate)
+          if [ "$IS_NEWEST" = "true" ]; then
+            DEFAULT_TAG=latest; DEFAULT_PRE_TAG=next
+          else
+            DEFAULT_TAG="latest-$MAJOR"; DEFAULT_PRE_TAG="next-$MAJOR"
+          fi
+          if [ "$IS_PRE" = "true" ]; then
+            DIST_TAG="${NPM_PRE_TAG:-$DEFAULT_PRE_TAG}"
+          else
+            DIST_TAG="${NPM_TAG:-$DEFAULT_TAG}"
+          fi
+          if [ "$IS_NEWEST" != "true" ] && { [ "$DIST_TAG" = "latest" ] || [ "$DIST_TAG" = "next" ]; }; then
+            echo "::error::Refusing to publish $VERSION with the \"$DIST_TAG\" dist-tag: it is not newer than the current latest $CURRENT_LATEST"
+            exit 1
+          fi
+
+          # The GitHub release becomes "Latest" only together with the npm "latest" tag
+          MAKE_LATEST=false
+          if [ "$IS_PRE" != "true" ] && [ "$DIST_TAG" = "latest" ]; then
+            MAKE_LATEST=true
+          fi
+
+          echo "Version: $VERSION, current latest: $CURRENT_LATEST, npm dist-tag: $DIST_TAG, GitHub latest: $MAKE_LATEST"
+          echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "make_latest=$MAKE_LATEST" >> "$GITHUB_OUTPUT"
+
+      # Fail before publishing to npm if the push would be rejected (bad token,
+      # missing permissions, branch moved since checkout). Runs in dry-run mode too.
+      # Branch protection is only evaluated on a real push, so it isn't covered here.
+      - name: Verify push to ${{ inputs.branch }}
+        env:
+          BRANCH: ${{ inputs.branch }}
+          GH_PUSH_TOKEN: ${{ secrets.GH_PUSH_TOKEN }}
+        run: |
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_PUSH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$AUTH_HEADER"
+          git -c "http.https://github.com/.extraheader=$AUTH_HEADER" \
+            push --dry-run origin "HEAD:refs/heads/$BRANCH" --follow-tags
+
       - name: Publish to npm
         env:
           DRY_RUN_FLAG: ${{ inputs.dryRun && '--dry-run' || '' }}
-          TAG_FLAG: ${{ startsWith(inputs.bump, 'pre') && format('--tag {0}', inputs.npmPreTag) || ''}}
-        run: npm publish --provenance --access=public $DRY_RUN_FLAG $TAG_FLAG
+          DIST_TAG: ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access=public $DRY_RUN_FLAG --tag "$DIST_TAG"
 
-      - name: Push changes to master
+      - name: Push changes to ${{ inputs.branch }}
         if: ${{ !inputs.dryRun }}
+        env:
+          BRANCH: ${{ inputs.branch }}
+          # Required to allow push to the release branch without the checks/PR
+          GH_PUSH_TOKEN: ${{ secrets.GH_PUSH_TOKEN }}
         run: |
-          git push origin master --follow-tags
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_PUSH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$AUTH_HEADER"
+          git -c "http.https://github.com/.extraheader=$AUTH_HEADER" \
+            push origin "HEAD:refs/heads/$BRANCH" --follow-tags
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ steps.bump-version.outputs.tag }}
+          target_commitish: ${{ inputs.branch }}
           generate_release_notes: true
+          make_latest: ${{ steps.npm-tag.outputs.make_latest }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
