@@ -510,6 +510,7 @@ describe('Scraper', () => {
 			plugins.SaveResourceToFileSystemPlugin.should.be.instanceOf(Function);
 			plugins.GenerateFilenameByTypePlugin.should.be.instanceOf(Function);
 			plugins.GenerateFilenameBySiteStructurePlugin.should.be.instanceOf(Function);
+			plugins.BlockPrivateAddressesPlugin.should.be.instanceOf(Function);
 		});
 	});
 
